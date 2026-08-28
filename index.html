@@ -236,6 +236,7 @@
             <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 4px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
             <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Rekap Mingguan</button></li>
             <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Rekap Bulanan</button></li>
+            <li style="margin-top: 15px;"><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.3); text-align: center; font-weight: 800;">🔗 Bagikan Link Aplikasi</button></li>
             <li style="margin-top: 25px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); text-align: center;">🚪 Keluar (Logout)</button></li>
         </ul>
     </div>
@@ -1141,7 +1142,7 @@
     
     function simpanKasMasuk(isAutoTrigger = false) { 
         const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; if(!db) return; 
-        const kasData = { cash: parseFloat(document.getElementById('inCash').value) || 0, qris: parseFloat(document.getElementById('inQris').value) || 0, gojek: parseFloat(document.getElementById('inGojek').value) || 0, grab: parseFloat(document.getElementById('inGrab').value) || 0, shopee: parseFloat(document.getElementById('inShopee').value) || 0, petty: parseFloat(document.getElementById('inPettycash').value) || 0, modalBesok: parseFloat(document.getElementById('inModalBesok').value) || 0 }; 
+        const kasData = { cash: parseFloat(document.getElementById('inCash').value) || 0, qris: parseFloat(document.getElementById('inGojek').value) || 0, grab: parseFloat(document.getElementById('inGrab').value) || 0, shopee: parseFloat(document.getElementById('inShopee').value) || 0, petty: parseFloat(document.getElementById('inPettycash').value) || 0, modalBesok: parseFloat(document.getElementById('inModalBesok').value) || 0 }; 
         db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); 
     }
     function simpanModalBesokManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } simpanKasMasuk(false); showToast('✅ Modal Besok Sukses Disimpan!'); }
@@ -1270,6 +1271,31 @@
     // ==========================================
     function downloadTemplatePagi() { const tgl = document.getElementById('tglOps').value; let csv = 'Kategori;Nama Produk;Stok Awal;Tambah;Kurang;Stok Sisa\n'; (dbStok[tgl] || masterProduk).forEach(p => { csv += `${p.kategori};${p.nama};${p.awal || 0};${p.tambah || 0};${p.kurang || 0};${p.sisa || ""}\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `Stok_Harian_${tgl}.csv`; link.click(); }
     function importStokPagi(event) { if(isDataLocked(document.getElementById('tglOps').value)) { alert("Data terkunci! Silakan buka gembok terlebih dahulu."); return; } const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const tgl = document.getElementById('tglOps').value; if (!dbStok[tgl]) syncStokDenganMaster(tgl); e.target.result.split('\n').forEach((line, index) => { if (index === 0 || !line.trim()) return; const cols = line.split(';'); if (cols.length >= 3) { const idx = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === cols[1].trim().toLowerCase()); if (idx !== -1) { dbStok[tgl][idx].awal = cols[2].trim(); if (cols[3]) dbStok[tgl][idx].tambah = cols[3].trim(); if (cols[4]) dbStok[tgl][idx].kurang = cols[4].trim(); if (cols[5]) dbStok[tgl][idx].sisa = cols[5].trim(); } } }); if(db) db.collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import OK'); }); else { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import Lokal OK'); } }; reader.readAsText(file); }
+
+    // ==========================================
+    // FUNGSI BAGIKAN APLIKASI
+    // ==========================================
+    function bagikanAplikasi() {
+        if (navigator.share) {
+            navigator.share({
+                title: "Aplikasi Kasir Bakso Mbak Sae'ah",
+                text: "Ini link untuk mengakses Aplikasi Kasir Bakso Malang Mbak Sae'ah Cab. Cipete. Silakan buka dan simpan di HP kamu ya!",
+                url: window.location.href
+            }).then(() => {
+                showToast('✅ Berhasil membuka menu bagikan!');
+            }).catch(err => {
+                console.log('Gagal membagikan', err);
+            });
+        } else {
+            const dummy = document.createElement('input');
+            document.body.appendChild(dummy);
+            dummy.value = window.location.href;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('🔗 Link aplikasi berhasil disalin (dicopy)!\n\nSilakan paste (tempel) di WhatsApp atau chat lainnya.');
+        }
+    }
 </script>
 </body>
 </html>
