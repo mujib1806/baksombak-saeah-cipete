@@ -1141,9 +1141,31 @@
     }
     
     function simpanKasMasuk(isAutoTrigger = false) { 
-        const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; if(!db) return; 
-        const kasData = { cash: parseFloat(document.getElementById('inCash').value) || 0, qris: parseFloat(document.getElementById('inGojek').value) || 0, grab: parseFloat(document.getElementById('inGrab').value) || 0, shopee: parseFloat(document.getElementById('inShopee').value) || 0, petty: parseFloat(document.getElementById('inPettycash').value) || 0, modalBesok: parseFloat(document.getElementById('inModalBesok').value) || 0 }; 
-        db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); 
+    const tgl = document.getElementById('tglOps').value; 
+    if(isDataLocked(tgl)) return; 
+    
+    // Perbaikan Bug: Membaca semua input kasir dengan tepat
+    const kasData = { 
+        cash: parseFloat(document.getElementById('inCash').value) || 0, 
+        qris: parseFloat(document.getElementById('inQris').value) || 0, 
+        gojek: parseFloat(document.getElementById('inGojek').value) || 0, 
+        grab: parseFloat(document.getElementById('inGrab').value) || 0, 
+        shopee: parseFloat(document.getElementById('inShopee').value) || 0, 
+        petty: parseFloat(document.getElementById('inPettycash').value) || 0, 
+        modalBesok: parseFloat(document.getElementById('inModalBesok').value) || 0 
+    }; 
+    
+    // Update perhitungan lokal terlebih dahulu agar Alokasi & Selisih langsung terakumulasi instan
+    dbKasMasuk[tgl] = kasData;
+    updateKalkulasi();
+
+    // Proses sinkronisasi ke Firebase
+    if(db) {
+        db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { 
+            if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } 
+        }); 
+    }
+}
     }
     function simpanModalBesokManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } simpanKasMasuk(false); showToast('✅ Modal Besok Sukses Disimpan!'); }
     function loadKasMasukUI() { const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; document.getElementById('inCash').value = kas.cash; document.getElementById('inQris').value = kas.qris; document.getElementById('inGojek').value = kas.gojek; document.getElementById('inGrab').value = kas.grab; document.getElementById('inShopee').value = kas.shopee; document.getElementById('inPettycash').value = kas.petty; document.getElementById('inModalBesok').value = kas.modalBesok || 0; }
