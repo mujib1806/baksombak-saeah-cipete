@@ -696,6 +696,9 @@
     // ==========================================
     // VARIABEL GLOBAL & FIREBASE
     // ==========================================
+    function formatRupiah(angka) { 
+        return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
+    }
     const firebaseConfig = {
         apiKey: "AIzaSyCBdZEmYbnIUuZ4Weu8vXFMh-EBPWmShNY",
         authDomain: "stockbaksoapp2.firebaseapp.com",
