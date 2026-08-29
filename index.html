@@ -1124,7 +1124,7 @@
         const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const btnToggle = document.getElementById('btnToggleLock'); 
         if(locked) { btnToggle.className = 'btn-lock locked'; btnToggle.innerHTML = '🔒 TERKUNCI'; } else { btnToggle.className = 'btn-lock unlock'; btnToggle.innerHTML = '🔓 TERBUKA'; } 
         const isDapur = currentUser && currentUser.role === 'dapur';
-     const idsToDisable = ['inCash', 'inQris', 'inGojek', 'inGrab', 'inShopee', 'inPettycash', 'inModalBesok', 'btnSimpanModalBesok', 'ketKeluarHarian', 'nominalKeluarHarian', 'btnSubmitPengeluaran', 'inAbsenUtama', 'inAbsenTambahan', 'inBmCash', 'inBmKetPengeluaran', 'inBmPengeluaran', 'inTehTerjual']; 
+        const idsToDisable = ['inCash', 'inQris', 'inGojek', 'inGrab', 'inShopee', 'inPettycash', 'inModalBesok', 'btnSimpanModalBesok', 'ketKeluarHarian', 'nominalKeluarHarian', 'btnSubmitPengeluaran', 'inAbsenUtama', 'inAbsenTambahan', 'inBmCash', 'inBmKetPengeluaran', 'inBmPengeluaran', 'inTehTerjual']; 
         idsToDisable.forEach(id => { 
             const el = document.getElementById(id); 
             if(el) { 
@@ -1139,7 +1139,7 @@
         if (document.activeElement && document.activeElement.tagName !== 'INPUT') { 
             renderTabelMatriks(); 
             renderPengeluaranTables(); 
-        } 
+        }
     }
 
     function simpanAbsensi() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const utama = document.getElementById('inAbsenUtama').value === 'ya'; const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; const nominal = (utama ? 50000 : 0) + (tambahan * 50000); const data = { utama, tambahan, nominal }; if(db) { db.collection('gajiHarian').doc(tgl).set(data).then(() => { showToast('✅ Absensi & Gaji Tersimpan!'); }); } else { dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); } }
@@ -1201,32 +1201,6 @@
         } 
     }
     
-  function simpanKasMasuk(isAutoTrigger = false) { 
-        const tgl = document.getElementById('tglOps').value; 
-        if(isDataLocked(tgl)) return; 
-        
-        // Membaca seluruh input kasir dengan id yang benar
-        const kasData = { 
-            cash: parseFloat(document.getElementById('inCash').value) || 0, 
-            qris: parseFloat(document.getElementById('inQris').value) || 0, 
-            gojek: parseFloat(document.getElementById('inGojek').value) || 0, 
-            grab: parseFloat(document.getElementById('inGrab').value) || 0, 
-            shopee: parseFloat(document.getElementById('inShopee').value) || 0, 
-            petty: parseFloat(document.getElementById('inPettycash').value) || 0, 
-            modalBesok: parseFloat(document.getElementById('inModalBesok').value) || 0 
-        }; 
-        
-        // Update perhitungan lokal agar seketika terakumulasi tanpa delay
-        dbKasMasuk[tgl] = kasData;
-        updateKalkulasi();
-
-        // Mengirim data ke Firebase
-        if(db) {
-            db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { 
-                if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } 
-            }); 
-        }
-    }
     function formatRibuanInput(el) {
         let angka = el.value.replace(/[^0-9]/g, '');
         if(angka) { el.value = parseInt(angka, 10).toLocaleString('id-ID'); }
