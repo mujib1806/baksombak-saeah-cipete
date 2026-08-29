@@ -1085,7 +1085,7 @@
     
     function simpanStokKeFirebase() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; if(!db) return; db.collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { showToast('✅ Stok Otomatis Tersimpan!'); }); }
 
-   function updateNilaiStokLokal(idx, tipe, val) { 
+ function updateNilaiStokLokal(idx, tipe, val) { 
         const tgl = document.getElementById('tglOps').value; 
         if (!dbStok[tgl]) syncStokDenganMaster(tgl); 
         if (tipe === 'awal') dbStok[tgl][idx].awal = val; 
@@ -1112,7 +1112,6 @@
         updateKalkulasi(); 
         clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { simpanStokKeFirebase(); }, 1000);
     }
-    
     function loadDataTanggalLocal() { 
         const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
         renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
@@ -1134,8 +1133,7 @@
     function simpanAbsensi() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const utama = document.getElementById('inAbsenUtama').value === 'ya'; const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; const nominal = (utama ? 50000 : 0) + (tambahan * 50000); const data = { utama, tambahan, nominal }; if(db) { db.collection('gajiHarian').doc(tgl).set(data).then(() => { showToast('✅ Absensi & Gaji Tersimpan!'); }); } else { dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); } }
     function loadGajiUI() { const tgl = document.getElementById('tglOps').value; const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; document.getElementById('inAbsenUtama').value = d.utama ? 'ya' : 'tidak'; document.getElementById('inAbsenTambahan').value = d.tambahan; document.getElementById('txtTotalGajiHarian').innerText = formatRupiah(d.nominal); }
 
-    function renderTabelMatriks() {
-        function renderTabelMatriks() {
+  function renderTabelMatriks() {
         const tgl = document.getElementById('tglOps').value; 
         const locked = isDataLocked(tgl); 
         
