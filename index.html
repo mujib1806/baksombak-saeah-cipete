@@ -82,13 +82,80 @@
         .fab-btn { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #ea580c, #c2410c); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 998; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         .fab-btn:active { transform: scale(0.9); }
 
-        /* SIDEBAR */
-        .sidebar { position: fixed; top: 0; left: -100%; width: 85%; max-width: 280px; height: 100%; background: var(--sidebar-bg); color: white; z-index: 1001; transition: all 0.3s; padding: 16px 12px; overflow-y: auto; }
+      /* SIDEBAR YANG LEBIH ELEGAN */
+        .sidebar { 
+            position: fixed; 
+            top: 0; 
+            left: -100%; 
+            width: 88%; 
+            max-width: 300px; 
+            height: 100%; 
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); 
+            color: white; 
+            z-index: 1001; 
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); 
+            padding: 20px 16px; 
+            overflow-y: auto; 
+            box-shadow: 10px 0 25px rgba(0,0,0,0.5);
+        }
         .sidebar.active { left: 0; }
-        .sidebar-menu { list-style: none; margin-top:12px; }
+        
+        .sidebar-profile {
+            text-align: center; 
+            margin: 15px 0 20px 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu { list-style: none; margin-top: 5px; }
         .sidebar-menu li { margin-bottom: 8px; }
-        .sidebar-menu button { width: 100%; text-align: left; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 10px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem;}
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; display: none; }
+        
+        /* Tombol Menu Utama yang Modern & Elegan */
+        .sidebar-menu button { 
+            width: 100%; 
+            text-align: left; 
+            background: rgba(255, 255, 255, 0.03); 
+            color: #cbd5e1; 
+            border: 1px solid rgba(255, 255, 255, 0.06); 
+            padding: 11px 14px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-menu button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(3px);
+        }
+
+        .sidebar-section-title {
+            font-size: 0.65rem; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            font-weight: 800; 
+            margin: 22px 0 8px 6px; 
+            letter-spacing: 1.5px;
+        }
+
+        .overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(15, 23, 42, 0.75); 
+            backdrop-filter: blur(4px); 
+            z-index: 1000; 
+            display: none; 
+            transition: opacity 0.3s ease;
+        }
         .overlay.active { display: block; }
 
         /* KAS CARDS */
@@ -214,48 +281,49 @@
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <div class="sidebar" id="sidebar">
+   <div class="sidebar" id="sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin: 0; border: none; padding: 0;">📌 Navigasi Utama</h3>
-            <button onclick="toggleSidebar()" style="background: rgba(255,255,255,0.1); border: none; color: white; font-size: 1rem; cursor: pointer; width:28px; height:28px; border-radius:6px;">✕</button>
+            <h3 style="margin: 0; border: none; padding: 0; font-size: 0.95rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px;">📌 Navigasi Utama</h3>
+            <button onclick="toggleSidebar()" style="background: rgba(255,255,255,0.08); border: none; color: white; font-size: 0.9rem; cursor: pointer; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;">✕</button>
         </div>
-        <div style="text-align: center; margin: 15px 0;">
-            <img src="AGAK HIDUP.png" alt="Logo Besar" style="width: 70px; height: 70px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #ea580c; margin-bottom: 8px;">
-            <div style="font-size: 0.75rem; color: #94a3b8;">Selamat datang,</div>
-            <div id="namaUserAktif" style="font-size: 1rem; font-weight: 800; color: #f8fafc;">-</div>
-            <div id="roleUserAktif" style="font-size: 0.65rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.1); display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 4px;">-</div>
+        
+        <div class="sidebar-profile">
+            <img src="AGAK HIDUP.png" alt="Logo Besar" style="width: 65px; height: 65px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid #ea580c; margin-bottom: 8px; object-fit: cover;">
+            <div style="font-size: 0.7rem; color: #94a3b8;">Selamat datang,</div>
+            <div id="namaUserAktif" style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; margin-top: 2px;">-</div>
+            <div id="roleUserAktif" style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; border: 1px solid rgba(56, 189, 248, 0.2);">-</div>
         </div>
-     <ul class="sidebar-menu" style="margin-top: 12px;">
-            
+        
+        <ul class="sidebar-menu">
             <!-- MENU UTAMA (BERANDA) -->
-            <li id="menuDashboard" style="margin-bottom: 15px;">
-                <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.9rem; text-align: center; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);">📈 Dashboard Utama</button>
+            <li id="menuDashboard" style="margin-bottom: 12px;">
+                <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.85rem; justify-content: center; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);">📈 Dashboard Utama</button>
             </li>
 
             <!-- KELOMPOK 1: OPERASIONAL -->
-            <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 10px 0 8px 5px; letter-spacing: 1px;">📝 Operasional</div>
+            <div class="sidebar-section-title">📝 Operasional</div>
             <li><button onclick="pilihMenuNav('harian')">📋 Rekap Stok Harian</button></li>
             <li id="menuSetoran"><button onclick="pilihMenuNav('setoranBakso')">🍲 Setoran Bakso Malang</button></li>
-            <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.1);">🛒 Form Order Vendor</button></li>
+            <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 3px solid #f59e0b;">🛒 Form Order Vendor</button></li>
             
-            <!-- KELOMPOK 2: KEUANGAN (Hanya tampil untuk Owner) -->
-            <div id="grupKeuanganTitle" style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 20px 0 8px 5px; letter-spacing: 1px;">💰 Keuangan & Kas</div>
-            <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 4px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
-            <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')">🏦 Rekap Transfer</button></li>
-            <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.1);">💵 Rekap Slip Gaji</button></li>
+            <!-- KELOMPOK 2: KEUANGAN -->
+            <div id="grupKeuanganTitle" class="sidebar-section-title">💰 Keuangan & Kas</div>
+            <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 3px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
+            <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')" style="border-left: 3px solid #3b82f6;">🏦 Rekap Transfer</button></li>
+            <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 3px solid #f43f5e;">💵 Rekap Slip Gaji</button></li>
 
             <!-- KELOMPOK 3: PENGATURAN & LAPORAN -->
-            <div id="grupPengaturanTitle" style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 20px 0 8px 5px; letter-spacing: 1px;">⚙️ Laporan & Sistem</div>
+            <div id="grupPengaturanTitle" class="sidebar-section-title">⚙️ Laporan & Sistem</div>
             <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
             <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
             <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
-            <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 4px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
-            <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 4px solid #0ea5e9;">🕰️ Riwayat Aktivitas</button></li>
+            <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
+            <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
 
             <!-- TOMBOL AKSI BAWAH -->
-            <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
-                <li><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.3); text-align: center; font-weight: 800;">🔗 Bagikan Link Aplikasi</button></li>
-                <li style="margin-top: 8px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); text-align: center;">🚪 Keluar (Logout)</button></li>
+            <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 15px;">
+                <li><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.08); color: #34d399; border-color: rgba(16, 185, 129, 0.2); justify-content: center; font-weight: 700;">🔗 Bagikan Link Aplikasi</button></li>
+                <li style="margin-top: 8px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.08); color: #fca5a5; border-color: rgba(239, 68, 68, 0.15); justify-content: center;">🚪 Keluar (Logout)</button></li>
             </div>
         </ul>
     </div>
