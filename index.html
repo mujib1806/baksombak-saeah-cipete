@@ -1363,7 +1363,17 @@ function formatRupiah(angka) {
     function hapusProdukMaster(i) { if(confirm("Hapus produk dari master?")){ masterProduk.splice(i,1); if(db)db.collection('appData').doc('masterProduk').set({list:masterProduk}); renderTabelMasterProduk(); } }
     function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
 
-    function bukaModalKas(jenis, tipe) { document.getElementById('modalJenisKas').value=jenis; document.getElementById('modalTipeTx').value=tipe; document.getElementById('modalKasJudul').innerText=`⚡ Kas ${jenis}`; document.getElementById('modalKas').classList.add('active'); }
+   function bukaModalKas(jenis, tipe) { 
+    document.getElementById('modalJenisKas').value = jenis; 
+    document.getElementById('modalTipeTx').value = tipe; 
+    document.getElementById('modalKasJudul').innerText = `⚡ Kas ${jenis}`; 
+    
+    // 2 Baris ini yang bertugas menyapu bersih angka yang nyangkut
+    document.getElementById('modalNominalTx').value = ""; 
+    document.getElementById('modalKetTx').value = ""; 
+    
+    document.getElementById('modalKas').classList.add('active'); 
+}
     function tutupModalKas() { document.getElementById('modalKas').classList.remove('active'); }
     function prosesTransaksiKas(e) { e.preventDefault(); if(!db)return; db.collection('logKas').add({ tgl:document.getElementById('tglOps').value, jenis:document.getElementById('modalJenisKas').value, tipe:document.getElementById('modalTipeTx').value, nominal:parseFloat(document.getElementById('modalNominalTx').value)||0, ket:document.getElementById('modalKetTx').value }).then(tutupModalKas); }
 
