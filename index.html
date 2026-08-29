@@ -1438,5 +1438,8 @@ function pilihMenuNav(jenis) {
         });
     }
 </script>
+    function formatRupiah(angka) { 
+    return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
+}
 </body>
 </html>
