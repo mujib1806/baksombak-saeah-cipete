@@ -294,33 +294,48 @@
             <div id="roleUserAktif" style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; border: 1px solid rgba(56, 189, 248, 0.2);">-</div>
         </div>
         
-        <ul class="sidebar-menu">
+       <ul class="sidebar-menu">
             <!-- MENU UTAMA (BERANDA) -->
             <li id="menuDashboard" style="margin-bottom: 12px;">
                 <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.85rem; justify-content: center; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);">📈 Dashboard Utama</button>
             </li>
 
-            <!-- KELOMPOK 1: OPERASIONAL -->
-            <div class="sidebar-section-title">📝 Operasional</div>
-            <li><button onclick="pilihMenuNav('harian')">📋 Rekap Stok Harian</button></li>
-            <li id="menuSetoran"><button onclick="pilihMenuNav('setoranBakso')">🍲 Setoran Bakso Malang</button></li>
-            <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 3px solid #f59e0b;">🛒 Form Order Vendor</button></li>
+            <!-- KELOMPOK 1: OPERASIONAL (Default Terbuka) -->
+            <div onclick="toggleDropdown('grupOperasional')" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span>📝 Operasional</span>
+                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
+            </div>
+            <div id="grupOperasional" style="display: block;">
+                <li><button onclick="pilihMenuNav('harian')">📋 Rekap Stok Harian</button></li>
+                <li id="menuSetoran"><button onclick="pilihMenuNav('setoranBakso')">🍲 Setoran Bakso Malang</button></li>
+                <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 3px solid #f59e0b;">🛒 Form Order Vendor</button></li>
+            </div>
             
-            <!-- KELOMPOK 2: KEUANGAN -->
-            <div id="grupKeuanganTitle" class="sidebar-section-title">💰 Keuangan & Kas</div>
-            <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 3px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
-            <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')" style="border-left: 3px solid #3b82f6;">🏦 Rekap Transfer</button></li>
-            <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 3px solid #f43f5e;">💵 Rekap Slip Gaji</button></li>
+            <!-- KELOMPOK 2: KEUANGAN (Default Tertutup) -->
+            <div onclick="toggleDropdown('grupKeuangan')" id="grupKeuanganTitle" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span>💰 Keuangan & Kas</span>
+                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
+            </div>
+            <div id="grupKeuangan" style="display: none;">
+                <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 3px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
+                <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')" style="border-left: 3px solid #3b82f6;">🏦 Rekap Transfer</button></li>
+                <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 3px solid #f43f5e;">💵 Rekap Slip Gaji</button></li>
+            </div>
 
-            <!-- KELOMPOK 3: PENGATURAN & LAPORAN -->
-            <div id="grupPengaturanTitle" class="sidebar-section-title">⚙️ Laporan & Sistem</div>
-            <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
-            <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
-            <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
-            <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
-            <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
+            <!-- KELOMPOK 3: LAPORAN & SISTEM (Default Tertutup) -->
+            <div onclick="toggleDropdown('grupPengaturan')" id="grupPengaturanTitle" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span>⚙️ Laporan & Sistem</span>
+                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
+            </div>
+            <div id="grupPengaturan" style="display: none;">
+                <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
+                <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
+                <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
+                <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
+                <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
+            </div>
 
-            <!-- TOMBOL AKSI BAWAH -->
+            <!-- TOMBOL AKSI BAWAH (Bagian Luar Dropdown) -->
             <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 15px;">
                 <li><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.08); color: #34d399; border-color: rgba(16, 185, 129, 0.2); justify-content: center; font-weight: 700;">🔗 Bagikan Link Aplikasi</button></li>
                 <li style="margin-top: 8px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.08); color: #fca5a5; border-color: rgba(239, 68, 68, 0.15); justify-content: center;">🚪 Keluar (Logout)</button></li>
@@ -1714,6 +1729,16 @@ function formatRupiah(angka) {
             console.error("Gagal ambil log:", err);
             document.getElementById('tabelRiwayatBody').innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #ef4444;">Gagal memuat data riwayat.</td></tr>`;
         });
+    }
+    function toggleDropdown(idGrup) {
+        const el = document.getElementById(idGrup);
+        if (el) {
+            if (el.style.display === "none" || el.style.display === "") {
+                el.style.display = "block";
+            } else {
+                el.style.display = "none";
+            }
+        }
     }
 </script>
     <script>
