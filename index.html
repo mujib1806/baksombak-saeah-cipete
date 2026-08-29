@@ -1182,7 +1182,18 @@ function pilihMenuNav(jenis) {
     
     function isDataLocked(tgl) { return dbStatusKunci[tgl] === true; }
     function toggleLock() { const tgl = document.getElementById('tglOps').value; const currentlyLocked = isDataLocked(tgl); if (currentlyLocked) { if(confirm("Buka gembok data hari ini?")) { setLockStatus(tgl, false); } } else { if(confirm("Kunci data hari ini?")) { setLockStatus(tgl, true); } } }
-    function setLockStatus(tgl, status) { if(db) { db.collection('statusHarian').doc(tgl).set({ terkunci: status }); } else { dbStatusKunci[tgl] = status; applyLockUI(); } }
+    function setLockStatus(tgl, status) { 
+        if(db) { 
+            db.collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
+                // --- TAMBAHKAN BARIS INI ---
+                const statusStr = status ? "MENKUNCI (LOCK)" : "MEMBUKA (UNLOCK)";
+                catatAktivitas('Keamanan Data', `${statusStr} data operasional untuk tanggal ${tgl}`);
+                // ---------------------------
+            }); 
+        } else { 
+            dbStatusKunci[tgl] = status; applyLockUI(); 
+        } 
+    }
     
     function applyLockUI() { 
         const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const btnToggle = document.getElementById('btnToggleLock'); 
@@ -1287,7 +1298,19 @@ function pilihMenuNav(jenis) {
         if(db) { db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); }
     }
 
-    function simpanModalBesokManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } simpanKasMasuk(false); showToast('✅ Modal Besok Sukses Disimpan!'); }
+    function simpanModalBesokManual() { 
+        const tgl = document.getElementById('tglOps').value; 
+        if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } 
+        
+        simpanKasMasuk(false); 
+        
+        // --- TAMBAHKAN BARIS INI ---
+        const modalVal = document.getElementById('inModalBesok').value;
+        catatAktivitas('Modal Laci', `Menyimpan modal laci besok sebesar Rp ${modalVal} untuk tanggal ${tgl}`);
+        // ---------------------------
+        
+        showToast('✅ Modal Besok Sukses Disimpan!'); 
+    }
     
     function loadKasMasukUI() { 
         const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
@@ -1301,12 +1324,22 @@ function pilihMenuNav(jenis) {
         document.getElementById('inModalBesok').value = formatTitik(kas.modalBesok || 0); 
     }
     
-    function tambahPengeluaranHarian(e) { 
+   function tambahPengeluaranHarian(e) { 
         e.preventDefault(); const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; 
         const ket = document.getElementById('ketKeluarHarian').value; 
         const nominal = parseFloat(document.getElementById('nominalKeluarHarian').value.replace(/\./g, '')) || 0; 
-        if(db) { db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { showToast('🛒 Pengeluaran Ditambah!'); }); } 
-        else { dbPengeluaranHarian.push({ id: null, tgl, ket, nominal }); renderPengeluaranTables(); updateKalkulasi(); } 
+        
+        if(db) { 
+            db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { 
+                // --- TAMBAHKAN BARIS INI ---
+                catatAktivitas('Pengeluaran Harian', `Menambah pengeluaran "${ket}" sebesar Rp ${nominal.toLocaleString('id-ID')} untuk tanggal ${tgl}`);
+                // ---------------------------
+                showToast('🛒 Pengeluaran Ditambah!'); 
+            }); 
+        } 
+        else { 
+            dbPengeluaranHarian.push({ id: null, tgl, ket, nominal }); renderPengeluaranTables(); updateKalkulasi(); 
+        } 
         document.getElementById('ketKeluarHarian').value = ''; document.getElementById('nominalKeluarHarian').value = ''; 
     }
     
