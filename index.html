@@ -895,7 +895,7 @@
     // FUNGSI NAVIGASI
     // ==========================================
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-    function pilihMenuNav(jenis) { 
+function pilihMenuNav(jenis) { 
     toggleSidebar(); 
     
     // 1. Sembunyikan semua halaman terlebih dahulu
@@ -907,33 +907,29 @@
     document.getElementById('viewDashboard').style.display = 'none'; 
     document.getElementById('viewOrderVendor').style.display = 'none'; 
     
-    // 2. Munculkan hanya halaman yang dipanggil oleh tombol
+    // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
     if (jenis === 'harian') { 
         document.getElementById('viewHarian').style.display = 'block'; 
     } else if (jenis === 'setoranBakso') { 
         document.getElementById('viewSetoranBakso').style.display = 'block'; 
+        renderViewSetoranBakso(); 
     } else if (jenis === 'rekapTransfer') { 
         document.getElementById('viewRekapTransfer').style.display = 'block'; 
+        renderViewRekapTransfer(); 
     } else if (jenis === 'mutasiKas') { 
         document.getElementById('viewMutasiKas').style.display = 'block'; 
+        hitungAkumulasiKasTotal(); 
     } else if (jenis === 'gajiBulanan') {
         document.getElementById('viewGajiBulanan').style.display = 'block';
+        renderRekapGajiBulanan();
     } else if (jenis === 'dashboard') {
         document.getElementById('viewDashboard').style.display = 'block';
+        renderDashboardGrafik();
     } else if (jenis === 'orderVendor') {
         document.getElementById('viewOrderVendor').style.display = 'block';
+        renderFormOrderVendor();
     }
 }
-        else if (jenis === 'setoranBakso') { document.getElementById('viewSetoranBakso').style.display = 'block'; renderViewSetoranBakso(); } 
-        else if (jenis === 'rekapTransfer') { document.getElementById('viewRekapTransfer').style.display = 'block'; renderViewRekapTransfer(); } 
-        else if (jenis === 'mutasiKas') { document.getElementById('viewMutasiKas').style.display = 'block'; hitungAkumulasiKasTotal(); }
-        else if (jenis === 'gajiBulanan') { document.getElementById('viewGajiBulanan').style.display = 'block'; renderRekapGajiBulanan(); }
-        else if (jenis === 'dashboard') { document.getElementById('viewDashboard').style.display = 'block'; renderDashboardGrafik(); }
-        else if (jenis === 'orderVendor') { document.getElementById('viewOrderVendor').style.display = 'block'; renderFormOrderVendor(); }
-    }
-    
-    function formatRupiah(angka) { return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); }
-    
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
     // ==========================================
