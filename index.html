@@ -896,16 +896,34 @@
     // ==========================================
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
     function pilihMenuNav(jenis) { 
-        toggleSidebar(); 
-        document.getElementById('viewHarian').style.display = 'none'; 
-        document.getElementById('viewSetoranBakso').style.display = 'none'; 
-        document.getElementById('viewRekapTransfer').style.display = 'none'; 
-        document.getElementById('viewMutasiKas').style.display = 'none'; 
-        document.getElementById('viewGajiBulanan').style.display = 'none';
-        document.getElementById('viewDashboard').style.display = 'none'; 
-        document.getElementById('viewOrderVendor').style.display = 'none'; 
-        
-        if (jenis === 'harian') { document.getElementById('viewHarian').style.display = 'block'; } 
+    toggleSidebar(); 
+    
+    // 1. Sembunyikan semua halaman terlebih dahulu
+    document.getElementById('viewHarian').style.display = 'none'; 
+    document.getElementById('viewSetoranBakso').style.display = 'none'; 
+    document.getElementById('viewRekapTransfer').style.display = 'none'; 
+    document.getElementById('viewMutasiKas').style.display = 'none'; 
+    document.getElementById('viewGajiBulanan').style.display = 'none';
+    document.getElementById('viewDashboard').style.display = 'none'; 
+    document.getElementById('viewOrderVendor').style.display = 'none'; 
+    
+    // 2. Munculkan hanya halaman yang dipanggil oleh tombol
+    if (jenis === 'harian') { 
+        document.getElementById('viewHarian').style.display = 'block'; 
+    } else if (jenis === 'setoranBakso') { 
+        document.getElementById('viewSetoranBakso').style.display = 'block'; 
+    } else if (jenis === 'rekapTransfer') { 
+        document.getElementById('viewRekapTransfer').style.display = 'block'; 
+    } else if (jenis === 'mutasiKas') { 
+        document.getElementById('viewMutasiKas').style.display = 'block'; 
+    } else if (jenis === 'gajiBulanan') {
+        document.getElementById('viewGajiBulanan').style.display = 'block';
+    } else if (jenis === 'dashboard') {
+        document.getElementById('viewDashboard').style.display = 'block';
+    } else if (jenis === 'orderVendor') {
+        document.getElementById('viewOrderVendor').style.display = 'block';
+    }
+}
         else if (jenis === 'setoranBakso') { document.getElementById('viewSetoranBakso').style.display = 'block'; renderViewSetoranBakso(); } 
         else if (jenis === 'rekapTransfer') { document.getElementById('viewRekapTransfer').style.display = 'block'; renderViewRekapTransfer(); } 
         else if (jenis === 'mutasiKas') { document.getElementById('viewMutasiKas').style.display = 'block'; hitungAkumulasiKasTotal(); }
