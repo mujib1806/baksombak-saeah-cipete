@@ -175,6 +175,11 @@
         .pdf-area-container th, .pdf-area-container td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
         .pdf-area-container th { background: #f1f5f9; font-weight: bold; text-align: center; }
     </style>
+    <script>
+    window.formatRupiah = function(angka) { 
+        return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
+    };
+</script>
 </head>
 <body>
 
@@ -696,9 +701,6 @@
     // ==========================================
     // VARIABEL GLOBAL & FIREBASE
     // ==========================================
-    function formatRupiah(angka) { 
-        return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
-    }
     const firebaseConfig = {
         apiKey: "AIzaSyCBdZEmYbnIUuZ4Weu8vXFMh-EBPWmShNY",
         authDomain: "stockbaksoapp2.firebaseapp.com",
