@@ -242,6 +242,30 @@
         .pdf-area-container table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .pdf-area-container th, .pdf-area-container td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
         .pdf-area-container th { background: #f1f5f9; font-weight: bold; text-align: center; }
+  /* Gaya Tombol Kategori Sidebar Berwarna (Mirip Dashboard) */
+        .sidebar-category-btn {
+            width: 100%;
+            text-align: left;
+            border: none;
+            padding: 11px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+        
+        .sidebar-category-btn:hover {
+            transform: translateX(3px);
+            filter: brightness(1.1);
+        }
     </style>
 </head>
 <body>
@@ -294,39 +318,39 @@
             <div id="roleUserAktif" style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; border: 1px solid rgba(56, 189, 248, 0.2);">-</div>
         </div>
         
-       <ul class="sidebar-menu">
-            <!-- MENU UTAMA (BERANDA) -->
+     <ul class="sidebar-menu">
+            <!-- MENU UTAMA (BERANDA) - Warna Ungu -->
             <li id="menuDashboard" style="margin-bottom: 12px;">
                 <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.85rem; justify-content: center; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);">📈 Dashboard Utama</button>
             </li>
 
-            <!-- KELOMPOK 1: OPERASIONAL (Default Terbuka) -->
-            <div onclick="toggleDropdown('grupOperasional')" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <!-- KELOMPOK 1: OPERASIONAL - Tombol Bergradasi Warna Oranye -->
+            <button onclick="toggleDropdown('grupOperasional')" class="sidebar-category-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
                 <span>📝 Operasional</span>
-                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
-            </div>
+                <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
+            </button>
             <div id="grupOperasional" style="display: block;">
                 <li><button onclick="pilihMenuNav('harian')">📋 Rekap Stok Harian</button></li>
                 <li id="menuSetoran"><button onclick="pilihMenuNav('setoranBakso')">🍲 Setoran Bakso Malang</button></li>
                 <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 3px solid #f59e0b;">🛒 Form Order Vendor</button></li>
             </div>
             
-            <!-- KELOMPOK 2: KEUANGAN (Default Tertutup) -->
-            <div onclick="toggleDropdown('grupKeuangan')" id="grupKeuanganTitle" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <!-- KELOMPOK 2: KEUANGAN - Tombol Bergradasi Warna Hijau -->
+            <button onclick="toggleDropdown('grupKeuangan')" id="grupKeuanganTitle" class="sidebar-category-btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
                 <span>💰 Keuangan & Kas</span>
-                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
-            </div>
+                <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
+            </button>
             <div id="grupKeuangan" style="display: none;">
                 <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 3px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
                 <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')" style="border-left: 3px solid #3b82f6;">🏦 Rekap Transfer</button></li>
                 <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 3px solid #f43f5e;">💵 Rekap Slip Gaji</button></li>
             </div>
 
-            <!-- KELOMPOK 3: LAPORAN & SISTEM (Default Tertutup) -->
-            <div onclick="toggleDropdown('grupPengaturan')" id="grupPengaturanTitle" class="sidebar-section-title" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <!-- KELOMPOK 3: LAPORAN & SISTEM - Tombol Bergradasi Warna Biru -->
+            <button onclick="toggleDropdown('grupPengaturan')" id="grupPengaturanTitle" class="sidebar-category-btn" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                 <span>⚙️ Laporan & Sistem</span>
-                <span style="font-size: 0.6rem; color: #94a3b8;">▼ Buka/Tutup</span>
-            </div>
+                <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
+            </button>
             <div id="grupPengaturan" style="display: none;">
                 <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
                 <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
@@ -335,8 +359,8 @@
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
             </div>
 
-            <!-- TOMBOL AKSI BAWAH (Bagian Luar Dropdown) -->
-            <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 15px;">
+            <!-- TOMBOL AKSI BAWAH (Bagian Logout & Bagikan Link) -->
+            <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 15px;">
                 <li><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.08); color: #34d399; border-color: rgba(16, 185, 129, 0.2); justify-content: center; font-weight: 700;">🔗 Bagikan Link Aplikasi</button></li>
                 <li style="margin-top: 8px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.08); color: #fca5a5; border-color: rgba(239, 68, 68, 0.15); justify-content: center;">🚪 Keluar (Logout)</button></li>
             </div>
