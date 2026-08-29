@@ -1337,9 +1337,30 @@ function pilihMenuNav(jenis) {
         } 
         document.getElementById('ketKeluarHarian').value = ''; document.getElementById('nominalKeluarHarian').value = ''; 
     }
-    
-    function hapusPengeluaranHarian(docId, idxLokal) { if(isDataLocked(document.getElementById('tglOps').value)) return; if (!confirm("Yakin ingin menghapus?")) return; if (db && docId !== 'null') db.collection('pengeluaranHarian').doc(docId).delete(); else { dbPengeluaranHarian.splice(idxLokal, 1); renderPengeluaranTables(); updateKalkulasi(); } }
-    
+    function hapusPengeluaranHarian(docId, idxLokal) { 
+        if(isDataLocked(document.getElementById('tglOps').value)) return; 
+        if (!confirm("Yakin ingin menghapus?")) return; 
+        
+        let ketItem = "Pengeluaran";
+        let nominalItem = 0;
+        if (db && docId !== 'null') {
+            db.collection('pengeluaranHarian').doc(docId).get().then(doc => {
+                if(doc.exists) {
+                    ketItem = doc.data().ket;
+                    nominalItem = doc.data().nominal;
+                    catatAktivitas('Hapus Pengeluaran', `Menghapus pengeluaran "${ketItem}" sebesar Rp ${nominalItem.toLocaleString('id-ID')}`);
+                }
+            });
+            db.collection('pengeluaranHarian').doc(docId).delete();
+        } else { 
+            const itemDihapus = dbPengeluaranHarian[idxLokal];
+            catatAktivitas('Hapus Pengeluaran', `Menghapus pengeluaran "${itemDihapus?.ket || 'Lokal'}"`);
+            dbPengeluaranHarian.splice(idxLokal, 1); 
+            renderPengeluaranTables(); 
+            updateKalkulasi(); 
+        } 
+    }
+        
     function renderPengeluaranTables() { const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const tbodyHarian = document.getElementById('tabelPengeluaranHarian'); tbodyHarian.innerHTML = ''; dbPengeluaranHarian.forEach((p, idx) => { if(p.tgl === tgl) { const actionHTML = locked ? '🔒' : `<button onclick="hapusPengeluaranHarian('${p.id}', ${idx})" class="btn btn-danger" style="padding:4px 8px; font-size:0.65rem; width:auto; margin:0; border-radius:6px;">🗑️</button>`; const tr = document.createElement('tr'); tr.innerHTML = `<td>${p.tgl}</td><td style="font-weight:600;">${p.ket}</td><td style="color:#dc2626; font-weight:700;">${formatRupiah(p.nominal)}</td><td style="text-align:center;">${actionHTML}</td>`; tbodyHarian.appendChild(tr); } }); }
 
     function loadSetoranDapurUI() { 
@@ -1433,10 +1454,46 @@ function formatRupiah(angka) {
     function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk').classList.remove('active'); }
     function tambahKategoriBaruPrompt() { const k=prompt("Nama Kategori Baru:"); if(k&&k.trim()){ daftarKategori.push(k.trim()); if(db)db.collection('appData').doc('daftarKategori').set({list:daftarKategori}); bukaModalKelolaProduk(); } }
     function hitungMarginForm() { document.getElementById('inputMarginProduk').value=Math.max(0,(parseFloat(document.getElementById('inputJualProduk').value)||0)-(parseFloat(document.getElementById('inputModalProduk').value)||0)); }
-    function simpanProdukBaru(e) { e.preventDefault(); const p={nama:document.getElementById('inputNamaProduk').value.trim(), kategori:document.getElementById('selectKategoriProduk').value, modal:parseFloat(document.getElementById('inputModalProduk').value)||0, jual:parseFloat(document.getElementById('inputJualProduk').value)||0, margin:0}; p.margin=p.jual-p.modal; const idx=parseInt(document.getElementById('editIndexProduk').value); if(idx>=0) masterProduk[idx]=p; else masterProduk.push(p); if(db)db.collection('appData').doc('masterProduk').set({list:masterProduk}).then(()=>{bukaModalKelolaProduk();alert("Berhasil disimpan!");}); else{bukaModalKelolaProduk();alert("Lokal OK");} }
+    function simpanProdukBaru(e) { 
+        e.preventDefault(); 
+        const p = {
+            nama: document.getElementById('inputNamaProduk').value.trim(), 
+            kategori: document.getElementById('selectKategoriProduk').value, 
+            modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
+            jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
+            margin: 0
+        }; 
+        p.margin = p.jual - p.modal; 
+        
+        const idx = parseInt(document.getElementById('editIndexProduk').value); 
+        const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}" (Jual: Rp ${p.jual.toLocaleString('id-ID')})` : `Menambahkan produk baru "${p.nama}"`;
+
+        if(idx >= 0) masterProduk[idx] = p; 
+        else masterProduk.push(p); 
+        catatAktivitas('Master Produk', aksiTeks);
+
+        if(db) {
+            db.collection('appData').doc('masterProduk').set({ list: masterProduk }).then(() => { 
+                bukaModalKelolaProduk(); 
+                alert("Berhasil disimpan!"); 
+            }); 
+        } else { 
+            bukaModalKelolaProduk(); 
+            alert("Lokal OK"); 
+        } 
+    }
     function renderTabelMasterProduk() { const t=document.getElementById('tbodyMasterProduk'); t.innerHTML=''; masterProduk.forEach((p,i)=>{ t.innerHTML+=`<tr><td>${i+1}</td><td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td><td>${p.modal}</td><td>${p.jual}</td><td><button onclick="editProdukMaster(${i})">✏️</button><button onclick="hapusProdukMaster(${i})">🗑️</button></td></tr>`; }); }
     function editProdukMaster(i) { const p=masterProduk[i]; document.getElementById('editIndexProduk').value=i; document.getElementById('inputNamaProduk').value=p.nama; document.getElementById('selectKategoriProduk').value=p.kategori; document.getElementById('inputModalProduk').value=p.modal; document.getElementById('inputJualProduk').value=p.jual; hitungMarginForm(); document.getElementById('btnSimpanProduk').innerText="Update"; }
-    function hapusProdukMaster(i) { if(confirm("Hapus produk dari master?")){ masterProduk.splice(i,1); if(db)db.collection('appData').doc('masterProduk').set({list:masterProduk}); renderTabelMasterProduk(); } }
+    function hapusProdukMaster(i) { 
+        if(confirm("Hapus produk dari master?")) { 
+            const namaProd = masterProduk[i]?.nama || 'Produk';
+            masterProduk.splice(i, 1); 
+            catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
+
+            if(db) db.collection('appData').doc('masterProduk').set({ list: masterProduk }); 
+            renderTabelMasterProduk(); 
+        } 
+    }
     function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
 
    function bukaModalKas(jenis, tipe) { 
