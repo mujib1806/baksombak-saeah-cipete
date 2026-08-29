@@ -1489,6 +1489,41 @@ function formatRupiah(angka) {
             alert('🔗 Link aplikasi berhasil disalin (dicopy)!\n\nSilakan paste (tempel) di WhatsApp atau chat lainnya.');
         }
     }
+    function catatAktivitas(aksi, detail) {
+        if(!db) return;
+        const namaUser = currentUser ? currentUser.nama : "Sistem";
+        const waktuWIB = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+        
+        db.collection('logAktivitas').add({
+            waktu: waktuWIB,
+            user: namaUser,
+            keterangan: `[${aksi}] ${detail}`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.error("Gagal mencatat log:", err));
+    }
+
+    function muatDataRiwayat() {
+        if(!db) return;
+        db.collection('logAktivitas').orderBy('timestamp', 'desc').limit(50).get().then(snapshot => {
+            let html = '';
+            if(snapshot.empty) {
+                html = `<tr><td colspan="3" style="text-align: center; padding: 25px; color: #64748b;">Belum ada riwayat aktivitas tercatat.</td></tr>`;
+            } else {
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    html += `<tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 14px 16px; color: #64748b; white-space: nowrap;">${d.waktu || '-'}</td>
+                        <td style="padding: 14px 16px; font-weight: 600; color: #0f172a;">${d.user || 'Sistem'}</td>
+                        <td style="padding: 14px 16px; color: #334155;">${d.keterangan || '-'}</td>
+                    </tr>`;
+                });
+            }
+            document.getElementById('tabelRiwayatBody').innerHTML = html;
+        }).catch(err => {
+            console.error("Gagal ambil log:", err);
+            document.getElementById('tabelRiwayatBody').innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 25px; color: #ef4444;">Gagal memuat data riwayat.</td></tr>`;
+        });
+    }
 </script>
     <script>
     // Mendaftarkan Service Worker agar aplikasi bisa Full Screen
