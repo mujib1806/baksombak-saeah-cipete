@@ -250,7 +250,6 @@
             <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
             <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
             <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 4px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
-            <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 4px solid #0ea5e9;">🕰️ Riwayat Aktivitas</button></li>
 
             <!-- TOMBOL AKSI BAWAH -->
             <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
@@ -834,11 +833,10 @@
         document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';   
-        document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
+        document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuCetak1').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none';   
+        document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none';        
 
         // ---> TAMBAHKAN DUA BARIS INI UNTUK JUDUL KELOMPOK MENU <---
         document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
@@ -916,27 +914,6 @@
         db.collection('logKas').onSnapshot(snapshot => { dbLogKas = []; snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); hitungAkumulasiKasTotal(); });
         db.collection('setoranDapur').onSnapshot(snapshot => { snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); });
     }
-    <!-- KODE HTML RIWAYAT AKTIVITAS DI SINI -->
-<div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="color: #0f172a; font-size: 1.25rem; font-weight: 800;">🕰️ Riwayat Aktivitas & Perubahan Sistem</h2>
-        <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;">🔄 Muat Ulang</button>
-    </div>
-    <div style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-            <thead style="background: #f8fafc; color: #475569; border-bottom: 1px solid #e2e8f0;">
-                <tr>
-                    <th style="padding: 12px 16px;">Waktu</th>
-                    <th style="padding: 12px 16px;">Pengguna</th>
-                    <th style="padding: 12px 16px;">Aktivitas / Keterangan</th>
-                </tr>
-            </thead>
-            <tbody id="tabelRiwayatBody">
-                <tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Memuat data riwayat...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
 
     // ==========================================
     // FUNGSI NAVIGASI
@@ -953,7 +930,6 @@ function pilihMenuNav(jenis) {
     document.getElementById('viewGajiBulanan').style.display = 'none';
     document.getElementById('viewDashboard').style.display = 'none'; 
     document.getElementById('viewOrderVendor').style.display = 'none'; 
-    document.getElementById('viewRiwayatAktivitas').style.display = 'none';
     
     // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
     if (jenis === 'harian') { 
@@ -976,9 +952,6 @@ function pilihMenuNav(jenis) {
     } else if (jenis === 'orderVendor') {
         document.getElementById('viewOrderVendor').style.display = 'block';
         renderFormOrderVendor();
-    } else if (jenis === 'riwayatAktivitas') {
-        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
-        muatDataRiwayat(); // Perintah untuk mengambil data riwayat dari database
     }
 }
     // ==========================================
@@ -1491,27 +1464,6 @@ function formatRupiah(angka) {
         }
     }
 </script>
-    <div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px; background: #f8fafc; padding: 20px; border-radius: 16px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="color: #0f172a; font-size: 1.25rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas & Perubahan Sistem</h2>
-        <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">🔄 Muat Ulang</button>
-    </div>
-    
-    <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-            <thead style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
-                <tr>
-                    <th style="padding: 14px 16px; font-weight: 700;">Waktu</th>
-                    <th style="padding: 14px 16px; font-weight: 700;">Pengguna</th>
-                    <th style="padding: 14px 16px; font-weight: 700;">Aktivitas / Keterangan</th>
-                </tr>
-            </thead>
-            <tbody id="tabelRiwayatBody" style="color: #1e293b;">
-                <tr><td colspan="3" style="text-align: center; padding: 25px; color: #64748b;">Memuat data riwayat...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
     <script>
     // Mendaftarkan Service Worker agar aplikasi bisa Full Screen
     if ('serviceWorker' in navigator) {
