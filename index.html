@@ -1135,10 +1135,10 @@
     function loadGajiUI() { const tgl = document.getElementById('tglOps').value; const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; document.getElementById('inAbsenUtama').value = d.utama ? 'ya' : 'tidak'; document.getElementById('inAbsenTambahan').value = d.tambahan; document.getElementById('txtTotalGajiHarian').innerText = formatRupiah(d.nominal); }
 
     function renderTabelMatriks() {
+        function renderTabelMatriks() {
         const tgl = document.getElementById('tglOps').value; 
         const locked = isDataLocked(tgl); 
         
-        // 1. HEADER TABEL DIPERDEK (Dibuat sama rata untuk Owner & Kasir)
         const thead = document.getElementById('theadMatriks');
         thead.innerHTML = `<tr><th>No</th><th style="text-align:left;">Produk & Kategori</th><th style="background:#fef9c3; color:#854d0e;">☀️ Awal</th><th style="background:#dcfce7; color:#166534;">➕ Tambah</th><th style="background:#fee2e2; color:#991b1b;">➖ Kurang</th><th style="background:#f1f5f9; color:#0f172a;">📦 Total</th><th style="background:#e2e8f0; color:#334155;">🌙 Sisa</th><th>Terjual</th><th>Aksi</th></tr>`;
         
@@ -1164,22 +1164,21 @@
             const tr = document.createElement('tr'); 
             tr.className = classRow;
             
-            // 2. ISI TABEL DIPERDEK (Bagian Harga Jual, Modal, Omset, Profit dihapus dari tampilan harian)
+            // Perhatikan ada tambahan id="td_total_${idx}" dan id="td_terjual_${idx}" di bawah ini
             tr.innerHTML = `
                 <td style="text-align:center; font-weight:700; color:#94a3b8;">${counter++}</td>
                 <td><div style="font-weight:700; color:var(--text-main); font-size:0.8rem;">${p.nama}</div>${badgeHTML}</td>
                 <td style="text-align:center;"><input type="number" class="input-stok input-pagi" id="pagi_${idx}" value="${p.awal}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
                 <td style="text-align:center;"><input type="number" class="input-stok input-tambah" style="width:45px;" id="tambah_${idx}" value="${p.tambah || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambah', this.value)" ${locked ? 'disabled' : ''}></td>
                 <td style="text-align:center;"><input type="number" class="input-stok input-kurang" style="width:45px;" id="kurang_${idx}" value="${p.kurang || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'kurang', this.value)" ${locked ? 'disabled' : ''}></td>
-                <td style="text-align:center; font-weight:800; font-size:0.95rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
+                <td id="td_total_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
                 <td style="text-align:center;"><input type="number" class="input-stok input-malam" id="malam_${idx}" value="${p.sisa}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
-                <td style="text-align:center; font-weight:800; font-size:0.95rem; color:#0284c7;">${sisa !== null ? terjual : '-'}</td>
+                <td id="td_terjual_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0284c7;">${sisa !== null ? terjual : '-'}</td>
                 <td style="text-align:center;">${actionHTML}</td>
             `;
             tbody.appendChild(tr);
         });
     }
-
     function updateTehManisLokal() { 
         const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return;
         let idxTeh = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === 'teh manis'); 
