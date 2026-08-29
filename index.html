@@ -1085,13 +1085,30 @@
     
     function simpanStokKeFirebase() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; if(!db) return; db.collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { showToast('✅ Stok Otomatis Tersimpan!'); }); }
 
-    function updateNilaiStokLokal(idx, tipe, val) { 
+   function updateNilaiStokLokal(idx, tipe, val) { 
         const tgl = document.getElementById('tglOps').value; 
         if (!dbStok[tgl]) syncStokDenganMaster(tgl); 
         if (tipe === 'awal') dbStok[tgl][idx].awal = val; 
         if (tipe === 'tambah') dbStok[tgl][idx].tambah = val; 
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val; 
         if (tipe === 'sisa') dbStok[tgl][idx].sisa = val; 
+        
+        // --- Trik agar angka Total & Terjual langsung berubah tanpa kedip ---
+        const p = dbStok[tgl][idx];
+        const awal = parseFloat(p.awal) || 0;
+        const tambah = parseFloat(p.tambah) || 0;
+        const kurang = parseFloat(p.kurang) || 0;
+        const totalStok = awal + tambah - kurang;
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;
+        let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;
+        
+        const elTotal = document.getElementById('td_total_' + idx);
+        if(elTotal) elTotal.innerText = totalStok;
+        
+        const elTerjual = document.getElementById('td_terjual_' + idx);
+        if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';
+        // -------------------------------------------------------------------
+
         updateKalkulasi(); 
         clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { simpanStokKeFirebase(); }, 1000);
     }
