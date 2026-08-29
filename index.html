@@ -1185,10 +1185,8 @@ function pilihMenuNav(jenis) {
     function setLockStatus(tgl, status) { 
         if(db) { 
             db.collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
-                // --- TAMBAHKAN BARIS INI ---
                 const statusStr = status ? "MENKUNCI (LOCK)" : "MEMBUKA (UNLOCK)";
                 catatAktivitas('Keamanan Data', `${statusStr} data operasional untuk tanggal ${tgl}`);
-                // ---------------------------
             }); 
         } else { 
             dbStatusKunci[tgl] = status; applyLockUI(); 
@@ -1298,20 +1296,17 @@ function pilihMenuNav(jenis) {
         if(db) { db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); }
     }
 
-    function simpanModalBesokManual() { 
+   function simpanModalBesokManual() { 
         const tgl = document.getElementById('tglOps').value; 
         if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } 
         
         simpanKasMasuk(false); 
         
-        // --- TAMBAHKAN BARIS INI ---
         const modalVal = document.getElementById('inModalBesok').value;
         catatAktivitas('Modal Laci', `Menyimpan modal laci besok sebesar Rp ${modalVal} untuk tanggal ${tgl}`);
-        // ---------------------------
         
         showToast('✅ Modal Besok Sukses Disimpan!'); 
     }
-    
     function loadKasMasukUI() { 
         const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
         const formatTitik = (num) => num ? num.toLocaleString('id-ID') : '0';
@@ -1331,9 +1326,7 @@ function pilihMenuNav(jenis) {
         
         if(db) { 
             db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { 
-                // --- TAMBAHKAN BARIS INI ---
                 catatAktivitas('Pengeluaran Harian', `Menambah pengeluaran "${ket}" sebesar Rp ${nominal.toLocaleString('id-ID')} untuk tanggal ${tgl}`);
-                // ---------------------------
                 showToast('🛒 Pengeluaran Ditambah!'); 
             }); 
         } 
