@@ -405,24 +405,25 @@
                 </div>
             </div>
 
+           <!-- BLOK KASIR & PENGELUARAN -->
             <div class="card" id="cardKasir">
                 <h2>💰 Kasir & Pengeluaran</h2>
                 <div class="grid-mobile">
-                    <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="number" id="inCash" value="0" onchange="simpanKasMasuk(true)" placeholder="Total sebelum setoran fisik"></div>
-                    <div class="form-group"><label>📱 QRIS</label><input type="number" id="inQris" value="0" onchange="simpanKasMasuk(true)"></div>
-                    <div class="form-group"><label>🛵 Gojek</label><input type="number" id="inGojek" value="0" onchange="simpanKasMasuk(true)"></div>
-                    <div class="form-group"><label>🛵 Grab</label><input type="number" id="inGrab" value="0" onchange="simpanKasMasuk(true)"></div>
-                    <div class="form-group"><label>🛍️ Shopee</label><input type="number" id="inShopee" value="0" onchange="simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="text" inputmode="numeric" id="inCash" value="0" oninput="formatRibuanInput(this); simpanKasMasuk(true)" placeholder="Total sebelum setoran fisik"></div>
+                    <div class="form-group"><label>📱 QRIS</label><input type="text" inputmode="numeric" id="inQris" value="0" oninput="formatRibuanInput(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛵 Gojek</label><input type="text" inputmode="numeric" id="inGojek" value="0" oninput="formatRibuanInput(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛵 Grab</label><input type="text" inputmode="numeric" id="inGrab" value="0" oninput="formatRibuanInput(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛍️ Shopee</label><input type="text" inputmode="numeric" id="inShopee" value="0" oninput="formatRibuanInput(this); simpanKasMasuk(true)"></div>
                     <div class="form-group">
                         <label>🪙 Pettycash (Modal Awal)</label>
-                        <input type="number" id="inPettycash" value="0" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #cbd5e1;" title="Angka ini otomatis ditarik dari Modal Besok hari sebelumnya.">
+                        <input type="text" id="inPettycash" value="0" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #cbd5e1;" title="Angka ini otomatis ditarik dari Modal Besok hari sebelumnya.">
                     </div>
                 </div>
 
                 <div class="form-group" style="background:#fefce8; border:1px solid #fde047; padding:12px; border-radius:8px; margin-top:8px;">
                     <label style="color:#854d0e;">🪙 Modal Laci Besok (Fisik Ditahan)</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="number" id="inModalBesok" value="0" style="border-color:#fef08a; font-weight:800; color:#854d0e; flex: 1; font-size: 1.1rem;" placeholder="Ketik uang receh yg ditinggal...">
+                        <input type="text" inputmode="numeric" id="inModalBesok" value="0" oninput="formatRibuanInput(this)" style="border-color:#fef08a; font-weight:800; color:#854d0e; flex: 1; font-size: 1.1rem;" placeholder="Ketik uang receh yg ditinggal...">
                         <button id="btnSimpanModalBesok" onclick="simpanModalBesokManual()" class="btn btn-warning" style="width: 120px; margin-bottom: 0;">💾 SIMPAN</button>
                     </div>
                     <div style="font-size:0.65rem; color:#d97706; margin-top:4px;">*Angka ini otomatis menjadi <strong>Pettycash</strong> untuk hari esok. Jangan lupa klik SIMPAN.</div>
@@ -434,7 +435,7 @@
                     <div style="display:flex; flex-direction: column; gap:8px;">
                         <input type="text" id="ketKeluarHarian" placeholder="Ket: Beli Lakban, Es Batu, dll" required>
                         <div style="display:flex; gap:8px;">
-                            <input type="number" id="nominalKeluarHarian" placeholder="Nominal (Rp)" required>
+                            <input type="text" inputmode="numeric" id="nominalKeluarHarian" oninput="formatRibuanInput(this)" placeholder="Nominal (Rp)" required>
                             <button type="submit" id="btnSubmitPengeluaran" class="btn btn-danger" style="width: 90px; margin-bottom:0;">+ Tambah</button>
                         </div>
                     </div>
@@ -444,12 +445,13 @@
                 </div>
             </div>
 
+            <!-- SETORAN DAPUR -->
             <div class="card" id="cardSetoranDapur" style="border-top: 4px solid #ea580c;">
                 <h2 style="color: #c2410c;">🍲 Setoran & Pengeluaran Dapur</h2>
                 <div style="background:#fff7ed; border:1px solid #fdba74; padding:12px; border-radius:8px;">
                     <div class="form-group">
                         <label style="color:#9a3412;">💵 Uang Cash Fisik (Diserahkan ke Dapur):</label>
-                        <input type="number" id="inBmCash" value="0" onchange="simpanSetoranDapurManual()" placeholder="Nominal Setoran Dapur" style="border-color:#fdba74;">
+                        <input type="text" inputmode="numeric" id="inBmCash" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Setoran Dapur" style="border-color:#fdba74;">
                         <div style="font-size:0.65rem; color:#d97706; margin-top:2px;">*Sekadar laporan. Uang disisihkan dari total 💵 Cash Laci di atas.</div>
                     </div>
                     <hr style="margin: 12px 0; border-top:1px dashed #fdba74;">
@@ -460,7 +462,7 @@
                     </div>
                     <div class="form-group">
                         <label style="color:#b91c1c;">🔻 Nominal Keluar Dapur:</label>
-                        <input type="number" id="inBmPengeluaran" value="0" onchange="simpanSetoranDapurManual()" placeholder="Nominal Rp" style="border-color:#fca5a5;">
+                        <input type="text" inputmode="numeric" id="inBmPengeluaran" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Rp" style="border-color:#fca5a5;">
                         <div style="font-size:0.65rem; color:#dc2626; margin-top:2px;">*Otomatis disatukan ke total Pengeluaran Harian agar laci balance.</div>
                     </div>
                 </div>
@@ -1209,16 +1211,70 @@
             }); 
         }
     }
-    function simpanModalBesokManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } simpanKasMasuk(false); showToast('✅ Modal Besok Sukses Disimpan!'); }
-    function loadKasMasukUI() { const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; document.getElementById('inCash').value = kas.cash; document.getElementById('inQris').value = kas.qris; document.getElementById('inGojek').value = kas.gojek; document.getElementById('inGrab').value = kas.grab; document.getElementById('inShopee').value = kas.shopee; document.getElementById('inPettycash').value = kas.petty; document.getElementById('inModalBesok').value = kas.modalBesok || 0; }
+    function formatRibuanInput(el) {
+        let angka = el.value.replace(/[^0-9]/g, '');
+        if(angka) { el.value = parseInt(angka, 10).toLocaleString('id-ID'); }
+        else { el.value = ''; }
+    }
     
-    function tambahPengeluaranHarian(e) { e.preventDefault(); const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const ket = document.getElementById('ketKeluarHarian').value; const nominal = parseFloat(document.getElementById('nominalKeluarHarian').value) || 0; if(db) { db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { showToast('🛒 Pengeluaran Ditambah!'); }); } else { dbPengeluaranHarian.push({ id: null, tgl, ket, nominal }); renderPengeluaranTables(); updateKalkulasi(); } document.getElementById('ketKeluarHarian').value = ''; document.getElementById('nominalKeluarHarian').value = ''; }
+    function simpanKasMasuk(isAutoTrigger = false) { 
+        const tgl = document.getElementById('tglOps').value; 
+        if(isDataLocked(tgl)) return; 
+        
+        const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+        
+        const kasData = { 
+            cash: bersih('inCash'), qris: bersih('inQris'), gojek: bersih('inGojek'), 
+            grab: bersih('inGrab'), shopee: bersih('inShopee'), petty: bersih('inPettycash'), 
+            modalBesok: bersih('inModalBesok') 
+        }; 
+        dbKasMasuk[tgl] = kasData;
+        updateKalkulasi();
+        if(db) { db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); }
+    }
+
+    function simpanModalBesokManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } simpanKasMasuk(false); showToast('✅ Modal Besok Sukses Disimpan!'); }
+    
+    function loadKasMasukUI() { 
+        const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
+        const formatTitik = (num) => num ? num.toLocaleString('id-ID') : '0';
+        document.getElementById('inCash').value = formatTitik(kas.cash); 
+        document.getElementById('inQris').value = formatTitik(kas.qris); 
+        document.getElementById('inGojek').value = formatTitik(kas.gojek); 
+        document.getElementById('inGrab').value = formatTitik(kas.grab); 
+        document.getElementById('inShopee').value = formatTitik(kas.shopee); 
+        document.getElementById('inPettycash').value = formatTitik(kas.petty); 
+        document.getElementById('inModalBesok').value = formatTitik(kas.modalBesok || 0); 
+    }
+    
+    function tambahPengeluaranHarian(e) { 
+        e.preventDefault(); const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; 
+        const ket = document.getElementById('ketKeluarHarian').value; 
+        const nominal = parseFloat(document.getElementById('nominalKeluarHarian').value.replace(/\./g, '')) || 0; 
+        if(db) { db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { showToast('🛒 Pengeluaran Ditambah!'); }); } 
+        else { dbPengeluaranHarian.push({ id: null, tgl, ket, nominal }); renderPengeluaranTables(); updateKalkulasi(); } 
+        document.getElementById('ketKeluarHarian').value = ''; document.getElementById('nominalKeluarHarian').value = ''; 
+    }
+    
     function hapusPengeluaranHarian(docId, idxLokal) { if(isDataLocked(document.getElementById('tglOps').value)) return; if (!confirm("Yakin ingin menghapus?")) return; if (db && docId !== 'null') db.collection('pengeluaranHarian').doc(docId).delete(); else { dbPengeluaranHarian.splice(idxLokal, 1); renderPengeluaranTables(); updateKalkulasi(); } }
+    
     function renderPengeluaranTables() { const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const tbodyHarian = document.getElementById('tabelPengeluaranHarian'); tbodyHarian.innerHTML = ''; dbPengeluaranHarian.forEach((p, idx) => { if(p.tgl === tgl) { const actionHTML = locked ? '🔒' : `<button onclick="hapusPengeluaranHarian('${p.id}', ${idx})" class="btn btn-danger" style="padding:4px 8px; font-size:0.65rem; width:auto; margin:0; border-radius:6px;">🗑️</button>`; const tr = document.createElement('tr'); tr.innerHTML = `<td>${p.tgl}</td><td style="font-weight:600;">${p.ket}</td><td style="color:#dc2626; font-weight:700;">${formatRupiah(p.nominal)}</td><td style="text-align:center;">${actionHTML}</td>`; tbodyHarian.appendChild(tr); } }); }
 
-    function loadSetoranDapurUI() { const tgl = document.getElementById('tglOps').value; const d = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; document.getElementById('inBmCash').value = d.cash; document.getElementById('inBmKetPengeluaran').value = d.ket; document.getElementById('inBmPengeluaran').value = d.pengeluaran; }
-    function simpanSetoranDapurManual() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const data = { cash: parseFloat(document.getElementById('inBmCash').value) || 0, ket: document.getElementById('inBmKetPengeluaran').value, pengeluaran: parseFloat(document.getElementById('inBmPengeluaran').value) || 0 }; if(db) { db.collection('setoranDapur').doc(tgl).set(data).then(() => { showToast('✅ Data Dapur Tersimpan!'); }); } else { dbSetoranDapur[tgl] = data; updateKalkulasi(); renderViewSetoranBakso(); } }
-
+    function loadSetoranDapurUI() { 
+        const tgl = document.getElementById('tglOps').value; const d = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
+        const formatTitik = (num) => num ? num.toLocaleString('id-ID') : '0';
+        document.getElementById('inBmCash').value = formatTitik(d.cash); 
+        document.getElementById('inBmKetPengeluaran').value = d.ket; 
+        document.getElementById('inBmPengeluaran').value = formatTitik(d.pengeluaran); 
+    }
+    
+    function simpanSetoranDapurManual() { 
+        const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; 
+        const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+        const data = { cash: bersih('inBmCash'), ket: document.getElementById('inBmKetPengeluaran').value, pengeluaran: bersih('inBmPengeluaran') }; 
+        if(db) { db.collection('setoranDapur').doc(tgl).set(data).then(() => { showToast('✅ Data Dapur Tersimpan!'); }); } 
+        else { dbSetoranDapur[tgl] = data; updateKalkulasi(); renderViewSetoranBakso(); } 
+    }
     function updateKalkulasi() {
         const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || [];
         let omsetPenjualan = 0, profitBakso = 0, profitReseller = 0, katData = {}; daftarKategori.forEach(k => { katData[k] = { omset: 0, modal: 0, profit: 0 }; });
