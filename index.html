@@ -1124,10 +1124,9 @@
         const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const btnToggle = document.getElementById('btnToggleLock'); 
         if(locked) { btnToggle.className = 'btn-lock locked'; btnToggle.innerHTML = '🔒 TERKUNCI'; } else { btnToggle.className = 'btn-lock unlock'; btnToggle.innerHTML = '🔓 TERBUKA'; } 
         const isDapur = currentUser && currentUser.role === 'dapur';
-        const idsToDisable = ['inCash', 'inQris', 'inGojek', 'inGrab', 'inShopee', 'inPettycash', 'inModalBesok', 'btnSimpanModalBesok', 'ketKeluarHarian', 'nominalKeluarHarian', 'btnSubmitPengeluaran', 'inAbsenUtama', 'inAbsenTambahan', 'inBmCash', 'inBmKetPengeluaran', 'inBmPengeluaran', 'inTehAwal', 'inTehSisa']; 
+      const idsToDisable = ['inCash', 'inQris', 'inGojek', 'inGrab', 'inShopee', 'inPettycash', 'inModalBesok', 'btnSimpanModalBesok', 'ketKeluarHarian', 'nominalKeluarHarian', 'btnSubmitPengeluaran', 'inAbsenUtama', 'inAbsenTambahan', 'inBmCash', 'inBmKetPengeluaran', 'inBmPengeluaran', 'inTehTerjual']; 
         idsToDisable.forEach(id => { const el = document.getElementById(id); if(el) { if (isDapur && (id.includes('inBm') || id.includes('btnSimpan') || id.includes('inAbsen'))) { el.disabled = true; } else { el.disabled = locked; } } }); 
-        if (document.activeElement && document.activeElement.tagName !== 'INPUT') { renderTabelMatriks(); renderPengeluaranTables(); } 
-    }
+        if (document.activeElement && document.activeElement.tagName !== 'INPUT') { renderTabelMatriks(); renderPengeluaranTables(); }
 
     function simpanAbsensi() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const utama = document.getElementById('inAbsenUtama').value === 'ya'; const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; const nominal = (utama ? 50000 : 0) + (tambahan * 50000); const data = { utama, tambahan, nominal }; if(db) { db.collection('gajiHarian').doc(tgl).set(data).then(() => { showToast('✅ Absensi & Gaji Tersimpan!'); }); } else { dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); } }
     function loadGajiUI() { const tgl = document.getElementById('tglOps').value; const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; document.getElementById('inAbsenUtama').value = d.utama ? 'ya' : 'tidak'; document.getElementById('inAbsenTambahan').value = d.tambahan; document.getElementById('txtTotalGajiHarian').innerText = formatRupiah(d.nominal); }
