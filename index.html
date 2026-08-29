@@ -175,11 +175,6 @@
         .pdf-area-container th, .pdf-area-container td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
         .pdf-area-container th { background: #f1f5f9; font-weight: bold; text-align: center; }
     </style>
-    <script>
-    window.formatRupiah = function(angka) { 
-        return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
-    };
-</script>
 </head>
 <body>
 
@@ -1316,7 +1311,9 @@ function pilihMenuNav(jenis) {
         hitungAkumulasiKasTotal(); renderViewRekapTransfer(); 
         if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'dapur')) { if(document.getElementById('viewDashboard').style.display === 'block') renderDashboardGrafik(); }
     }
-
+function formatRupiah(angka) { 
+    return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
+}
     function renderViewSetoranBakso() {
         const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || []; const tbody = document.getElementById('tbodyBaksoSetoran'); tbody.innerHTML = ''; let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumSisa = 0; 
         items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; const valSisa = sisa !== null ? sisa : 0; const omset = terjual * p.jual; const modal = terjual * p.modal; const profit = terjual * p.margin; totalPorsi += terjual; totalOmset += omset; totalModal += modal; totalKeuntungan += profit; sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumSisa += valSisa; const tr = document.createElement('tr'); tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`; tbody.appendChild(tr); });
