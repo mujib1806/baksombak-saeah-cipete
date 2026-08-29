@@ -225,20 +225,37 @@
             <div id="namaUserAktif" style="font-size: 1rem; font-weight: 800; color: #f8fafc;">-</div>
             <div id="roleUserAktif" style="font-size: 0.65rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.1); display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 4px;">-</div>
         </div>
-        <ul class="sidebar-menu" style="margin-top: 12px;">
+     <ul class="sidebar-menu" style="margin-top: 12px;">
+            
+            <!-- MENU UTAMA (BERANDA) -->
+            <li id="menuDashboard" style="margin-bottom: 15px;">
+                <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.9rem; text-align: center; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);">📈 Dashboard Utama</button>
+            </li>
+
+            <!-- KELOMPOK 1: OPERASIONAL -->
+            <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 10px 0 8px 5px; letter-spacing: 1px;">📝 Operasional</div>
             <li><button onclick="pilihMenuNav('harian')">📋 Rekap Stok Harian</button></li>
-            <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.1);">🛒 Form Order Vendor</button></li>
             <li id="menuSetoran"><button onclick="pilihMenuNav('setoranBakso')">🍲 Setoran Bakso Malang</button></li>
-            <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')">🏦 Rekap Transfer Dompet</button></li>
-            <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 4px solid #10b981;">💰 Ringkasan & Mutasi Kas</button></li>
-            <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 4px solid #f43f5e; margin-top: 10px; background: rgba(244, 63, 94, 0.1);">💵 Rekap Slip Gaji</button></li>
-            <li id="menuDashboard"><button onclick="pilihMenuNav('dashboard')" style="border-left: 4px solid #8b5cf6;">📈 Dashboard Grafik</button></li>
-            <li id="menuProduk" style="margin-top: 20px;"><button onclick="bukaModalKelolaProduk()">⚙️ Kelola Master Produk</button></li>
+            <li><button onclick="pilihMenuNav('orderVendor')" style="border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.1);">🛒 Form Order Vendor</button></li>
+            
+            <!-- KELOMPOK 2: KEUANGAN (Hanya tampil untuk Owner) -->
+            <div id="grupKeuanganTitle" style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 20px 0 8px 5px; letter-spacing: 1px;">💰 Keuangan & Kas</div>
+            <li id="menuMutasi"><button onclick="pilihMenuNav('mutasiKas')" style="border-left: 4px solid #10b981;">💰 Mutasi & Ringkasan</button></li>
+            <li id="menuTransfer"><button onclick="pilihMenuNav('rekapTransfer')">🏦 Rekap Transfer</button></li>
+            <li id="menuGaji"><button onclick="pilihMenuNav('gajiBulanan')" style="border-left: 4px solid #f43f5e; background: rgba(244, 63, 94, 0.1);">💵 Rekap Slip Gaji</button></li>
+
+            <!-- KELOMPOK 3: PENGATURAN & LAPORAN -->
+            <div id="grupPengaturanTitle" style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: bold; margin: 20px 0 8px 5px; letter-spacing: 1px;">⚙️ Laporan & Sistem</div>
+            <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
+            <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
+            <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
             <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 4px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
-            <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Rekap Mingguan</button></li>
-            <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Rekap Bulanan</button></li>
-            <li style="margin-top: 15px;"><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.3); text-align: center; font-weight: 800;">🔗 Bagikan Link Aplikasi</button></li>
-            <li style="margin-top: 25px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); text-align: center;">🚪 Keluar (Logout)</button></li>
+
+            <!-- TOMBOL AKSI BAWAH -->
+            <div style="margin-top: 25px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 15px;">
+                <li><button onclick="bagikanAplikasi()" style="background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.3); text-align: center; font-weight: 800;">🔗 Bagikan Link Aplikasi</button></li>
+                <li style="margin-top: 8px;"><button onclick="prosesLogout()" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.2); text-align: center;">🚪 Keluar (Logout)</button></li>
+            </div>
         </ul>
     </div>
 
@@ -804,37 +821,42 @@
     function cekDanBuatAkunMaster() { db.collection('users').get().then(snap => { if (snap.empty) { db.collection('users').doc('08111111111').set({ nama: 'Owner (Master)', hp: '08111111111', password: 'owner123', role: 'owner' }); } }); }
     function prosesLogin(e) { e.preventDefault(); const hp = document.getElementById('inLoginHp').value; const pass = document.getElementById('inLoginPass').value; const btn = document.getElementById('btnLoginBtn'); if(!db) { alert("Tidak ada koneksi ke database. Pastikan internet Anda aktif!"); return; } btn.innerText = "MEMERIKSA..."; btn.disabled = true; db.collection('users').doc(hp).get().then(doc => { if (doc.exists && doc.data().password === pass) { currentUser = doc.data(); localStorage.setItem('baksoUser', JSON.stringify(currentUser)); bukaLayarAplikasi(); } else { alert("Gagal Masuk! Nomor HP belum terdaftar atau Password salah."); } btn.innerText = "MASUK"; btn.disabled = false; }).catch(err => { alert("Terjadi kesalahan sistem: " + err.message); btn.innerText = "MASUK"; btn.disabled = false; }); }
     
-    function bukaLayarAplikasi() { 
-        document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block'; 
-        document.getElementById('namaUserAktif').innerText = currentUser.nama; 
+    function bukaLayarAplikasi() {        
+        document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
+        document.getElementById('namaUserAktif').innerText = currentUser.nama;        
         
-        const isOwner = currentUser.role === 'owner'; const isDapur = currentUser.role === 'dapur'; 
-        document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR'); 
+        const isOwner = currentUser.role === 'owner'; const isDapur = currentUser.role === 'dapur';        
+        document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
         
-        document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none'; 
-        document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none'; 
-        document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('menuCetak1').style.display = (isOwner || isDapur) ? 'block' : 'none'; 
-        document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none'; 
+        document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+        document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+        document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuCetak1').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+        document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+
+        // ---> TAMBAHKAN DUA BARIS INI UNTUK JUDUL KELOMPOK MENU <---
+        document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
+        document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
+        // ----------------------------------------------------------
         
         document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
         document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
         document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
-        document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none'; 
-        document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none'; 
+        document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
         
         pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
 
-        const today = new Date(); document.getElementById('tglOps').valueAsDate = today; 
-        document.getElementById('cetakTglAwal').valueAsDate = today; document.getElementById('cetakTglAkhir').valueAsDate = today; 
-        document.getElementById('cetakBulan').value = today.toISOString().slice(0, 7); 
-        document.getElementById('filterBulanGaji').value = today.toISOString().slice(0, 7); 
+        const today = new Date(); document.getElementById('tglOps').valueAsDate = today;        
+        document.getElementById('cetakTglAwal').valueAsDate = today; document.getElementById('cetakTglAkhir').valueAsDate = today;        
+        document.getElementById('cetakBulan').value = today.toISOString().slice(0, 7);        
+        document.getElementById('filterBulanGaji').value = today.toISOString().slice(0, 7);        
         
-        try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); } 
+        try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
     }
     
     function prosesLogout() { if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { localStorage.removeItem('baksoUser'); currentUser = null; window.location.reload(); } }
