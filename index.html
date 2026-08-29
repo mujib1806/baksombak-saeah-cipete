@@ -855,7 +855,8 @@
         document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
         document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
-        document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';        
+        document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';  
+        document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
         document.getElementById('menuCetak1').style.display = (isOwner || isDapur) ? 'block' : 'none';        
         document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none';        
 
@@ -951,6 +952,7 @@ function pilihMenuNav(jenis) {
     document.getElementById('viewGajiBulanan').style.display = 'none';
     document.getElementById('viewDashboard').style.display = 'none'; 
     document.getElementById('viewOrderVendor').style.display = 'none'; 
+    document.getElementById('viewRiwayatAktivitas').style.display = 'none';
     
     // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
     if (jenis === 'harian') { 
@@ -973,6 +975,9 @@ function pilihMenuNav(jenis) {
     } else if (jenis === 'orderVendor') {
         document.getElementById('viewOrderVendor').style.display = 'block';
         renderFormOrderVendor();
+    } else if (jenis === 'riwayatAktivitas') {
+        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
+        muatDataRiwayat();
     }
 }
     // ==========================================
