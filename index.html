@@ -831,7 +831,67 @@
     <div><table><thead id="pdfTHeadHarianBarang"></thead><tbody id="pdfTbodyHarianBarang"></tbody></table></div>
 </div>
     <div id="pdfAreaBakso" style="display: none; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff;">
+    <!-- KERANGKA PDF ORDER VENDOR -->
+<div id="pdfAreaVendor" style="display: none; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff;">
+    <style>
+        #pdfAreaVendor table th, #pdfAreaVendor table td {
+            border: 1px solid #cbd5e1;
+            padding: 7px 6px;
+        }
+    </style>
     
+    <!-- Kop Surat -->
+    <div style="display: flex; align-items: center; border-bottom: 3px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
+        <img src="AGAK HIDUP.png" alt="Logo" style="width: 65px; height: 65px; object-fit: contain; margin-right: 15px;">
+        <div>
+            <h1 style="margin: 0; font-size: 24px; color: #ea580c; font-weight: 900; text-transform: uppercase;">BAKSO MALANG MBAK SAE'AH</h1>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #475569; font-weight: 600;">Cabang Cipete Utara</p>
+        </div>
+    </div>
+    
+    <!-- Judul Dokumen -->
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800; color: #0f172a; text-decoration: underline;">PURCHASE ORDER (PEMESANAN BARANG)</h2>
+        <p id="pdfVendorTgl" style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;"></p>
+    </div>
+
+    <!-- Tabel Pesanan -->
+    <div style="margin-bottom: 25px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead style="background: #ffedd5; color: #9a3412;">
+                <tr>
+                    <th style="width: 30px; text-align: center;">No</th>
+                    <th style="text-align: left;">Nama Barang</th>
+                    <th style="text-align: center;">Kemasan</th>
+                    <th style="text-align: center;">Qty (Pesan)</th>
+                    <th style="text-align: right;">Harga Satuan</th>
+                    <th style="text-align: right;">Total Harga</th>
+                </tr>
+            </thead>
+            <tbody id="pdfTbodyVendor">
+                <!-- Data akan diisi JS -->
+            </tbody>
+            <tfoot>
+                <tr style="background: #fff7ed; font-weight: 900; color: #c2410c; font-size: 12px;">
+                    <td colspan="5" style="text-align: right; padding-right: 10px;">TOTAL TAGIHAN:</td>
+                    <td id="pdfVendorTotal" style="text-align: right;">Rp 0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Kolom Tanda Tangan -->
+    <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 11px;">
+        <div style="width: 200px;">
+            <p style="margin-bottom: 50px; color: #475569;">Dibuat Oleh,</p>
+            <p style="border-top: 1px solid #94a3b8; padding-top: 5px; margin: 0; color: #1e293b;">( PIC Toko / Kasir )</p>
+        </div>
+        <div style="width: 200px;">
+            <p style="margin-bottom: 50px; color: #475569;">Disetujui/Diterima Oleh,</p>
+            <p style="border-top: 1px solid #94a3b8; padding-top: 5px; margin: 0; color: #1e293b;">( Pihak Vendor / Sales )</p>
+        </div>
+    </div>
+</div>
     <!-- CSS Tambahan Khusus untuk Merapikan Tabel yang Digenerate JS -->
     <style>
         #pdfAreaBakso table th, #pdfAreaBakso table td {
@@ -1281,7 +1341,7 @@ function pilihMenuNav(jenis) {
         }
     }
 
-   function kirimWhatsAppOrder() {
+ function kirimWhatsAppOrder() {
         let orderItems = vendorCatalog.filter(item => parseInt(item.qty) > 0);
         if (orderItems.length === 0) {
             alert("Belum ada qty pesanan yang diisi!");
@@ -1290,40 +1350,85 @@ function pilihMenuNav(jenis) {
 
         const tglOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const tglKirim = new Date().toLocaleDateString('id-ID', tglOptions);
+        const tglFile = new Date().toISOString().split('T')[0];
         
-        let pesan = `📝 *FORM PEMESANAN BARANG*\n`;
-        pesan += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-        pesan += `🏪 *Toko:* Bakso Malang Mbak Sae'ah (Cab. Cipete)\n`;
-        pesan += `📅 *Tanggal:* ${tglKirim}\n`;
-        pesan += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-        pesan += `*Rincian Pesanan:*\n`;
-
+        // 1. Masukkan data ke kerangka PDF
+        document.getElementById('pdfVendorTgl').innerText = 'Tanggal Pesanan: ' + tglKirim;
+        
+        const tbody = document.getElementById('pdfTbodyVendor');
+        tbody.innerHTML = '';
         let grandTotal = 0;
+        
         orderItems.forEach((item, index) => {
             const qty = parseInt(item.qty);
             const harga = parseInt(item.harga);
             const total = qty * harga;
             grandTotal += total;
-
+            
             const rasaTxt = item.rasa ? ` - ${item.rasa}` : '';
-            pesan += `${index + 1}. *${item.nama}* (${item.kemasan}, ${item.vol}${rasaTxt})\n`;
-            pesan += `   └ ${qty} Dus x Rp ${harga.toLocaleString('id-ID')} = *Rp ${total.toLocaleString('id-ID')}*\n\n`;
+            const namaLengkap = `${item.nama} (${item.vol}${rasaTxt})`;
+            
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td><strong>${namaLengkap}</strong></td>
+                    <td style="text-align: center;">${item.kemasan}</td>
+                    <td style="text-align: center; font-weight: bold; color: #15803d; font-size: 13px;">${qty}</td>
+                    <td style="text-align: right;">${formatRupiah(harga)}</td>
+                    <td style="text-align: right; font-weight: bold; color: #d97706;">${formatRupiah(total)}</td>
+                </tr>
+            `;
         });
-
-        pesan += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-        pesan += `💰 *TOTAL TAGIHAN: Rp ${grandTotal.toLocaleString('id-ID')}*\n`;
-        pesan += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-        pesan += `Mohon pesanan segera diproses dan dikirim. Terima kasih! 🙏`;
-
-        const urlEncodedPesan = encodeURIComponent(pesan);
-        const targetUrl = `https://wa.me/?text=${urlEncodedPesan}`;
         
-        if(confirm("Lanjutkan ke WhatsApp?\n\n(Pilih kontak Sales/Vendor setelah WhatsApp terbuka, dan form ini akan otomatis direset).")) {
-            vendorCatalog.forEach(item => item.qty = "");
-            if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog });
-            renderFormOrderVendor();
-            window.open(targetUrl, '_blank');
-        }
+        document.getElementById('pdfVendorTotal').innerText = formatRupiah(grandTotal);
+        
+        // 2. Munculkan elemen untuk dirender html2pdf
+        const element = document.getElementById('pdfAreaVendor');
+        element.style.display = 'block';
+        
+        // 3. Proses Cetak PDF & Share
+        html2pdf().set({
+            margin: 5,
+            filename: `PO_Vendor_${tglFile}.pdf`,
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(element).output('blob').then(function(pdfBlob) {
+            element.style.display = 'none'; // Sembunyikan lagi kerangkanya
+            
+            const namaFile = `PO_Vendor_${tglFile}.pdf`;
+            const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
+            
+            // Fungsi kecil untuk mereset angka form setelah selesai share
+            const resetForm = () => {
+                vendorCatalog.forEach(item => item.qty = "");
+                if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog });
+                renderFormOrderVendor();
+            };
+
+            // Panggil Share WA
+            if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
+                navigator.share({
+                    files: [filePdf],
+                    title: 'Purchase Order (PO)',
+                    text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
+                }).then(() => {
+                    resetForm(); // Reset form jika sukses share
+                }).catch((error) => {
+                    console.error('Batal bagikan:', error);
+                    // Tanya jika user membatalkan share tapi tetap mau reset form
+                    if(confirm("Batal membagikan. Apakah Anda tetap ingin mereset/mengosongkan form pemesanan?")) {
+                        resetForm();
+                    }
+                });
+            } else {
+                // Fallback untuk desktop
+                const urlObj = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
+                if(confirm("File PO telah didownload. Reset/kosongkan form pesanan sekarang?")) {
+                    resetForm();
+                }
+            }
+        });
     }
 
     // ==========================================
