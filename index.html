@@ -1248,8 +1248,9 @@
         
         document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
         document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
-        document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
-        document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';        
+        // HAPUS ATAU BERI TANDA // PADA DUA BARIS INI:
+        // document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
+        // document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';       
         document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
         
         pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
@@ -1333,7 +1334,10 @@
 function pilihMenuNav(jenis) { 
         if (typeof toggleSidebar === 'function') toggleSidebar(); 
         
-        // 1. Sembunyikan semua halaman terlebih dahulu
+        const isOwner = currentUser && currentUser.role === 'owner';
+        const isDapur = currentUser && currentUser.role === 'dapur';
+
+        // 1. Sembunyikan semua kontainer halaman utama
         document.getElementById('viewHarian').style.display = 'none'; 
         document.getElementById('viewSetoranBakso').style.display = 'none'; 
         document.getElementById('viewRekapTransfer').style.display = 'none'; 
@@ -1342,13 +1346,28 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewDashboard').style.display = 'none'; 
         document.getElementById('viewOrderVendor').style.display = 'none'; 
         document.getElementById('viewRiwayatAktivitas').style.display = 'none';
-        
-        // ---> TAMBAHAN: Sembunyikan halaman produk <---
         document.getElementById('layar-produk').style.display = 'none';
+
+        // 2. SEMBUNYIKAN KARTU KHUSUS SECARA DEFAULT (Supaya tidak bocor ke halaman lain)
+        if (document.getElementById('cardSetoranDapur')) {
+            document.getElementById('cardSetoranDapur').style.display = 'none';
+        }
+        if (document.getElementById('cardAlokasiHarian')) {
+            document.getElementById('cardAlokasiHarian').style.display = 'none';
+        }
         
-        // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
+        // 3. Munculkan halaman yang dipanggil DAN atur kembali visibilitas kartu khusus jika di halaman 'harian'
         if (jenis === 'harian') { 
             document.getElementById('viewHarian').style.display = 'block'; 
+            
+            // Munculkan kartu hanya jika berada di halaman Entry Stok Harian & sesuai Role User
+            if (document.getElementById('cardSetoranDapur')) {
+                document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
+            }
+            if (document.getElementById('cardAlokasiHarian')) {
+                document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
+            }
+
         } else if (jenis === 'setoranBakso') { 
             document.getElementById('viewSetoranBakso').style.display = 'block'; 
             renderViewSetoranBakso(); 
@@ -1370,12 +1389,9 @@ function pilihMenuNav(jenis) {
         } else if (jenis === 'riwayatAktivitas') {
             document.getElementById('viewRiwayatAktivitas').style.display = 'block';
             muatDataRiwayat();
-        } 
-        // ---> TAMBAHAN: Tampilkan halaman produk <---
-      // ---> TAMBAHAN: Tampilkan halaman produk & Muat Datanya <---
-        else if (jenis === 'produk') {
+        } else if (jenis === 'produk') {
             document.getElementById('layar-produk').style.display = 'block';
-            renderTabelMasterProduk(); // Baris ini yang memanggil data agar otomatis muncul!
+            if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
         }
     }
     // ==========================================
