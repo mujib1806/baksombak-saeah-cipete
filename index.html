@@ -1286,17 +1286,17 @@ function pilihMenuNav(jenis) {
                 <td style="text-align:center;">${item.isi}</td>
                 <td>${item.rasa || '-'}</td>
                 
-                <!-- PERUBAHAN DI SINI: oninput diganti menjadi onchange -->
                 <td style="background:#eff6ff;">
-                    <input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" onchange="updateItemVendor(${index}, 'qty', this.value)">
+                    <input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" oninput="updateItemVendor(${index}, 'qty', this.value)">
                 </td>
                 
-                <!-- PERUBAHAN DI SINI: oninput diganti menjadi onchange -->
                 <td style="background:#fefce8;">
-                    <input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" onchange="updateItemVendor(${index}, 'harga', this.value)">
+                    <input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)">
                 </td>
                 
-                <td style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
+                <!-- Kunci Perbaikannya di sini: Saya beri ID khusus agar angkanya bisa diubah tanpa merender ulang tabel -->
+                <td id="vendor-total-${index}" style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
+                
                 <td style="text-align:center;">
                     <button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button>
                 </td>
@@ -1307,8 +1307,29 @@ function pilihMenuNav(jenis) {
     }
 
     function updateItemVendor(index, field, value) {
+        // 1. Catat perubahan angka
         vendorCatalog[index][field] = value;
-        renderFormOrderVendor(); 
+        
+        // 2. Hitung ulang total BARIS INI SAJA (Tanpa render ulang seluruh tabel!)
+        const qty = parseInt(vendorCatalog[index].qty) || 0;
+        const harga = parseInt(vendorCatalog[index].harga) || 0;
+        const totalBaris = qty * harga;
+        
+        const tdTotal = document.getElementById(`vendor-total-${index}`);
+        if (tdTotal) {
+            tdTotal.innerText = formatRupiah(totalBaris);
+        }
+
+        // 3. Hitung ulang GRAND TOTAL bawah
+        let grandTotal = 0;
+        vendorCatalog.forEach(item => {
+            const q = parseInt(item.qty) || 0;
+            const h = parseInt(item.harga) || 0;
+            grandTotal += (q * h);
+        });
+        document.getElementById('vendorGrandTotal').innerText = formatRupiah(grandTotal);
+
+        // 4. Simpan ke database perlahan di latar belakang
         clearTimeout(vendorSaveTimeout);
         vendorSaveTimeout = setTimeout(() => {
             if(db) {
