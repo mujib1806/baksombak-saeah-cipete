@@ -352,7 +352,7 @@
                 <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
             </button>
             <div id="grupPengaturan" style="display: none;">
-                <li><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
+                <li id="menuCetakBerkala"><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
                 <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
                 <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
@@ -1153,7 +1153,7 @@
             btn.disabled = false; 
         }); 
     }    
-    function bukaLayarAplikasi() {        
+  function bukaLayarAplikasi() {        
         document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
         document.getElementById('namaUserAktif').innerText = currentUser.nama;        
         
@@ -1168,8 +1168,10 @@
         document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';  
         document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
-        document.getElementById('menuCetak1').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('menuCetak2').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+        
+        // ---> INI YANG KITA UBAH (Gabungan dari menuCetak1 dan menuCetak2) <---
+        document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+        // -----------------------------------------------------------------------
 
         // ---> TAMBAHKAN DUA BARIS INI UNTUK JUDUL KELOMPOK MENU <---
         document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
@@ -1191,7 +1193,6 @@
         
         try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
     }
-    
     function prosesLogout() { 
         if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
             if (currentUser) {
