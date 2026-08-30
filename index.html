@@ -1266,7 +1266,15 @@ function pilihMenuNav(jenis) {
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
     // ==========================================
-   function renderFormOrderVendor() {
+function renderFormOrderVendor() {
+        // --- GEMBOK ANTI KEYBOARD TUTUP ---
+        // Cek apakah user sedang aktif mengetik (kursor ada di dalam input)
+        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+            // Jika iya, BATALKAN proses menggambar ulang tabel agar keyboard tidak hilang!
+            return; 
+        }
+        // -----------------------------------
+
         const tbody = document.getElementById('tbodyOrderVendor');
         tbody.innerHTML = '';
         let grandTotal = 0;
@@ -1294,7 +1302,6 @@ function pilihMenuNav(jenis) {
                     <input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)">
                 </td>
                 
-                <!-- Kunci Perbaikannya di sini: Saya beri ID khusus agar angkanya bisa diubah tanpa merender ulang tabel -->
                 <td id="vendor-total-${index}" style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
                 
                 <td style="text-align:center;">
@@ -1305,7 +1312,6 @@ function pilihMenuNav(jenis) {
         });
         document.getElementById('vendorGrandTotal').innerText = formatRupiah(grandTotal);
     }
-
     function updateItemVendor(index, field, value) {
         // 1. Catat perubahan angka
         vendorCatalog[index][field] = value;
