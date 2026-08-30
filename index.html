@@ -2423,5 +2423,24 @@ function formatRupiah(angka) {
         });
     }
 </script>
+    <!-- SCRIPT KALKULATOR KASIR -->
+<script>
+    function hitungOtomatis(elemen) {
+        let nilai = elemen.value;
+        if (nilai.includes('+') || nilai.includes('-') || nilai.includes('=')) {
+            try {
+                let bersih = nilai.replace(/=/g, '').replace(/\./g, '').replace(/ /g, '');
+                if (/^[0-9+\-*/]+$/.test(bersih)) {
+                    elemen.value = eval(bersih); 
+                }
+            } catch(e) {
+                console.log("Format rumus salah");
+            }
+        }
+        if (typeof formatRibuanInput === 'function') {
+            formatRibuanInput(elemen);
+        }
+    }
+</script>
 </body>
 </html>
