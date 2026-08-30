@@ -352,8 +352,7 @@
                 <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
             </button>
             <div id="grupPengaturan" style="display: none;">
-                <li id="menuCetak1"><button onclick="bukaModalCetakPeriode('mingguan')">📊 Cetak Mingguan</button></li>
-                <li id="menuCetak2"><button onclick="bukaModalCetakPeriode('bulanan')">📈 Cetak Bulanan</button></li>
+                <li><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
                 <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
                 <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
@@ -758,7 +757,45 @@
 </div>
 
 <div class="modal" id="modalKelolaAkun"><div class="modal-content"><h3 style="font-size:1.1rem; font-weight:800; color:#d97706;">👥 Manajemen Akun Karyawan</h3><form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:12px; border-radius:8px; border:1px solid #fde68a; margin-bottom:15px;"><div class="form-group"><label>Nama Kasir/Karyawan:</label><input type="text" id="inAkunNama" required></div><div class="form-group"><label>No. HP:</label><input type="tel" id="inAkunHp" required></div><div class="grid-mobile"><div class="form-group"><label>Password:</label><input type="text" id="inAkunPass" required></div><div class="form-group"><label>Jabatan (Role):</label><select id="inAkunRole"><option value="kasir">🧑‍🍳 Kasir</option><option value="owner">👑 Owner</option><option value="dapur">🔪 Dapur</option></select></div></div><button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Tambahkan Akun</button></form><div class="table-wrapper" style="max-height:200px; overflow-y:auto;"><table><thead><tr><th>Nama</th><th>No. HP</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="tbodyDaftarAkun"></tbody></table></div><button type="button" class="btn btn-outline" onclick="tutupModalKelolaAkun()">Tutup</button></div></div>
-<div class="modal" id="modalCetakPeriode"><div class="modal-content"><h3 id="modalCetakJudul" style="font-size:1.1rem; font-weight:800;">Cetak Laporan</h3><input type="hidden" id="jenisCetakPeriode"><div id="formCetakMingguan" style="display:none;"><div class="form-group"><label>Dari Tanggal:</label><input type="date" id="cetakTglAwal"></div><div class="form-group"><label>Sampai Tanggal:</label><input type="date" id="cetakTglAkhir"></div></div><div id="formCetakBulanan" style="display:none;"><div class="form-group"><label>Pilih Bulan & Tahun:</label><input type="month" id="cetakBulan"></div></div><div style="display:flex; gap:8px; margin-top:16px;"><button type="button" class="btn btn-outline" onclick="tutupModalCetakPeriode()">Batal</button><button type="button" class="btn btn-pdf" onclick="eksekusiCetakPeriode()">Cetak PDF</button></div></div></div>
+<div class="modal" id="modalCetakPeriode">
+    <div class="modal-content">
+        <h3 style="font-size:1.1rem; font-weight:800; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Cetak Laporan Berkala</h3>
+        
+        <!-- Pilihan Jenis Laporan -->
+        <div class="form-group" style="margin-top: 15px;">
+            <label style="font-weight: bold; color: #0f172a;">Pilih Jenis Laporan:</label>
+            <select id="jenisCetakPeriode" onchange="gantiTampilanModalLaporan()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <option value="mingguan">Laporan Mingguan (Pilih Tanggal)</option>
+                <option value="bulanan">Laporan Bulanan (Pilih Bulan)</option>
+            </select>
+        </div>
+
+        <!-- Form Mingguan -->
+        <div id="formCetakMingguan" style="display:block; background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <div class="form-group">
+                <label>Dari Tanggal:</label>
+                <input type="date" id="cetakTglAwal">
+            </div>
+            <div class="form-group">
+                <label>Sampai Tanggal:</label>
+                <input type="date" id="cetakTglAkhir">
+            </div>
+        </div>
+
+        <!-- Form Bulanan -->
+        <div id="formCetakBulanan" style="display:none; background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <div class="form-group">
+                <label>Pilih Bulan & Tahun:</label>
+                <input type="month" id="cetakBulan">
+            </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:20px;">
+            <button type="button" class="btn btn-outline" onclick="tutupModalCetakPeriode()">Batal</button>
+            <button type="button" class="btn btn-pdf" onclick="eksekusiCetakPeriode()">Cetak PDF</button>
+        </div>
+    </div>
+</div>
 <div class="modal" id="modalKelolaProduk"><div class="modal-content"><h3 style="font-size:1.1rem; font-weight:800;">⚙️ Master Produk</h3><form onsubmit="simpanProdukBaru(event)"><input type="hidden" id="editIndexProduk" value="-1"><div class="form-group"><label>Nama Produk:</label><input type="text" id="inputNamaProduk" required></div><div class="form-group"><label>Kategori:</label><div style="display:flex; gap:6px;"><select id="selectKategoriProduk" required></select><button type="button" onclick="tambahKategoriBaruPrompt()" class="btn btn-warning" style="width:auto; margin:0;">+ Kat</button></div></div><div class="grid-mobile"><div class="form-group"><label>Modal (Rp):</label><input type="number" id="inputModalProduk" min="0" required oninput="hitungMarginForm()"></div><div class="form-group"><label>Jual (Rp):</label><input type="number" id="inputJualProduk" min="0" required oninput="hitungMarginForm()"></div></div><div class="form-group"><label>Margin:</label><input type="number" id="inputMarginProduk" readonly style="color:#16a34a;"></div><div style="display:flex; gap:8px; margin-top:12px;"><button type="button" class="btn btn-danger" onclick="tutupModalKelolaProduk()">Batal</button><button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button></div></form><div class="table-wrapper" style="max-height:180px; overflow-y:auto; margin-top:12px;"><table><thead><tr><th>No</th><th style="text-align:left;">Nama</th><th>Mod</th><th>Jual</th><th>Aksi</th></tr></thead><tbody id="tbodyMasterProduk"></tbody></table></div></div></div>
 <div class="modal" id="modalKas"><div class="modal-content"><h3 id="modalKasJudul" style="font-size:1.1rem; font-weight:800;">Kelola Kas</h3><form onsubmit="prosesTransaksiKas(event)"><input type="hidden" id="modalJenisKas"><div class="form-group"><label>Tipe Transaksi:</label><select id="modalTipeTx"><option value="masuk">🟢 SETOR (+)</option><option value="keluar">🔴 TARIK (-)</option></select></div><div class="form-group"><label>Nominal (Rp):</label><input type="number" id="modalNominalTx" required min="1"></div><div class="form-group"><label>Catatan:</label><input type="text" id="modalKetTx" required></div><div style="display:flex; gap:8px; margin-top:16px;"><button type="button" class="btn btn-danger" onclick="tutupModalKas()">Batal</button><button type="submit" class="btn btn-success">Simpan</button></div></form></div></div>
 
@@ -1904,6 +1941,22 @@ function formatRupiah(angka) {
     // ==========================================
     function bukaModalCetakPeriode(jenis) { toggleSidebar(); document.getElementById('jenisCetakPeriode').value = jenis; if(jenis === 'mingguan') { document.getElementById('modalCetakJudul').innerText = "📊 Cetak Rekap Mingguan"; document.getElementById('formCetakMingguan').style.display = 'block'; document.getElementById('formCetakBulanan').style.display = 'none'; } else { document.getElementById('modalCetakJudul').innerText = "📈 Cetak Rekap Bulanan"; document.getElementById('formCetakMingguan').style.display = 'none'; document.getElementById('formCetakBulanan').style.display = 'block'; } document.getElementById('modalCetakPeriode').classList.add('active'); }
     function tutupModalCetakPeriode() { document.getElementById('modalCetakPeriode').classList.remove('active'); }
+    function bukaModalGabungan() {
+        if (typeof toggleSidebar === 'function') toggleSidebar(); // Tutup sidebar jika di HP
+        document.getElementById('modalCetakPeriode').classList.add('active');
+        gantiTampilanModalLaporan(); // Pastikan tampilan sesuai pilihan awal
+    }
+
+    function gantiTampilanModalLaporan() {
+        const jenis = document.getElementById('jenisCetakPeriode').value;
+        if(jenis === 'mingguan') {
+            document.getElementById('formCetakMingguan').style.display = 'block';
+            document.getElementById('formCetakBulanan').style.display = 'none';
+        } else {
+            document.getElementById('formCetakMingguan').style.display = 'none';
+            document.getElementById('formCetakBulanan').style.display = 'block';
+        }
+    }
     function eksekusiCetakPeriode() { 
         if (typeof html2pdf === 'undefined') return; 
         tutupModalCetakPeriode(); 
