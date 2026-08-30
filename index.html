@@ -1266,7 +1266,7 @@ function pilihMenuNav(jenis) {
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
     // ==========================================
-    function renderFormOrderVendor() {
+   function renderFormOrderVendor() {
         const tbody = document.getElementById('tbodyOrderVendor');
         tbody.innerHTML = '';
         let grandTotal = 0;
@@ -1285,10 +1285,21 @@ function pilihMenuNav(jenis) {
                 <td>${item.vol}</td>
                 <td style="text-align:center;">${item.isi}</td>
                 <td>${item.rasa || '-'}</td>
-                <td style="background:#eff6ff;"><input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" oninput="updateItemVendor(${index}, 'qty', this.value)"></td>
-                <td style="background:#fefce8;"><input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)"></td>
+                
+                <!-- PERUBAHAN DI SINI: oninput diganti menjadi onchange -->
+                <td style="background:#eff6ff;">
+                    <input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" onchange="updateItemVendor(${index}, 'qty', this.value)">
+                </td>
+                
+                <!-- PERUBAHAN DI SINI: oninput diganti menjadi onchange -->
+                <td style="background:#fefce8;">
+                    <input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" onchange="updateItemVendor(${index}, 'harga', this.value)">
+                </td>
+                
                 <td style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
-                <td style="text-align:center;"><button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button></td>
+                <td style="text-align:center;">
+                    <button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button>
+                </td>
             `;
             tbody.appendChild(tr);
         });
