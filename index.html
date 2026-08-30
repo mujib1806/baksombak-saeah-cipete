@@ -531,14 +531,14 @@
             </div>
 
            <!-- BLOK KASIR & PENGELUARAN -->
-           <div class="card" id="cardKasir">
+          <div class="card" id="cardKasir">
     <h2>💰 Kasir & Pengeluaran</h2>
     <div class="grid-mobile">
-        <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="text" id="inCash" value="0" onblur="hitungOtomatis(this); simpanKasMasuk(true)" placeholder="Total sebelum setoran fisik"></div>
-        <div class="form-group"><label>📱 QRIS</label><input type="text" id="inQris" value="0" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
-        <div class="form-group"><label>🛵 Gojek</label><input type="text" id="inGojek" value="0" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
-        <div class="form-group"><label>🛵 Grab</label><input type="text" id="inGrab" value="0" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
-        <div class="form-group"><label>🛍️ Shopee</label><input type="text" id="inShopee" value="0" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+        <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="text" id="inCash" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)" placeholder="Total sebelum setoran fisik"></div>
+        <div class="form-group"><label>📱 QRIS</label><input type="text" id="inQris" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+        <div class="form-group"><label>🛵 Gojek</label><input type="text" id="inGojek" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+        <div class="form-group"><label>🛵 Grab</label><input type="text" id="inGrab" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+        <div class="form-group"><label>🛍️ Shopee</label><input type="text" id="inShopee" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
         <div class="form-group">
             <label>🪙 Pettycash (Modal Awal)</label>
             <input type="text" id="inPettycash" value="0" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #cbd5e1;" title="Angka ini otomatis ditarik dari Modal Besok hari sebelumnya.">
@@ -2437,6 +2437,20 @@ function formatRupiah(angka) {
                 console.log("Format rumus salah");
             }
         }
+        if (typeof formatRibuanInput === 'function') {
+            formatRibuanInput(elemen);
+        }
+    }
+    // TAMBAHKAN FUNGSI INI DI BAWAHNYA:
+    function inputKasirPintar(elemen) {
+        let nilai = elemen.value;
+        
+        // Jika kasir sedang mengetik rumus (+, -, =), biarkan saja dulu
+        if (nilai.includes('+') || nilai.includes('-') || nilai.includes('=')) {
+            return; 
+        }
+        
+        // Jika hanya ngetik angka biasa, jalankan titik otomatisnya!
         if (typeof formatRibuanInput === 'function') {
             formatRibuanInput(elemen);
         }
