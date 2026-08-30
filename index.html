@@ -808,7 +808,7 @@
     </div>
     
     <!-- Tabel Luas -->
-  <div class="table-wrapper" style="height: calc(100vh - 90px); overflow-y: auto;">
+  <div class="table-wrapper" style="padding-bottom: 30px;">
         <table style="width: 100%;">
             <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
                 <tr>
@@ -1371,8 +1371,10 @@ function pilihMenuNav(jenis) {
             muatDataRiwayat();
         } 
         // ---> TAMBAHAN: Tampilkan halaman produk <---
+      // ---> TAMBAHAN: Tampilkan halaman produk & Muat Datanya <---
         else if (jenis === 'produk') {
             document.getElementById('layar-produk').style.display = 'block';
+            renderTabelMasterProduk(); // Baris ini yang memanggil data agar otomatis muncul!
         }
     }
     // ==========================================
