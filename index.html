@@ -353,7 +353,7 @@
             </button>
             <div id="grupPengaturan" style="display: none;">
                 <li id="menuCetakBerkala"><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
-                <li id="menuProduk"><button onclick="bukaModalKelolaProduk()">⚙️ Master Produk</button></li>
+                <li id="menuProduk"><button onclick="pilihMenuNav('produk')">⚙️ Master Produk</button></li>
                 <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
             </div>
@@ -796,7 +796,74 @@
         </div>
     </div>
 </div>
-<div class="modal" id="modalKelolaProduk"><div class="modal-content"><h3 style="font-size:1.1rem; font-weight:800;">⚙️ Master Produk</h3><form onsubmit="simpanProdukBaru(event)"><input type="hidden" id="editIndexProduk" value="-1"><div class="form-group"><label>Nama Produk:</label><input type="text" id="inputNamaProduk" required></div><div class="form-group"><label>Kategori:</label><div style="display:flex; gap:6px;"><select id="selectKategoriProduk" required></select><button type="button" onclick="tambahKategoriBaruPrompt()" class="btn btn-warning" style="width:auto; margin:0;">+ Kat</button></div></div><div class="grid-mobile"><div class="form-group"><label>Modal (Rp):</label><input type="number" id="inputModalProduk" min="0" required oninput="hitungMarginForm()"></div><div class="form-group"><label>Jual (Rp):</label><input type="number" id="inputJualProduk" min="0" required oninput="hitungMarginForm()"></div></div><div class="form-group"><label>Margin:</label><input type="number" id="inputMarginProduk" readonly style="color:#16a34a;"></div><div style="display:flex; gap:8px; margin-top:12px;"><button type="button" class="btn btn-danger" onclick="tutupModalKelolaProduk()">Batal</button><button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button></div></form><div class="table-wrapper" style="max-height:180px; overflow-y:auto; margin-top:12px;"><table><thead><tr><th>No</th><th style="text-align:left;">Nama</th><th>Mod</th><th>Jual</th><th>Aksi</th></tr></thead><tbody id="tbodyMasterProduk"></tbody></table></div></div></div>
+<!-- 1. HALAMAN PENUH MASTER PRODUK -->
+<div id="layar-produk" style="display: none; padding: 15px;">
+    <!-- Bagian Header & Tombol Tambah -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+        <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #1e293b;">⚙️ Master Produk</h2>
+        <!-- Tombol ini memanggil fungsi lama Anda untuk membuka pop-up -->
+        <button onclick="bukaModalKelolaProduk()" class="btn btn-success" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);">
+            + Tambah Produk
+        </button>
+    </div>
+    
+    <!-- Tabel Luas -->
+    <div class="table-wrapper" style="height: calc(100vh - 160px); overflow-y: auto;">
+        <table style="width: 100%;">
+            <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
+                <tr>
+                    <th style="width: 40px; text-align: center;">No</th>
+                    <th style="text-align: left;">Nama Produk</th>
+                    <th style="text-align: right;">Modal</th>
+                    <th style="text-align: right;">Jual</th>
+                    <th style="text-align: center;">Aksi</th>
+                </tr>
+            </thead>
+            <!-- Target JavaScript lama Anda tetap tidak berubah -->
+            <tbody id="tbodyMasterProduk"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 2. POP-UP (MODAL) KHUSUS FORM TAMBAH/EDIT -->
+<div class="modal" id="modalKelolaProduk">
+    <div class="modal-content">
+        <h3 style="font-size:1.1rem; font-weight:800; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📝 Form Produk</h3>
+        <form onsubmit="simpanProdukBaru(event)" style="margin-top: 15px;">
+            <input type="hidden" id="editIndexProduk" value="-1">
+            <div class="form-group">
+                <label>Nama Produk:</label>
+                <input type="text" id="inputNamaProduk" required>
+            </div>
+            <div class="form-group">
+                <label>Kategori:</label>
+                <div style="display:flex; gap:6px;">
+                    <select id="selectKategoriProduk" required></select>
+                    <button type="button" onclick="tambahKategoriBaruPrompt()" class="btn btn-warning" style="width:auto; margin:0;">+ Kat</button>
+                </div>
+            </div>
+            <div class="grid-mobile">
+                <div class="form-group">
+                    <label>Modal (Rp):</label>
+                    <input type="number" id="inputModalProduk" min="0" required oninput="hitungMarginForm()">
+                </div>
+                <div class="form-group">
+                    <label>Jual (Rp):</label>
+                    <input type="number" id="inputJualProduk" min="0" required oninput="hitungMarginForm()">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Margin:</label>
+                <!-- Diberi warna latar hijau agar beda -->
+                <input type="number" id="inputMarginProduk" readonly style="color:#16a34a; background: #f0fdf4;">
+            </div>
+            <div style="display:flex; gap:8px; margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="tutupModalKelolaProduk()">Batal</button>
+                <button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="modal" id="modalKas"><div class="modal-content"><h3 id="modalKasJudul" style="font-size:1.1rem; font-weight:800;">Kelola Kas</h3><form onsubmit="prosesTransaksiKas(event)"><input type="hidden" id="modalJenisKas"><div class="form-group"><label>Tipe Transaksi:</label><select id="modalTipeTx"><option value="masuk">🟢 SETOR (+)</option><option value="keluar">🔴 TARIK (-)</option></select></div><div class="form-group"><label>Nominal (Rp):</label><input type="number" id="modalNominalTx" required min="1"></div><div class="form-group"><label>Catatan:</label><input type="text" id="modalKetTx" required></div><div style="display:flex; gap:8px; margin-top:16px;"><button type="button" class="btn btn-danger" onclick="tutupModalKas()">Batal</button><button type="submit" class="btn btn-success">Simpan</button></div></form></div></div>
 
 <div class="modal" id="modalFeedback">
@@ -1263,44 +1330,51 @@
     // ==========================================
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
 function pilihMenuNav(jenis) { 
-    toggleSidebar(); 
-    
-    // 1. Sembunyikan semua halaman terlebih dahulu
-    document.getElementById('viewHarian').style.display = 'none'; 
-    document.getElementById('viewSetoranBakso').style.display = 'none'; 
-    document.getElementById('viewRekapTransfer').style.display = 'none'; 
-    document.getElementById('viewMutasiKas').style.display = 'none'; 
-    document.getElementById('viewGajiBulanan').style.display = 'none';
-    document.getElementById('viewDashboard').style.display = 'none'; 
-    document.getElementById('viewOrderVendor').style.display = 'none'; 
-    document.getElementById('viewRiwayatAktivitas').style.display = 'none';
-    
-    // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
-    if (jenis === 'harian') { 
-        document.getElementById('viewHarian').style.display = 'block'; 
-    } else if (jenis === 'setoranBakso') { 
-        document.getElementById('viewSetoranBakso').style.display = 'block'; 
-        renderViewSetoranBakso(); 
-    } else if (jenis === 'rekapTransfer') { 
-        document.getElementById('viewRekapTransfer').style.display = 'block'; 
-        renderViewRekapTransfer(); 
-    } else if (jenis === 'mutasiKas') { 
-        document.getElementById('viewMutasiKas').style.display = 'block'; 
-        hitungAkumulasiKasTotal(); 
-    } else if (jenis === 'gajiBulanan') {
-        document.getElementById('viewGajiBulanan').style.display = 'block';
-        renderRekapGajiBulanan();
-    } else if (jenis === 'dashboard') {
-        document.getElementById('viewDashboard').style.display = 'block';
-        renderDashboardGrafik();
-    } else if (jenis === 'orderVendor') {
-        document.getElementById('viewOrderVendor').style.display = 'block';
-        renderFormOrderVendor();
-    } else if (jenis === 'riwayatAktivitas') {
-        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
-        muatDataRiwayat();
+        if (typeof toggleSidebar === 'function') toggleSidebar(); 
+        
+        // 1. Sembunyikan semua halaman terlebih dahulu
+        document.getElementById('viewHarian').style.display = 'none'; 
+        document.getElementById('viewSetoranBakso').style.display = 'none'; 
+        document.getElementById('viewRekapTransfer').style.display = 'none'; 
+        document.getElementById('viewMutasiKas').style.display = 'none'; 
+        document.getElementById('viewGajiBulanan').style.display = 'none';
+        document.getElementById('viewDashboard').style.display = 'none'; 
+        document.getElementById('viewOrderVendor').style.display = 'none'; 
+        document.getElementById('viewRiwayatAktivitas').style.display = 'none';
+        
+        // ---> TAMBAHAN: Sembunyikan halaman produk <---
+        document.getElementById('layar-produk').style.display = 'none';
+        
+        // 2. Munculkan halaman yang dipanggil DAN jalankan fungsi pemuat datanya
+        if (jenis === 'harian') { 
+            document.getElementById('viewHarian').style.display = 'block'; 
+        } else if (jenis === 'setoranBakso') { 
+            document.getElementById('viewSetoranBakso').style.display = 'block'; 
+            renderViewSetoranBakso(); 
+        } else if (jenis === 'rekapTransfer') { 
+            document.getElementById('viewRekapTransfer').style.display = 'block'; 
+            renderViewRekapTransfer(); 
+        } else if (jenis === 'mutasiKas') { 
+            document.getElementById('viewMutasiKas').style.display = 'block'; 
+            hitungAkumulasiKasTotal(); 
+        } else if (jenis === 'gajiBulanan') {
+            document.getElementById('viewGajiBulanan').style.display = 'block';
+            renderRekapGajiBulanan();
+        } else if (jenis === 'dashboard') {
+            document.getElementById('viewDashboard').style.display = 'block';
+            renderDashboardGrafik();
+        } else if (jenis === 'orderVendor') {
+            document.getElementById('viewOrderVendor').style.display = 'block';
+            renderFormOrderVendor();
+        } else if (jenis === 'riwayatAktivitas') {
+            document.getElementById('viewRiwayatAktivitas').style.display = 'block';
+            muatDataRiwayat();
+        } 
+        // ---> TAMBAHAN: Tampilkan halaman produk <---
+        else if (jenis === 'produk') {
+            document.getElementById('layar-produk').style.display = 'block';
+        }
     }
-}
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
     // ==========================================
