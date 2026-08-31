@@ -1344,9 +1344,13 @@ function prosesLogin(e) {
         }
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
+   // ... kode di atasnya biarkan sama ...
     })
     .catch(err => { 
-        alert("Gagal Masuk! Pastikan Email dan Password benar."); 
+        // KITA UBAH BAGIAN INI AGAR ERROR-NYA KELIHATAN
+        console.error("Error Login:", err);
+        alert("Gagal Masuk! Alasan: " + err.message); 
+        
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
     }); 
