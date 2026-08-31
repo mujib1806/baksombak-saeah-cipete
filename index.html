@@ -1389,16 +1389,26 @@ function prosesLogin(e) {
         
         try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
     }
-    function prosesLogout() { 
-        if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
-            if (currentUser) {
-                catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
-            }
+function prosesLogout() { 
+    if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
+        if (currentUser) {
+            catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
+        }
+        
+        // Perintah WAJIB agar Firebase memutus kunci/sesi Anda
+        firebase.auth().signOut().then(() => {
+            // Setelah Firebase berhasil diputus, baru kita bersihkan sisanya
             localStorage.removeItem('baksoUser'); 
             currentUser = null; 
+            
+            // Reload halaman agar kembali bersih ke tampilan Login
             window.location.reload(); 
-        } 
-    }
+        }).catch((error) => {
+            console.error("Logout Error:", error);
+            alert("Gagal keluar dari sistem. Periksa koneksi internet Anda.");
+        });
+    } 
+}
     function bukaModalKelolaAkun() { if (currentUser.role !== 'owner') return; toggleSidebar(); document.getElementById('modalKelolaAkun').classList.add('active'); muatDaftarAkun(); }
     function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').classList.remove('active'); }
     function muatDaftarAkun() { if(!db) return; db.collection('users').get().then(snap => { listAkunKasir = []; const tbody = document.getElementById('tbodyDaftarAkun'); tbody.innerHTML = ''; snap.forEach(doc => { const data = doc.data(); listAkunKasir.push(data); const roleBadge = data.role === 'owner' ? '<span style="color:#d97706;font-weight:bold;">👑 Owner</span>' : (data.role === 'dapur' ? '<span style="color:#ef4444;font-weight:bold;">🔪 Dapur</span>' : '🧑‍🍳 Kasir'); const aksiBtn = data.hp === currentUser.hp ? '<i>(Anda)</i>' : `<button onclick="hapusAkunUser('${data.hp}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem; margin:0; width:auto;">Hapus</button>`; tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; }); }); }
