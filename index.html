@@ -2558,22 +2558,45 @@ function formatRupiah(angka) {
     }
 </script>
     <script>
-// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL
+// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL (OTOMATIS DETEKSI VARIABEL)
 function exportProdukKeExcel() {
-    if (typeof daftarProduk === 'undefined' || !daftarProduk || daftarProduk.length === 0) {
-        alert("Belum ada data produk untuk di-export!");
+    let dataTarget = null;
+
+    // Otomatis mengecek berbagai variabel produk yang ada di sistem Anda
+    if (typeof daftarProduk !== 'undefined' && Array.isArray(daftarProduk) && daftarProduk.length > 0) {
+        dataTarget = daftarProduk;
+    } else if (typeof masterProduk !== 'undefined' && Array.isArray(masterProduk) && masterProduk.length > 0) {
+        dataTarget = masterProduk;
+    } else if (typeof dbProduk !== 'undefined' && Array.isArray(dbProduk) && dbProduk.length > 0) {
+        dataTarget = dbProduk;
+    } else if (typeof listProduk !== 'undefined' && Array.isArray(listProduk) && listProduk.length > 0) {
+        dataTarget = listProduk;
+    } else if (typeof dataProduk !== 'undefined' && Array.isArray(dataProduk) && dataProduk.length > 0) {
+        dataTarget = dataProduk;
+    } else if (typeof produk !== 'undefined' && Array.isArray(produk) && produk.length > 0) {
+        dataTarget = produk;
+    }
+
+    if (!dataTarget || dataTarget.length === 0) {
+        alert("Sistem tidak menemukan data produk untuk di-export!");
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,";
+    // Menggunakan Unicode \uFEFF agar huruf & angka rupiah dibaca rapi di Microsoft Excel
+    let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
     csvContent += "No,Nama Produk,Kategori,Harga Modal (HPP),Harga Jual,Margin (Rp)\n";
 
-    daftarProduk.forEach((p, index) => {
-        let margin = (p.jual || 0) - (p.modal || 0);
-        let nama = `"${(p.nama || '').replace(/"/g, '""')}"`;
-        let kategori = `"${p.kategori || '-'}"`;
+    dataTarget.forEach((p, index) => {
+        let namaVal = p.nama || p.namaProduk || p.title || '-';
+        let katVal = p.kategori || p.kat || p.category || '-';
+        let modalVal = p.modal || p.hpp || p.hargaModal || 0;
+        let jualVal = p.jual || p.harga || p.hargaJual || 0;
+        let marginVal = jualVal - modalVal;
+
+        let namaFormat = `"${String(namaVal).replace(/"/g, '""')}"`;
+        let katFormat = `"${String(katVal).replace(/"/g, '""')}"`;
         
-        csvContent += `${index + 1},${nama},${kategori},${p.modal || 0},${p.jual || 0},${margin}\n`;
+        csvContent += `${index + 1},${namaFormat},${katFormat},${modalVal},${jualVal},${marginVal}\n`;
     });
 
     let encodedUri = encodeURI(csvContent);
