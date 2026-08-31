@@ -1732,8 +1732,29 @@ function renderFormOrderVendor() {
         else { let currentStok = dbStok[tgl], newStokList = []; masterProduk.forEach(mp => { let found = currentStok.find(item => item.nama === mp.nama); if (found) newStokList.push({ ...mp, awal: found.awal, tambah: found.tambah || "", kurang: found.kurang || "", sisa: found.sisa }); else newStokList.push({ ...mp, awal: "", tambah: "", kurang: "", sisa: "" }); }); dbStok[tgl] = newStokList; } 
     }
     
-    function simpanStokKeFirebase() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; if(!db) return; db.collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { showToast('✅ Stok Otomatis Tersimpan!'); }); }
+   function simpanStokKeFirebase() { 
+    const tgl = document.getElementById('tglOps').value; 
+    if(isDataLocked(tgl)) return; 
+    if(!db) return; 
 
+    // 1. Ambil angka profit bersih yang sedang tampil di layar
+    let elemenProfit = document.getElementById('totalProfitBersih').innerText;
+    
+    // 2. Bersihkan tulisan "Rp" dan titik, ubah jadi murni angka matematika
+    let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,""));
+    let profitSiapBagi = Math.max(0, profitAngka);
+
+    // 3. Simpan stok DAN hasil hitungan 20-40-40 ke database menggunakan merge: true
+    db.collection('stokHarian').doc(tgl).set({ 
+        items: dbStok[tgl],
+        profitBersih: profitSiapBagi,
+        danaDarurat: profitSiapBagi * 0.20,
+        tabunganAnak: profitSiapBagi * 0.40,
+        labaBersih: profitSiapBagi * 0.40
+    }, { merge: true }).then(() => { 
+        showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
+    }); 
+}
  function updateNilaiStokLokal(idx, tipe, val) { 
         const tgl = document.getElementById('tglOps').value; 
         if (!dbStok[tgl]) syncStokDenganMaster(tgl); 
