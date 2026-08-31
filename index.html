@@ -2276,19 +2276,27 @@ function formatRupiah(angka) {
         if (l.jenis === jenis) mutasiList.push({ ...l, auto: false }); 
     }); 
     
+    // Biarkan sort ini tetap seperti semula agar hitungan Saldo berjalan akurat
     mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl)); 
     let saldo = 0; 
     
     mutasiList.forEach(m => { 
+        // 1. Saldo dihitung secara urut
         saldo += (m.tipe === 'masuk' ? m.nominal : -m.nominal); 
         const tr = document.createElement('tr'); 
         tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(saldo)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; 
-        tbody.appendChild(tr); 
+        
+        // 2. KUNCI PERUBAHAN: Ganti appendChild menjadi prepend
+        // Ini akan memaksa data terbaru selalu muncul di baris teratas tabel
+        tbody.prepend(tr); 
     }); 
     
     document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldo); 
 }
-    function hapusMutasiKas(docId) { if(db && confirm("Hapus transaksi kas ini?")) db.collection('logKas').doc(docId).delete(); }
+
+function hapusMutasiKas(docId) { 
+    if(db && confirm("Hapus transaksi kas ini?")) db.collection('logKas').doc(docId).delete(); 
+}
 
     function bukaModalKelolaProduk() { const select=document.getElementById('selectKategoriProduk'); select.innerHTML=''; daftarKategori.forEach(k=>{select.innerHTML+=`<option value="${k}">${k}</option>`}); document.getElementById('editIndexProduk').value="-1"; document.getElementById('inputNamaProduk').value=""; document.getElementById('inputModalProduk').value=""; document.getElementById('inputJualProduk').value=""; document.getElementById('inputMarginProduk').value=""; document.getElementById('btnSimpanProduk').innerText="Simpan"; renderTabelMasterProduk(); document.getElementById('modalKelolaProduk').classList.add('active'); }
     function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk').classList.remove('active'); }
