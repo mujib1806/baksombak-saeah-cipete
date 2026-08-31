@@ -1297,60 +1297,47 @@ function cekDanBuatAkunMaster() {
 function prosesLogin(e) { 
     e.preventDefault(); 
     
-    // Kita mengambil input dari kolom HP, TAPI MINTA TIM MENGISINYA DENGAN EMAIL
-    const email = document.getElementById('inLoginHp').value.trim(); 
+    // Ambil input dari layar (ingat, isinya harus email)
+    const email = document.getElementById('inLoginHp').value.trim().toLowerCase(); 
     const pass = document.getElementById('inLoginPass').value; 
     const btn = document.getElementById('btnLoginBtn'); 
     
-    if(!db || !firebase) { 
-        alert("Tidak ada koneksi ke database. Pastikan internet Anda aktif!"); 
-        return; 
-    } 
+    if(!firebase) return; 
     
     btn.innerText = "MEMERIKSA KUNCI..."; 
     btn.disabled = true; 
     
-    // 1. Sistem memeriksa kunci sandi ke gerbang resmi Firebase
+    // 1. Cek kunci ke Firebase Auth
     firebase.auth().signInWithEmailAndPassword(email, pass)
     .then((userCredential) => {
-        // 2. Jika kunci cocok, cari data hak akses (role)-nya di database
-        return db.collection('users').doc(email).get();
-    })
-    .then(doc => {
-        if (doc.exists) {
-            currentUser = doc.data();
-            localStorage.setItem('baksoUser', JSON.stringify(currentUser)); 
-            catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) masuk ke aplikasi`);  
-            bukaLayarAplikasi(); 
-        } else {
-            // MAGIC TRICK: Jika belum ada di database, sistem buatkan otomatis
-            // berdasar nama emailnya (owner / dapur / kasir)
-            let roleOtomatis = 'kasir'; 
-            if(email.includes('owner')) roleOtomatis = 'owner';
-            else if(email.includes('dapur')) roleOtomatis = 'dapur';
-            
-            const dataUserBaru = {
-                nama: email.split('@')[0].toUpperCase(), 
-                role: roleOtomatis,
-                terhubungFirebase: true
-            };
-            
-            db.collection('users').doc(email).set(dataUserBaru).then(() => {
-                currentUser = dataUserBaru;
-                localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-                catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
-                bukaLayarAplikasi();
-            });
+        // 2. KUNCI COCOK! Kita tentukan jabatannya langsung dari nama email
+        let roleOtomatis = 'kasir'; 
+        if(email.includes('owner')) roleOtomatis = 'owner';
+        else if(email.includes('dapur')) roleOtomatis = 'dapur';
+        
+        // 3. Buat tanda pengenal untuk browser
+        currentUser = {
+            nama: email.split('@')[0].toUpperCase(), 
+            role: roleOtomatis,
+            email: email
+        };
+        
+        // 4. Simpan di ingatan browser lalu buka aplikasi
+        localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+        
+        // Catat aktivitas jika fungsi ini ada
+        if (typeof catatAktivitas === "function") {
+            catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
         }
+        
+        bukaLayarAplikasi(); 
+        
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
-   // ... kode di atasnya biarkan sama ...
     })
     .catch(err => { 
-        // KITA UBAH BAGIAN INI AGAR ERROR-NYA KELIHATAN
         console.error("Error Login:", err);
-        alert("Gagal Masuk! Alasan: " + err.message); 
-        
+        alert("Gagal Masuk! Pastikan Email dan Password benar."); 
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
     }); 
