@@ -1263,31 +1263,33 @@
         // ... kode Auth yang tadi ...
    firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-        // Lampu hijau dari Firebase!
         let savedUser = localStorage.getItem('baksoUser');
         
         if (savedUser) { 
             currentUser = JSON.parse(savedUser); 
             bukaLayarAplikasi(); 
         } else {
-            // JIKA MEMORI KOSONG SAAT LOGIN, BIKIN BARU (JANGAN DI-LOGOUT)
-            let roleOtomatis = 'kasir'; 
-            if(user.email.includes('owner')) roleOtomatis = 'owner';
-            else if(user.email.includes('dapur')) roleOtomatis = 'dapur';
+            // JIKA MEMORI KOSONG, KITA AMBIL DARI DATABASE
+            // user.email bentuknya "08111111111@bakso.com", kita buang @bakso.com nya
+            const noHp = user.email.split('@')[0];
             
-            currentUser = {
-                nama: user.email.split('@')[0].toUpperCase(), 
-                role: roleOtomatis,
-                email: user.email
-            };
-            localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-            bukaLayarAplikasi();
+            db.collection('users').doc(noHp).get().then(doc => {
+                if (doc.exists) {
+                    currentUser = doc.data();
+                    currentUser.email = user.email;
+                } else {
+                    currentUser = { nama: "Kasir", role: "kasir", hp: noHp, email: user.email };
+                }
+                localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+                bukaLayarAplikasi();
+            }).catch(err => {
+                console.error("Gagal menarik data user:", err);
+            });
         }
     } else {
-        // Hanya tampilkan layar login jika benar-benar tidak ada token
         document.getElementById('loginScreen').style.display = 'flex'; 
         document.getElementById('appScreen').style.display = 'none';
-        localStorage.removeItem('baksoUser'); // Bersihkan sisa memori lama
+        localStorage.removeItem('baksoUser'); 
     }
 });
 
@@ -1310,7 +1312,8 @@ function cekDanBuatAkunMaster() {
 function prosesLogin(e) { 
     e.preventDefault(); 
     
-    const email = document.getElementById('inLoginHp').value.trim().toLowerCase(); 
+    // Ambil input dari layar (Sekarang karyawan cukup ketik Nomor HP)
+    const noHp = document.getElementById('inLoginHp').value.trim(); 
     const pass = document.getElementById('inLoginPass').value; 
     const btn = document.getElementById('btnLoginBtn'); 
     
@@ -1319,21 +1322,35 @@ function prosesLogin(e) {
     btn.innerText = "MEMERIKSA KUNCI..."; 
     btn.disabled = true; 
     
-    // 1. Cek kunci ke Firebase Auth (tanpa baca database lagi)
-    firebase.auth().signInWithEmailAndPassword(email, pass)
+    // TRIK RAHASIA: Gabungkan nomor HP dengan email palsu
+    const emailPalsu = noHp + "@bakso.com";
+    
+    // 1. Cek kunci ke Firebase Auth pakai email palsu
+    firebase.auth().signInWithEmailAndPassword(emailPalsu, pass)
     .then((userCredential) => {
-        // 2. Kunci cocok! Tentukan jabatan dari nama email
-        let roleOtomatis = 'kasir'; 
-        if(email.includes('owner')) roleOtomatis = 'owner';
-        else if(email.includes('dapur')) roleOtomatis = 'dapur';
-        
-        currentUser = {
-            nama: email.split('@')[0].toUpperCase(), 
-            role: roleOtomatis,
-            email: email
-        };
+        // 2. Kunci cocok! Karena Satpam sudah kasih izin, kita ambil data jabatannya dari database
+        return db.collection('users').doc(noHp).get();
+    })
+    .then(doc => {
+        if (doc.exists) {
+            // Jika nomor HP ada di database lama, pakai data aslinya
+            currentUser = doc.data();
+            currentUser.email = emailPalsu; // simpan cadangan
+        } else {
+            // Jika belum ada di database, buatkan standar
+            currentUser = {
+                nama: "Pengguna " + noHp, 
+                role: 'kasir',
+                hp: noHp,
+                email: emailPalsu
+            };
+        }
         
         localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+        
+        if (typeof catatAktivitas === "function") {
+            catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
+        }
         
         bukaLayarAplikasi(); 
         
@@ -1342,8 +1359,7 @@ function prosesLogin(e) {
     })
     .catch(err => { 
         console.error("Error Login:", err);
-        // Perhatikan tulisan di bawah ini, saya ubah agar kita tahu kodenya sudah ganti
-        alert("Gagal Masuk! Pastikan Email dan Sandi sudah betul."); 
+        alert("Gagal Masuk! Pastikan Nomor HP dan Sandi Anda sudah betul."); 
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
     }); 
