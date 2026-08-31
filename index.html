@@ -266,6 +266,82 @@
             transform: translateX(3px);
             filter: brightness(1.1);
         }
+        /* ==========================================
+   STYLE KHUSUS CETAK PDF / PRINT MASTER PRODUK
+   ========================================== */
+@media print {
+    /* 1. Sembunyikan semua elemen navigasi, sidebar, dan tombol */
+    .sidebar, 
+    .navbar, 
+    .btn, 
+    button, 
+    #modalKelolaProduk,
+    .filter-container,
+    header,
+    footer {
+        display: none !important;
+    }
+
+    /* 2. Atur halaman cetak agar bersih berlatar putih */
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        font-family: Arial, sans-serif !important;
+    }
+
+    /* 3. Paksa layar Master Produk untuk tampil penuh */
+    #layar-produk {
+        display: block !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    /* 4. Rapikan judul cetakan */
+    #layar-produk h2 {
+        font-size: 1.4rem !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 15px !important;
+        text-align: center;
+    }
+
+    /* 5. Hilangkan batas scroll pada wrapper tabel */
+    .table-wrapper {
+        overflow: visible !important;
+        max-height: none !important;
+        height: auto !important;
+    }
+
+    /* 6. Formating tabel agar rapi dan tidak terpotong kertas */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 0.85rem !important;
+    }
+
+    th, td {
+        border: 1px solid #444444 !important;
+        padding: 8px 10px !important;
+        text-align: left !important;
+        color: #000000 !important;
+    }
+
+    th {
+        background-color: #f1f5f9 !important;
+        font-weight: bold !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Sembunyikan kolom "Aksi" (tombol Edit/Hapus) di tabel jika ada */
+    table th:last-child, 
+    table td:last-child {
+        display: none !important;
+    }
+}
     </style>
 </head>
 <body>
