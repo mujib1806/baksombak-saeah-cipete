@@ -799,13 +799,22 @@
 </div>
 <!-- 1. HALAMAN PENUH MASTER PRODUK -->
 <div id="layar-produk" style="display: none; padding: 15px;">
-    <!-- Bagian Header & Tombol Tambah -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+    <!-- Bagian Header & Tombol Aksi -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
         <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #1e293b;">⚙️ Master Produk</h2>
-        <!-- Tombol ini memanggil fungsi lama Anda untuk membuka pop-up -->
-        <button onclick="bukaModalKelolaProduk()" class="btn btn-success" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);">
-            + Tambah Produk
-        </button>
+        
+        <!-- Grup Tombol Aksi -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="exportProdukKeExcel()" class="btn btn-warning" style="width: auto; margin: 0; padding: 8px 12px; font-size: 0.8rem; border-radius: 6px; background: #fbbf24; color: #78350f; font-weight: bold;">
+                📥 Export CSV
+            </button>
+            <button onclick="cetakPDFProduk()" class="btn btn-pdf" style="width: auto; margin: 0; padding: 8px 12px; font-size: 0.8rem; border-radius: 6px; font-weight: bold;">
+                📄 Cetak PDF
+            </button>
+            <button onclick="bukaModalKelolaProduk()" class="btn btn-success" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);">
+                + Tambah Produk
+            </button>
+        </div>
     </div>
     
     <!-- Tabel Luas -->
@@ -2471,6 +2480,39 @@ function formatRupiah(angka) {
             formatRibuanInput(elemen);
         }
     }
+</script>
+    <script>
+// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL
+function exportProdukKeExcel() {
+    if (typeof daftarProduk === 'undefined' || !daftarProduk || daftarProduk.length === 0) {
+        alert("Belum ada data produk untuk di-export!");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "No,Nama Produk,Kategori,Harga Modal (HPP),Harga Jual,Margin (Rp)\n";
+
+    daftarProduk.forEach((p, index) => {
+        let margin = (p.jual || 0) - (p.modal || 0);
+        let nama = `"${(p.nama || '').replace(/"/g, '""')}"`;
+        let kategori = `"${p.kategori || '-'}"`;
+        
+        csvContent += `${index + 1},${nama},${kategori},${p.modal || 0},${p.jual || 0},${margin}\n`;
+    });
+
+    let encodedUri = encodeURI(csvContent);
+    let link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Master_Produk_Bakso_Saeah_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// FUNGSI CETAK PDF DAFTAR PRODUK
+function cetakPDFProduk() {
+    window.print();
+}
 </script>
 </body>
 </html>
