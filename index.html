@@ -759,7 +759,28 @@
                     <div><span style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase; font-weight:800;">Saldo Terkini DOMPET</span><h3 id="txtNamaTabKas" style="font-size:0.95rem; color:#38bdf8; margin-top:2px;">Kas Reseller</h3></div>
                     <div id="txtTotalTabKas" style="font-size:1.3rem; font-weight:800; color:#4ade80;">Rp 0</div>
                 </div>
-                <div class="table-wrapper"><table><thead><tr><th>Tgl</th><th>Tipe</th><th>Ket. Tx</th><th>Nominal</th><th>Saldo</th><th>Aksi</th></tr></thead><tbody id="tbodyMutasiKas"></tbody></table></div>
+            <!-- Ini tombol filter bulannya -->
+<div style="margin-bottom: 15px; text-align: right;">
+    <label style="font-weight:bold; font-size:0.9rem; margin-right: 5px;">Filter Bulan: </label>
+    <input type="month" id="inputFilterBulan" onchange="renderMutasiTabKas(activeKasTab)" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;">
+</div>
+
+<!-- Ini tabel bawaan Anda -->
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Tgl</th>
+                <th>Tipe</th>
+                <th>Ket. Tx</th>
+                <th>Nominal</th>
+                <th>Saldo</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyMutasiKas"></tbody>
+    </table>
+</div>    
             </div>
         </div>
 
@@ -2276,22 +2297,35 @@ function formatRupiah(angka) {
         if (l.jenis === jenis) mutasiList.push({ ...l, auto: false }); 
     }); 
     
-    // Biarkan sort ini tetap seperti semula agar hitungan Saldo berjalan akurat
+    // KODE PENGGANTI DIMULAI DARI SINI
     mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl)); 
-    let saldo = 0; 
-    
+    let saldoTotal = 0; 
+
+    // Ambil bulan yang sedang dipilih di kotak HTML
+    const filterBulan = document.getElementById('inputFilterBulan') ? document.getElementById('inputFilterBulan').value : ''; 
+
+    // Hitung dulu seluruh saldo dari awal buka warung agar hitungan tidak rusak
     mutasiList.forEach(m => { 
-        // 1. Saldo dihitung secara urut
-        saldo += (m.tipe === 'masuk' ? m.nominal : -m.nominal); 
+        saldoTotal += (m.tipe === 'masuk' ? m.nominal : -m.nominal); 
+        m.saldoSaatIni = saldoTotal; // Simpan nilai saldo
+    }); 
+
+    // Tampilkan ke tabel HANYA jika bulannya cocok
+    mutasiList.forEach(m => { 
+        // Jika kotak filter diisi, dan tanggalnya tidak cocok, maka lewati
+        if (filterBulan && !m.tgl.startsWith(filterBulan)) {
+            return; 
+        }
+
         const tr = document.createElement('tr'); 
-        tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(saldo)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; 
+        tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(m.saldoSaatIni)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; 
         
-        // 2. KUNCI PERUBAHAN: Ganti appendChild menjadi prepend
-        // Ini akan memaksa data terbaru selalu muncul di baris teratas tabel
+        // Memastikan data terbaru selalu di urutan atas
         tbody.prepend(tr); 
     }); 
     
-    document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldo); 
+    // Update teks total saldo
+    document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldoTotal); 
 }
 
 function hapusMutasiKas(docId) { 
