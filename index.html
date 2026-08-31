@@ -2045,14 +2045,119 @@ function formatRupiah(angka) {
     }
 
     function hitungAkumulasiKasTotal() { 
-        let kasReseller = 0, kasPlastik = 0, kasDarurat = 0, kasLaba = 0, kasAnak = 0; const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
-        validDates.forEach(tgl => { let pKotor = 0, omsetLebihan = 0, modalReseller = 0; dbStok[tgl].forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const terjual = totalStok - sisa; pKotor += (terjual * p.margin); if (p.kategori === 'Reseller') { if (p.nama.toLowerCase().includes('lebihan bakso')) { omsetLebihan += (terjual * p.jual); } else { modalReseller += (terjual * p.modal); } } } }); const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const pBersih = pKotor - (dbGajiHarian[tgl]?.nominal || 0) - pengeluaranHarianBulan; const basis = Math.max(0, pBersih); kasReseller += modalReseller; kasPlastik += omsetLebihan; kasDarurat += (basis * 0.20); kasLaba += (basis * 0.40); kasAnak += (basis * 0.40); }); 
-        dbLogKas.forEach(l => { const n = l.tipe === 'masuk' ? l.nominal : -l.nominal; if (l.jenis === 'Reseller') kasReseller += n; else if (l.jenis === 'Plastik') kasPlastik += n; else if (l.jenis === 'Dana Darurat') kasDarurat += n; else if (l.jenis === 'Laba Bersih') kasLaba += n; else if (l.jenis === 'Tabungan Anak') kasAnak += n; }); 
-        document.getElementById('sbKasReseller').innerText = formatRupiah(kasReseller); document.getElementById('sbKasPlastik').innerText = formatRupiah(kasPlastik); document.getElementById('sbKasDarurat').innerText = formatRupiah(kasDarurat); document.getElementById('sbKasLaba').innerText = formatRupiah(kasLaba); document.getElementById('sbKasAnak').innerText = formatRupiah(kasAnak); renderMutasiTabKas(activeKasTab); 
-    }
+    let kasReseller = 0, kasPlastik = 0, kasDarurat = 0, kasLaba = 0, kasAnak = 0; 
+    const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
+    
+    validDates.forEach(tgl => { 
+        let pKotor = 0, omsetLebihan = 0, modalReseller = 0; 
+        dbStok[tgl].forEach(p => { 
+            const awal = parseFloat(p.awal) || 0; 
+            const tambah = parseFloat(p.tambah) || 0; 
+            const kurang = parseFloat(p.kurang) || 0; 
+            const totalStok = awal + tambah - kurang; 
+            const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+            
+            if (sisa !== null && sisa <= totalStok) { 
+                const terjual = totalStok - sisa; 
+                pKotor += (terjual * p.margin); 
+                if (p.kategori === 'Reseller') { 
+                    if (p.nama.toLowerCase().includes('lebihan bakso')) { 
+                        omsetLebihan += (terjual * p.jual); 
+                    } else { 
+                        modalReseller += (terjual * p.modal); 
+                    } 
+                } 
+            } 
+        }); 
+        
+        const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+        
+        // PERBAIKAN: Samakan pemotongan gaji default 50.000 dengan sistem rekap
+        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
+        const pBersih = pKotor - gajiHarian - pengeluaranHarianBulan; 
+        const basis = Math.max(0, pBersih); 
+        
+        kasReseller += modalReseller; 
+        kasPlastik += omsetLebihan; 
+        kasDarurat += (basis * 0.20); 
+        kasLaba += (basis * 0.40); 
+        kasAnak += (basis * 0.40); 
+    }); 
+    
+    dbLogKas.forEach(l => { 
+        const n = l.tipe === 'masuk' ? l.nominal : -l.nominal; 
+        if (l.jenis === 'Reseller') kasReseller += n; 
+        else if (l.jenis === 'Plastik') kasPlastik += n; 
+        else if (l.jenis === 'Dana Darurat') kasDarurat += n; 
+        else if (l.jenis === 'Laba Bersih') kasLaba += n; 
+        else if (l.jenis === 'Tabungan Anak') kasAnak += n; 
+    }); 
+    
+    document.getElementById('sbKasReseller').innerText = formatRupiah(kasReseller); 
+    document.getElementById('sbKasPlastik').innerText = formatRupiah(kasPlastik); 
+    document.getElementById('sbKasDarurat').innerText = formatRupiah(kasDarurat); 
+    document.getElementById('sbKasLaba').innerText = formatRupiah(kasLaba); 
+    document.getElementById('sbKasAnak').innerText = formatRupiah(kasAnak); 
+    
+    if (typeof activeKasTab !== 'undefined') renderMutasiTabKas(activeKasTab); 
+}
     
     function gantiTabKas(jenis, el) { activeKasTab = jenis; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); if(el) el.classList.add('active'); renderMutasiTabKas(jenis); }
-    function renderMutasiTabKas(jenis) { document.getElementById('txtNamaTabKas').innerText = `Kas ${jenis}`; const tbody = document.getElementById('tbodyMutasiKas'); tbody.innerHTML = ''; let mutasiList = []; const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); validDates.forEach(tgl => { let pKotor = 0, modalR = 0, omsetL = 0; dbStok[tgl].forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const terjual = totalStok - sisa; pKotor += (terjual * p.margin); if (p.kategori === 'Reseller') { if (p.nama.toLowerCase().includes('lebihan bakso')) omsetL += (terjual * p.jual); else modalR += (terjual * p.modal); } } }); const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const pB = Math.max(0, pKotor - (dbGajiHarian[tgl]?.nominal || 0) - pengeluaranHarianBulan); if (jenis === 'Reseller' && modalR > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Modal Reseller', nominal: modalR, auto: true }); else if (jenis === 'Plastik' && omsetL > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Jual Plastik', nominal: omsetL, auto: true }); else if (jenis === 'Dana Darurat' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (20%)', nominal: pB * 0.20, auto: true }); else if (jenis === 'Laba Bersih' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (40%)', nominal: pB * 0.40, auto: true }); else if (jenis === 'Tabungan Anak' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (40%)', nominal: pB * 0.40, auto: true }); }); dbLogKas.forEach(l => { if (l.jenis === jenis) mutasiList.push({ ...l, auto: false }); }); mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl)); let saldo = 0; mutasiList.forEach(m => { saldo += (m.tipe === 'masuk' ? m.nominal : -m.nominal); const tr = document.createElement('tr'); tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(saldo)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; tbody.appendChild(tr); }); document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldo); }
+    function renderMutasiTabKas(jenis) { 
+    document.getElementById('txtNamaTabKas').innerText = `Kas ${jenis}`; 
+    const tbody = document.getElementById('tbodyMutasiKas'); 
+    tbody.innerHTML = ''; 
+    let mutasiList = []; 
+    const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
+    
+    validDates.forEach(tgl => { 
+        let pKotor = 0, modalR = 0, omsetL = 0; 
+        dbStok[tgl].forEach(p => { 
+            const awal = parseFloat(p.awal) || 0; 
+            const tambah = parseFloat(p.tambah) || 0; 
+            const kurang = parseFloat(p.kurang) || 0; 
+            const totalStok = awal + tambah - kurang; 
+            const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+            
+            if (sisa !== null && sisa <= totalStok) { 
+                const terjual = totalStok - sisa; 
+                pKotor += (terjual * p.margin); 
+                if (p.kategori === 'Reseller') { 
+                    if (p.nama.toLowerCase().includes('lebihan bakso')) omsetL += (terjual * p.jual); 
+                    else modalR += (terjual * p.modal); 
+                } 
+            } 
+        }); 
+        
+        const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+        
+        // PERBAIKAN: Samakan pemotongan gaji default 50.000 di rincian tabel
+        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
+        const pB = Math.max(0, pKotor - gajiHarian - pengeluaranHarianBulan); 
+        
+        if (jenis === 'Reseller' && modalR > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Modal Reseller', nominal: modalR, auto: true }); 
+        else if (jenis === 'Plastik' && omsetL > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Jual Plastik', nominal: omsetL, auto: true }); 
+        else if (jenis === 'Dana Darurat' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (20%)', nominal: pB * 0.20, auto: true }); 
+        else if (jenis === 'Laba Bersih' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (40%)', nominal: pB * 0.40, auto: true }); 
+        else if (jenis === 'Tabungan Anak' && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Profit (40%)', nominal: pB * 0.40, auto: true }); 
+    }); 
+    
+    dbLogKas.forEach(l => { 
+        if (l.jenis === jenis) mutasiList.push({ ...l, auto: false }); 
+    }); 
+    
+    mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl)); 
+    let saldo = 0; 
+    
+    mutasiList.forEach(m => { 
+        saldo += (m.tipe === 'masuk' ? m.nominal : -m.nominal); 
+        const tr = document.createElement('tr'); 
+        tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(saldo)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; 
+        tbody.appendChild(tr); 
+    }); 
+    
+    document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldo); 
+}
     function hapusMutasiKas(docId) { if(db && confirm("Hapus transaksi kas ini?")) db.collection('logKas').doc(docId).delete(); }
 
     function bukaModalKelolaProduk() { const select=document.getElementById('selectKategoriProduk'); select.innerHTML=''; daftarKategori.forEach(k=>{select.innerHTML+=`<option value="${k}">${k}</option>`}); document.getElementById('editIndexProduk').value="-1"; document.getElementById('inputNamaProduk').value=""; document.getElementById('inputModalProduk').value=""; document.getElementById('inputJualProduk').value=""; document.getElementById('inputMarginProduk').value=""; document.getElementById('btnSimpanProduk').innerText="Simpan"; renderTabelMasterProduk(); document.getElementById('modalKelolaProduk').classList.add('active'); }
