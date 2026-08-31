@@ -2558,7 +2558,7 @@ function formatRupiah(angka) {
     }
 </script>
     <script>
-// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL (OTOMATIS DETEKSI VARIABEL)
+// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL (KOLOM TERPISAH RAPI)
 function exportProdukKeExcel() {
     let dataTarget = null;
 
@@ -2582,9 +2582,9 @@ function exportProdukKeExcel() {
         return;
     }
 
-    // Menggunakan Unicode \uFEFF agar huruf & angka rupiah dibaca rapi di Microsoft Excel
+    // Menggunakan Unicode \uFEFF & pemisah titik koma (;) agar Excel otomatis memisahkannya ke kolom terpisah
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-    csvContent += "No,Nama Produk,Kategori,Harga Modal (HPP),Harga Jual,Margin (Rp)\n";
+    csvContent += "No;Nama Produk;Kategori;Harga Modal (HPP);Harga Jual;Margin (Rp)\n";
 
     dataTarget.forEach((p, index) => {
         let namaVal = p.nama || p.namaProduk || p.title || '-';
@@ -2596,7 +2596,8 @@ function exportProdukKeExcel() {
         let namaFormat = `"${String(namaVal).replace(/"/g, '""')}"`;
         let katFormat = `"${String(katVal).replace(/"/g, '""')}"`;
         
-        csvContent += `${index + 1},${namaFormat},${katFormat},${modalVal},${jualVal},${marginVal}\n`;
+        // Gunakan titik koma (;) sebagai pemisah antar kolom
+        csvContent += `${index + 1};${namaFormat};${katFormat};${modalVal};${jualVal};${marginVal}\n`;
     });
 
     let encodedUri = encodeURI(csvContent);
@@ -2607,7 +2608,6 @@ function exportProdukKeExcel() {
     link.click();
     document.body.removeChild(link);
 }
-
 // FUNGSI CETAK PDF DAFTAR PRODUK
 function cetakPDFProduk() {
     window.print();
