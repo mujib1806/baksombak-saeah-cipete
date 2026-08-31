@@ -1182,8 +1182,14 @@
         appId: "1:762988721032:web:ece3972d70e1f79803c03d"
     };
 
-    if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") { firebase.initializeApp(firebaseConfig); }
-    const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
+    if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") { 
+    firebase.initializeApp(firebaseConfig); 
+}
+const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
+
+// --- TAMBAHKAN LANGKAH 1 TEPAT DI BAWAH SINI ---
+const configSistem = firebase.app().options; 
+const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
 
     const defaultMasterProduk = [
         { nama: "Bakso Sapi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
@@ -1428,7 +1434,63 @@ function prosesLogout() {
     function bukaModalKelolaAkun() { if (currentUser.role !== 'owner') return; toggleSidebar(); document.getElementById('modalKelolaAkun').classList.add('active'); muatDaftarAkun(); }
     function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').classList.remove('active'); }
     function muatDaftarAkun() { if(!db) return; db.collection('users').get().then(snap => { listAkunKasir = []; const tbody = document.getElementById('tbodyDaftarAkun'); tbody.innerHTML = ''; snap.forEach(doc => { const data = doc.data(); listAkunKasir.push(data); const roleBadge = data.role === 'owner' ? '<span style="color:#d97706;font-weight:bold;">👑 Owner</span>' : (data.role === 'dapur' ? '<span style="color:#ef4444;font-weight:bold;">🔪 Dapur</span>' : '🧑‍🍳 Kasir'); const aksiBtn = data.hp === currentUser.hp ? '<i>(Anda)</i>' : `<button onclick="hapusAkunUser('${data.hp}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem; margin:0; width:auto;">Hapus</button>`; tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; }); }); }
-    function simpanAkunBaru(e) { e.preventDefault(); const nama = document.getElementById('inAkunNama').value.trim(); const hp = document.getElementById('inAkunHp').value.trim(); const password = document.getElementById('inAkunPass').value.trim(); const role = document.getElementById('inAkunRole').value; if(!db) return; db.collection('users').doc(hp).set({ nama, hp, password, role }).then(() => { alert(`Akun berhasil dibuat!\nHP: ${hp}\nPassword: ${password}`); document.getElementById('inAkunNama').value = ''; document.getElementById('inAkunHp').value = ''; document.getElementById('inAkunPass').value = ''; muatDaftarAkun(); }); }
+    function simpanAkunBaru(e) { 
+    e.preventDefault(); 
+    
+    const nama = document.getElementById('inAkunNama').value.trim(); 
+    const hp = document.getElementById('inAkunHp').value.trim(); 
+    const password = document.getElementById('inAkunPass').value.trim(); 
+    const role = document.getElementById('inAkunRole').value; 
+    
+    if(!db || !aplikasiPendaftaran) {
+        alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
+        return; 
+    }
+
+    if(!hp || !password) {
+        alert("Nomor HP dan Password wajib diisi!");
+        return;
+    }
+
+    // Trik email palsu
+    const emailPalsu = hp + "@bakso.com";
+    
+    // 1. Daftarkan akun ke Satpam Firebase lewat pintu belakang
+    aplikasiPendaftaran.auth().createUserWithEmailAndPassword(emailPalsu, password)
+    .then((userCredential) => {
+        // 2. Simpan profil ke database 
+        // (Catatan Keamanan: Kita tidak lagi menyimpan teks password di database, biar Firebase Auth yang jaga)
+        return db.collection('users').doc(hp).set({ 
+            nama: nama, 
+            hp: hp, 
+            role: role,
+            email: emailPalsu
+        });
+    })
+    .then(() => { 
+        alert(`Akun berhasil dibuat!\nHP: ${hp}\nPassword: ${password}`); 
+        
+        // Bersihkan kolom isian
+        document.getElementById('inAkunNama').value = ''; 
+        document.getElementById('inAkunHp').value = ''; 
+        document.getElementById('inAkunPass').value = ''; 
+        
+        // Muat ulang daftar tabel di layar
+        if(typeof muatDaftarAkun === 'function') muatDaftarAkun(); 
+        
+        // Logout aplikasi pendaftaran agar memori bersih
+        aplikasiPendaftaran.auth().signOut();
+    })
+    .catch(err => {
+        console.error("Gagal buat akun:", err);
+        // Pesan error khusus jika nomor HP sudah ada
+        if (err.code === 'auth/email-already-in-use') {
+            alert("Gagal! Nomor HP ini sudah pernah didaftarkan.");
+        } else {
+            alert("Gagal menambahkan akun: " + err.message);
+        }
+    }); 
+}
     function hapusAkunUser(hp) { if(confirm(`PERINGATAN: Hapus akses untuk pengguna dengan No HP ${hp}?`)) { db.collection('users').doc(hp).delete().then(() => { muatDaftarAkun(); }); } }
 
     // ==========================================
