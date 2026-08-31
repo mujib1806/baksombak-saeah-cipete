@@ -2739,5 +2739,27 @@ function cetakPDFProduk() {
     window.print();
 }
 </script>
+    <script>
+        // PINTU RAHASIA: Blokir akan aktif KECUALI link web diakhiri dengan "?mode=bos"
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDeveloper = urlParams.get('mode') === 'bos' || window.location.hostname === 'localhost';
+
+        if (!isDeveloper) {
+            // Matikan Klik Kanan
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+
+            // Matikan tombol F12, Ctrl+U, dll
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || 
+                   (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                   (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                   (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
 </body>
 </html>
