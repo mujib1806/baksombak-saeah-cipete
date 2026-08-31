@@ -1260,11 +1260,26 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Meminta Firebase Auth untuk mengecek kunci resmi terlebih dahulu
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // Lampu hijau! Kunci resmi sudah dikonfirmasi satpam.
         const savedUser = localStorage.getItem('baksoUser');
-        if (savedUser) { currentUser = JSON.parse(savedUser); bukaLayarAplikasi(); } 
-        else { document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('appScreen').style.display = 'none'; }
-        if(db) cekDanBuatAkunMaster();
-    });
+        if (savedUser) { 
+            currentUser = JSON.parse(savedUser); 
+            bukaLayarAplikasi(); 
+        } else {
+            // Jaga-jaga jika data lokal hilang, paksa login ulang
+            firebase.auth().signOut();
+            document.getElementById('loginScreen').style.display = 'flex'; 
+            document.getElementById('appScreen').style.display = 'none';
+        }
+    } else {
+        // Belum punya kunci / belum login
+        document.getElementById('loginScreen').style.display = 'flex'; 
+        document.getElementById('appScreen').style.display = 'none';
+    }
+});
 
     function showToast(message) {
         const toast = document.getElementById('toastNotif');
