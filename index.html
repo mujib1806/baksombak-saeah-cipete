@@ -1297,7 +1297,6 @@ function cekDanBuatAkunMaster() {
 function prosesLogin(e) { 
     e.preventDefault(); 
     
-    // Ambil input dari layar (ingat, isinya harus email)
     const email = document.getElementById('inLoginHp').value.trim().toLowerCase(); 
     const pass = document.getElementById('inLoginPass').value; 
     const btn = document.getElementById('btnLoginBtn'); 
@@ -1307,28 +1306,21 @@ function prosesLogin(e) {
     btn.innerText = "MEMERIKSA KUNCI..."; 
     btn.disabled = true; 
     
-    // 1. Cek kunci ke Firebase Auth
+    // 1. Cek kunci ke Firebase Auth (tanpa baca database lagi)
     firebase.auth().signInWithEmailAndPassword(email, pass)
     .then((userCredential) => {
-        // 2. KUNCI COCOK! Kita tentukan jabatannya langsung dari nama email
+        // 2. Kunci cocok! Tentukan jabatan dari nama email
         let roleOtomatis = 'kasir'; 
         if(email.includes('owner')) roleOtomatis = 'owner';
         else if(email.includes('dapur')) roleOtomatis = 'dapur';
         
-        // 3. Buat tanda pengenal untuk browser
         currentUser = {
             nama: email.split('@')[0].toUpperCase(), 
             role: roleOtomatis,
             email: email
         };
         
-        // 4. Simpan di ingatan browser lalu buka aplikasi
         localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-        
-        // Catat aktivitas jika fungsi ini ada
-        if (typeof catatAktivitas === "function") {
-            catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
-        }
         
         bukaLayarAplikasi(); 
         
@@ -1337,7 +1329,8 @@ function prosesLogin(e) {
     })
     .catch(err => { 
         console.error("Error Login:", err);
-        alert("Gagal Masuk! Pastikan Email dan Password benar."); 
+        // Perhatikan tulisan di bawah ini, saya ubah agar kita tahu kodenya sudah ganti
+        alert("Gagal Masuk! Pastikan Email dan Sandi sudah betul."); 
         btn.innerText = "MASUK"; 
         btn.disabled = false; 
     }); 
