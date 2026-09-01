@@ -494,7 +494,16 @@
 
         <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #8b5cf6;">
-                <h2 style="color: #6d28d9; margin-bottom: 12px;">📈 Dashboard Analisa Bisnis (7 Hari)</h2>
+               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+    <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
+    <select id="filterDashboardPeriode" onchange="renderDashboardGrafik()" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+        <option value="7">7 Hari Terakhir</option>
+        <option value="30">30 Hari Terakhir</option>
+        <option value="bulan_ini">Bulan Ini</option>
+        <option value="bulan_lalu">Bulan Lalu</option>
+        <option value="semua">Semua Waktu</option>
+    </select>
+</div>
                 <div class="grid-mobile" style="margin-bottom: 15px;">
                     <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
                         <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
@@ -2399,18 +2408,153 @@ function hapusMutasiKas(docId) {
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS
     // ==========================================
+    // ==========================================
+    // FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN FILTER)
+    // ==========================================
     function renderDashboardGrafik() {
         const isDapur = currentUser && currentUser.role === 'dapur';
-        if (isDapur) { document.querySelectorAll('.summary-box').forEach(box => { const text = box.innerText.toUpperCase(); if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET')) { box.style.display = 'none'; } }); } else { document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); }
-        const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); const last7Dates = allDates.slice(-7); if(last7Dates.length === 0) return;
-        let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0; let totalGaji = 0, totalDapur = 0, totalLaci = 0; let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = []; let produkBakso = {}, produkReseller = {};
-        last7Dates.forEach(tgl => { labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0; let items = dbStok[tgl] || []; items.forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if(sisa !== null && sisa <= totalStok) { const laku = totalStok - sisa; const omset = laku * p.jual; const profit = laku * p.margin; harianProfitKotor += profit; if(p.kategori === 'Bakso Malang') { harianOmsetBakso += omset; if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; } else { harianOmsetReseller += omset; if(laku > 0) produkReseller[p.nama] = (produkReseller[p.nama] || 0) + laku; } } }); const dGaji = (dbGajiHarian[tgl] || {nominal:0}).nominal; const dLaci = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const dDapur = (dbSetoranDapur[tgl] || {pengeluaran:0}).pengeluaran || 0; const profitBersih = Math.max(0, harianProfitKotor - dGaji - dLaci); totalOmsetBakso += harianOmsetBakso; totalOmsetReseller += harianOmsetReseller; totalProfit += profitBersih; totalGaji += dGaji; totalDapur += dDapur; totalLaci += dLaci; dataBakso.push(harianOmsetBakso); dataReseller.push(harianOmsetReseller); dataProfitLine.push(profitBersih); });
-        document.getElementById('dashTotalOmset').innerText = formatRupiah(totalOmsetBakso + totalOmsetReseller); document.getElementById('dashOmsetBakso').innerText = formatRupiah(totalOmsetBakso); document.getElementById('dashOmsetReseller').innerText = formatRupiah(totalOmsetReseller); document.getElementById('dashTotalProfit').innerText = formatRupiah(totalProfit); document.getElementById('dashTotalBeban').innerText = formatRupiah(totalGaji + totalDapur + totalLaci); document.getElementById('dashBebanGaji').innerText = formatRupiah(totalGaji); document.getElementById('dashBebanDapur').innerText = formatRupiah(totalDapur); document.getElementById('dashBebanLaci').innerText = formatRupiah(totalLaci);
-        Chart.register(ChartDataLabels); const formatSingkatan = function(value) { if (value === 0 || !value) return ''; if (value >= 1000000) { let j = value / 1000000; return (j % 1 === 0 ? j : j.toFixed(1).replace('.', ',')) + ' Jt'; } else if (value >= 1000) { let rb = value / 1000; return (rb % 1 === 0 ? rb : rb.toFixed(1).replace('.', ',')) + ' Rb'; } return value.toString(); };
-        if(chartTren) chartTren.destroy(); const ctxTren = document.getElementById('chartTren').getContext('2d'); chartTren = new Chart(ctxTren, { type: 'bar', data: { labels: labelsTren, datasets: [ { type: 'line', label: 'Profit Bersih', data: dataProfitLine, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } } ] }, options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, datalabels: { display: true } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, display: false } } } });
-        const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); const topBakso = sortSliceTop5(produkBakso); const topReseller = sortSliceTop5(produkReseller); const optHorizontalBar = { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 35 } }, plugins: { legend: { display: false }, datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 10 }, formatter: (val) => val + ' pcs' } }, scales: { x: { beginAtZero: true, display: false }, y: { grid: { display: false } } } };
-        if(chartTopBakso) chartTopBakso.destroy(); const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 4 }] }, options: optHorizontalBar });
-        if(chartTopReseller) chartTopReseller.destroy(); const ctxReseller = document.getElementById('chartTopReseller').getContext('2d'); chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: topReseller.map(x => x.nama), datasets: [{ data: topReseller.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 4 }] }, options: optHorizontalBar });
+        if (isDapur) { 
+            document.querySelectorAll('.summary-box').forEach(box => { 
+                const text = box.innerText.toUpperCase(); 
+                if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET')) { 
+                    box.style.display = 'none'; 
+                } 
+            }); 
+        } else { 
+            document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
+        }
+        
+        const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
+        
+        // --- LOGIKA FILTER PERIODE DARI DROPDOWN ---
+        const periode = document.getElementById('filterDashboardPeriode') ? document.getElementById('filterDashboardPeriode').value : '7';
+        let targetDates = [];
+        const today = new Date();
+        
+        if (periode === '7') {
+            targetDates = allDates.slice(-7);
+        } else if (periode === '30') {
+            targetDates = allDates.slice(-30);
+        } else if (periode === 'bulan_ini') {
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const prefix = `${y}-${m}`;
+            targetDates = allDates.filter(d => d.startsWith(prefix));
+        } else if (periode === 'bulan_lalu') {
+            let y = today.getFullYear();
+            let m = today.getMonth(); 
+            if (m === 0) { y--; m = 12; }
+            const prefix = `${y}-${String(m).padStart(2, '0')}`;
+            targetDates = allDates.filter(d => d.startsWith(prefix));
+        } else {
+            targetDates = allDates; // Semua Waktu
+        }
+
+        if(targetDates.length === 0) {
+            document.getElementById('dashTotalOmset').innerText = "Rp 0";
+            document.getElementById('dashOmsetBakso').innerText = "Rp 0";
+            document.getElementById('dashOmsetReseller').innerText = "Rp 0";
+            document.getElementById('dashTotalProfit').innerText = "Rp 0";
+            document.getElementById('dashTotalBeban').innerText = "Rp 0";
+            document.getElementById('dashBebanGaji').innerText = "Rp 0";
+            document.getElementById('dashBebanDapur').innerText = "Rp 0";
+            document.getElementById('dashBebanLaci').innerText = "Rp 0";
+            if(chartTren) chartTren.destroy();
+            if(chartTopBakso) chartTopBakso.destroy();
+            if(chartTopReseller) chartTopReseller.destroy();
+            return;
+        }
+
+        let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0; 
+        let totalGaji = 0, totalDapur = 0, totalLaci = 0; 
+        let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = []; 
+        let produkBakso = {}, produkReseller = {};
+        
+        targetDates.forEach(tgl => { 
+            labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
+            let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0; 
+            let items = dbStok[tgl] || []; 
+            items.forEach(p => { 
+                const awal = parseFloat(p.awal) || 0; 
+                const tambah = parseFloat(p.tambah) || 0; 
+                const kurang = parseFloat(p.kurang) || 0; 
+                const totalStok = awal + tambah - kurang; 
+                const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+                if(sisa !== null && sisa <= totalStok) { 
+                    const laku = totalStok - sisa; 
+                    const omset = laku * p.jual; 
+                    const profit = laku * p.margin; 
+                    harianProfitKotor += profit; 
+                    if(p.kategori === 'Bakso Malang') { 
+                        harianOmsetBakso += omset; 
+                        if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; 
+                    } else { 
+                        harianOmsetReseller += omset; 
+                        if(laku > 0) produkReseller[p.nama] = (produkReseller[p.nama] || 0) + laku; 
+                    } 
+                } 
+            }); 
+            const dGaji = (dbGajiHarian[tgl] || {nominal:0}).nominal; 
+            const dLaci = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+            const dDapur = (dbSetoranDapur[tgl] || {pengeluaran:0}).pengeluaran || 0; 
+            const profitBersih = Math.max(0, harianProfitKotor - dGaji - dLaci); 
+            
+            totalOmsetBakso += harianOmsetBakso; 
+            totalOmsetReseller += harianOmsetReseller; 
+            totalProfit += profitBersih; 
+            totalGaji += dGaji; 
+            totalDapur += dDapur; 
+            totalLaci += dLaci; 
+            
+            dataBakso.push(harianOmsetBakso); 
+            dataReseller.push(harianOmsetReseller); 
+            dataProfitLine.push(profitBersih); 
+        });
+        
+        document.getElementById('dashTotalOmset').innerText = formatRupiah(totalOmsetBakso + totalOmsetReseller); 
+        document.getElementById('dashOmsetBakso').innerText = formatRupiah(totalOmsetBakso); 
+        document.getElementById('dashOmsetReseller').innerText = formatRupiah(totalOmsetReseller); 
+        document.getElementById('dashTotalProfit').innerText = formatRupiah(totalProfit); 
+        document.getElementById('dashTotalBeban').innerText = formatRupiah(totalGaji + totalDapur + totalLaci); 
+        document.getElementById('dashBebanGaji').innerText = formatRupiah(totalGaji); 
+        document.getElementById('dashBebanDapur').innerText = formatRupiah(totalDapur); 
+        document.getElementById('dashBebanLaci').innerText = formatRupiah(totalLaci);
+        
+        Chart.register(ChartDataLabels); 
+        const formatSingkatan = function(value) { 
+            if (value === 0 || !value) return ''; 
+            if (value >= 1000000) { let j = value / 1000000; return (j % 1 === 0 ? j : j.toFixed(1).replace('.', ',')) + ' Jt'; } 
+            else if (value >= 1000) { let rb = value / 1000; return (rb % 1 === 0 ? rb : rb.toFixed(1).replace('.', ',')) + ' Rb'; } 
+            return value.toString(); 
+        };
+        
+        if(chartTren) chartTren.destroy(); 
+        const ctxTren = document.getElementById('chartTren').getContext('2d'); 
+        chartTren = new Chart(ctxTren, { 
+            type: 'bar', 
+            data: { 
+                labels: labelsTren, 
+                datasets: [ 
+                    { type: 'line', label: 'Profit Bersih', data: dataProfitLine, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } }, 
+                    { type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } }, 
+                    { type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } } 
+                ] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, datalabels: { display: true } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, display: false } } } 
+        });
+        
+        const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
+        const topBakso = sortSliceTop5(produkBakso); 
+        const topReseller = sortSliceTop5(produkReseller); 
+        const optHorizontalBar = { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 35 } }, plugins: { legend: { display: false }, datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 10 }, formatter: (val) => val + ' pcs' } }, scales: { x: { beginAtZero: true, display: false }, y: { grid: { display: false } } } };
+        
+        if(chartTopBakso) chartTopBakso.destroy(); 
+        const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); 
+        chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 4 }] }, options: optHorizontalBar });
+        
+        if(chartTopReseller) chartTopReseller.destroy(); 
+        const ctxReseller = document.getElementById('chartTopReseller').getContext('2d'); 
+        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: topReseller.map(x => x.nama), datasets: [{ data: topReseller.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 4 }] }, options: optHorizontalBar });
     }
 
     // ==========================================
