@@ -539,9 +539,9 @@
                         <h4 style="font-size:0.85rem; color:#c2410c; margin-bottom:10px; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
                         <div class="chart-container-pie"><canvas id="chartTopBakso"></canvas></div>
                     </div>
-                    <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd;">
-                        <h4 style="font-size:0.85rem; color:#1d4ed8; margin-bottom:10px; text-align:center; font-weight:800;">🥤 TOP 5 RESELLER</h4>
-                        <div class="chart-container-pie"><canvas id="chartTopReseller"></canvas></div>
+                   <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd;">
+    <h4 style="font-size:0.85rem; color:#1d4ed8; margin-bottom:10px; text-align:center; font-weight:800;">🥤 TOP 5 RESELLER</h4>
+    <div class="chart-container-pie"><canvas id="chartTopReseller"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -2404,19 +2404,65 @@ function hapusMutasiKas(docId) {
     function bukaModalFeedback() { document.getElementById('modalFeedback').classList.add('active'); }
     function tutupModalFeedback() { document.getElementById('modalFeedback').classList.remove('active'); document.getElementById('fbDeskripsi').value = ''; }
     function kirimFeedback(e) { e.preventDefault(); if(!db) { alert("Sistem Offline. Tidak bisa mengirim laporan."); return; } const jenis = document.getElementById('fbJenis').value; const deskripsi = document.getElementById('fbDeskripsi').value; const btn = document.getElementById('btnKirimFeedback'); btn.innerText = "Mengirim..."; btn.disabled = true; db.collection('laporanBugs').add({ waktu: new Date().toISOString(), user: currentUser ? currentUser.nama : 'Unknown', hp: currentUser ? currentUser.hp : '-', jenis: jenis, deskripsi: deskripsi }).then(() => { showToast('✅ Laporan Terkirim! Terima kasih atas masukannya.'); tutupModalFeedback(); }).catch(err => { alert("Gagal mengirim: " + err.message); }).finally(() => { btn.innerText = "Kirim Laporan"; btn.disabled = false; }); }
+// ==========================================
+// FITUR FILTER GRAFIK RESELLER
+// ==========================================
+let produkResellerDisembunyikan = []; // Menyimpan produk yang tidak dicentang
 
+function bukaFilterReseller() {
+    document.getElementById('modalFilterReseller').style.display = 'flex';
+    const container = document.getElementById('listCheckboxReseller');
+    container.innerHTML = '';
+    
+    if(!window.listProdukResellerAktif || window.listProdukResellerAktif.length === 0) {
+        container.innerHTML = '<div style="font-size:0.8rem; color:#64748b;">Tidak ada data reseller di periode ini.</div>';
+        return;
+    }
+    
+    // Buat daftar checkbox
+    window.listProdukResellerAktif.forEach(nama => {
+        const isDisembunyikan = produkResellerDisembunyikan.includes(nama);
+        const isChecked = isDisembunyikan ? '' : 'checked'; // Jika disembunyikan, hilangkan centangnya
+        
+        container.innerHTML += `
+            <label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.85rem; color:#334155;">
+                <input type="checkbox" class="cb-reseller" value="${nama}" ${isChecked} style="width:16px; height:16px;">
+                ${nama}
+            </label>
+        `;
+    });
+}
+
+function tutupFilterReseller() {
+    document.getElementById('modalFilterReseller').style.display = 'none';
+}
+
+function terapkanFilterReseller() {
+    produkResellerDisembunyikan = [];
+    const checkboxes = document.querySelectorAll('.cb-reseller');
+    checkboxes.forEach(cb => {
+        if(!cb.checked) {
+            produkResellerDisembunyikan.push(cb.value); // Simpan nama yang centangnya dihapus
+        }
+    });
+    tutupFilterReseller();
+    renderDashboardGrafik(); // Refresh grafik
+}
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS
     // ==========================================
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN FILTER)
     // ==========================================
+    // ==========================================
+    // FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN FILTER & AUTO-SCROLL RESELLER)
+    // ==========================================
     function renderDashboardGrafik() {
         const isDapur = currentUser && currentUser.role === 'dapur';
         if (isDapur) { 
             document.querySelectorAll('.summary-box').forEach(box => { 
                 const text = box.innerText.toUpperCase(); 
-                if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET')) { 
+                if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('RANKING RESELLER') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET')) { 
                     box.style.display = 'none'; 
                 } 
             }); 
@@ -2426,29 +2472,23 @@ function hapusMutasiKas(docId) {
         
         const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
         
-        // --- LOGIKA FILTER PERIODE DARI DROPDOWN ---
         const periode = document.getElementById('filterDashboardPeriode') ? document.getElementById('filterDashboardPeriode').value : '7';
         let targetDates = [];
         const today = new Date();
         
-        if (periode === '7') {
-            targetDates = allDates.slice(-7);
-        } else if (periode === '30') {
-            targetDates = allDates.slice(-30);
-        } else if (periode === 'bulan_ini') {
+        if (periode === '7') { targetDates = allDates.slice(-7); } 
+        else if (periode === '30') { targetDates = allDates.slice(-30); } 
+        else if (periode === 'bulan_ini') {
             const y = today.getFullYear();
             const m = String(today.getMonth() + 1).padStart(2, '0');
-            const prefix = `${y}-${m}`;
-            targetDates = allDates.filter(d => d.startsWith(prefix));
-        } else if (periode === 'bulan_lalu') {
-            let y = today.getFullYear();
-            let m = today.getMonth(); 
+            targetDates = allDates.filter(d => d.startsWith(`${y}-${m}`));
+        } 
+        else if (periode === 'bulan_lalu') {
+            let y = today.getFullYear(); let m = today.getMonth(); 
             if (m === 0) { y--; m = 12; }
-            const prefix = `${y}-${String(m).padStart(2, '0')}`;
-            targetDates = allDates.filter(d => d.startsWith(prefix));
-        } else {
-            targetDates = allDates; // Semua Waktu
-        }
+            targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
+        } 
+        else { targetDates = allDates; }
 
         if(targetDates.length === 0) {
             document.getElementById('dashTotalOmset').innerText = "Rp 0";
@@ -2499,16 +2539,10 @@ function hapusMutasiKas(docId) {
             const dDapur = (dbSetoranDapur[tgl] || {pengeluaran:0}).pengeluaran || 0; 
             const profitBersih = Math.max(0, harianProfitKotor - dGaji - dLaci); 
             
-            totalOmsetBakso += harianOmsetBakso; 
-            totalOmsetReseller += harianOmsetReseller; 
-            totalProfit += profitBersih; 
-            totalGaji += dGaji; 
-            totalDapur += dDapur; 
-            totalLaci += dLaci; 
+            totalOmsetBakso += harianOmsetBakso; totalOmsetReseller += harianOmsetReseller; 
+            totalProfit += profitBersih; totalGaji += dGaji; totalDapur += dDapur; totalLaci += dLaci; 
             
-            dataBakso.push(harianOmsetBakso); 
-            dataReseller.push(harianOmsetReseller); 
-            dataProfitLine.push(profitBersih); 
+            dataBakso.push(harianOmsetBakso); dataReseller.push(harianOmsetReseller); dataProfitLine.push(profitBersih); 
         });
         
         document.getElementById('dashTotalOmset').innerText = formatRupiah(totalOmsetBakso + totalOmsetReseller); 
@@ -2532,20 +2566,20 @@ function hapusMutasiKas(docId) {
         const ctxTren = document.getElementById('chartTren').getContext('2d'); 
         chartTren = new Chart(ctxTren, { 
             type: 'bar', 
-            data: { 
-                labels: labelsTren, 
-                datasets: [ 
-                    { type: 'line', label: 'Profit Bersih', data: dataProfitLine, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } }, 
-                    { type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } }, 
-                    { type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } } 
-                ] 
-            }, 
+            data: { labels: labelsTren, datasets: [ { type: 'line', label: 'Profit Bersih', data: dataProfitLine, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } } ] }, 
             options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, datalabels: { display: true } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, display: false } } } 
         });
         
         const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
         const topBakso = sortSliceTop5(produkBakso); 
-        const topReseller = sortSliceTop5(produkReseller); 
+        
+        // --- LOGIKA BARU RESELLER (TANPA BATAS 5 & TERAPKAN FILTER) ---
+        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); // Simpan untuk checkbox popup
+        let resellerDifilter = Object.keys(produkReseller)
+            .filter(nama => !produkResellerDisembunyikan.includes(nama))
+            .map(nama => ({nama: nama, qty: produkReseller[nama]}))
+            .sort((a,b) => b.qty - a.qty);
+        
         const optHorizontalBar = { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 35 } }, plugins: { legend: { display: false }, datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 10 }, formatter: (val) => val + ' pcs' } }, scales: { x: { beginAtZero: true, display: false }, y: { grid: { display: false } } } };
         
         if(chartTopBakso) chartTopBakso.destroy(); 
@@ -2553,8 +2587,14 @@ function hapusMutasiKas(docId) {
         chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 4 }] }, options: optHorizontalBar });
         
         if(chartTopReseller) chartTopReseller.destroy(); 
-        const ctxReseller = document.getElementById('chartTopReseller').getContext('2d'); 
-        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: topReseller.map(x => x.nama), datasets: [{ data: topReseller.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 4 }] }, options: optHorizontalBar });
+        const canvasReseller = document.getElementById('chartTopReseller');
+        
+        // Tinggi dinamis agar area grafik otomatis memanjang ke bawah kalau produk ada banyak
+        const tinggiDibutuhkan = Math.max(250, resellerDifilter.length * 35); 
+        canvasReseller.style.height = tinggiDibutuhkan + 'px';
+        const ctxReseller = canvasReseller.getContext('2d'); 
+        
+        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 4 }] }, options: optHorizontalBar });
     }
 
     // ==========================================
@@ -3055,6 +3095,22 @@ function cetakPDFProduk() {
     window.print();
 }
 </script>
+    <!-- MODAL FILTER RESELLER -->
+<div id="modalFilterReseller" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; width:90%; max-width:400px; border-radius:10px; padding:20px; max-height:80vh; display:flex; flex-direction:column;">
+        <h3 style="margin-top:0; color:#334155; font-size:1.1rem; margin-bottom:5px;">⚙️ Sembunyikan Produk</h3>
+        <p style="font-size:0.8rem; color:#64748b; margin-top:0; margin-bottom:15px;">Hapus centang pada produk yang tidak ingin ditampilkan di grafik.</p>
+        
+        <div id="listCheckboxReseller" style="overflow-y:auto; flex:1; margin-bottom:15px; border:1px solid #e2e8f0; padding:10px; border-radius:8px;">
+            <!-- Checkbox otomatis masuk ke sini -->
+        </div>
+        
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button onclick="tutupFilterReseller()" style="padding:8px 15px; border:none; background:#e2e8f0; color:#475569; border-radius:6px; cursor:pointer; font-weight:bold;">Batal</button>
+            <button onclick="terapkanFilterReseller()" style="padding:8px 15px; border:none; background:#3b82f6; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">Terapkan</button>
+        </div>
+    </div>
+</div>
     <script>
         // PINTU RAHASIA: Blokir akan aktif KECUALI link web diakhiri dengan "?mode=bos"
         const urlParams = new URLSearchParams(window.location.search);
