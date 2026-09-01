@@ -2616,7 +2616,7 @@ function terapkanFilterReseller() {
         const ctxReseller = canvasReseller.getContext('2d'); 
         
         chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar }); 
-       
+    }
     // ==========================================
     // FUNGSI CETAK PDF
     // ==========================================
