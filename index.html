@@ -908,16 +908,20 @@
 
             <div class="grid-mobile" style="margin-bottom:20px;">
                 <div class="summary-box" style="background:#fffdf5; border-color:#fde89d;">
-                    <div class="summary-item"><span>Total Omset Kotor:</span><span id="prevOmset" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
-                    <div class="summary-item"><span>Modal Belanja Produk:</span><span id="prevModal" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
-                    <div class="summary-item bold" style="color:#16a34a; font-size:1.1rem; border-top:1px dashed #fde89d; padding-top:8px;"><span>TOTAL PROFIT BERSIH:</span><span id="prevProfit">Rp 0</span></div>
+                    <div class="summary-item"><span>Total Omset:</span><span id="prevOmset" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
+                    <div class="summary-item"><span>Modal Belanja:</span><span id="prevModal" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
+                    <div class="summary-item bold" style="color:#0284c7; font-size:1.1rem; border-top:1px dashed #fde89d; padding-top:8px;">
+                        <span>Laba Kotor:</span><span id="prevLabaKotor">Rp 0</span>
+                    </div>
                 </div>
-                <div class="summary-box" style="background:#f0fdf4; border-color:#86efac;">
-                    <div class="summary-item"><span>Hak Partner (40%):</span><span id="prevPartner" style="font-weight:bold; color:#0284c7;">Rp 0</span></div>
-                    <div class="summary-item bold" style="color:#d97706; font-size:1.1rem; border-top:1px dashed #86efac; padding-top:8px;"><span>Hak Anda (60%):</span><span id="prevAnda">Rp 0</span></div>
-                    <div id="prevNoticeOps" style="font-size:0.7rem; color:#dc2626; margin-top:5px;"></div>
+                <div class="summary-box" style="background:#fef2f2; border-color:#fca5a5;">
+                    <div class="summary-item"><span>Pengeluaran Harian:</span><span id="prevPengeluaran" style="font-weight:bold; color:#ef4444;">Rp 0</span></div>
+                    <div class="summary-item"><span>Gaji Karyawan:</span><span id="prevGaji" style="font-weight:bold; color:#ef4444;">Rp 0</span></div>
+                    <div class="summary-item bold" style="color:#16a34a; font-size:1.1rem; border-top:1px dashed #fca5a5; padding-top:8px;">
+                        <span>LABA BERSIH:</span><span id="prevLabaBersih">Rp 0</span>
+                    </div>
                 </div>
-            </div>
+            </div>div>
 
             <h4 style="font-size:0.85rem; font-weight:800; color:#334155; margin-bottom:8px;">📦 Detail Barang Terjual</h4>
             <div class="table-wrapper" style="max-height:none;">
@@ -2713,7 +2717,7 @@ function prosesPreviewBerkala() {
         teksPeriode = `Periode: Bulan ${bln}`;
     }
 
-    let omsetTotal = 0, modalTotal = 0, profitKotorTotal = 0, pengeluaranTotal = 0, gajiTotal = 0, pengeluaranHarianSaja = 0;
+    let omsetTotal = 0, modalTotal = 0, profitKotorTotal = 0, pengeluaranTotal = 0, gajiTotal = 0;
     let rekapProduk = masterProduk.map(p => ({ ...p, totalTerjual: 0, totalOmset: 0, totalProfit: 0 }));
 
     validKeys.forEach(tgl => {
@@ -2735,29 +2739,19 @@ function prosesPreviewBerkala() {
                 profitKotorTotal += (terjual * p.margin);
             }
         });
-        dbPengeluaranHarian.forEach(p => { if (p.tgl === tgl) pengeluaranHarianSaja += p.nominal; });
+        dbPengeluaranHarian.forEach(p => { if (p.tgl === tgl) pengeluaranTotal += p.nominal; });
         gajiTotal += (dbGajiHarian[tgl]?.nominal || 0);
     });
 
-    const profitBersih = profitKotorTotal - gajiTotal - pengeluaranHarianSaja;
-    const profitSiapBagi = Math.max(0, profitBersih);
-
-    let hakPartner = profitSiapBagi * 0.40;
-    let hakAnda = profitSiapBagi * 0.60;
-    let noticeOperasional = "";
-
-    if (jenis === 'rentang' && hakAnda >= 25000) {
-         hakAnda -= 25000;
-         noticeOperasional = "*Khusus Mingguan: Hak Anda sudah dipotong operasional Rp 25.000.";
-    }
+    const profitBersih = profitKotorTotal - pengeluaranTotal - gajiTotal;
 
     document.getElementById('prevTeksPeriode').innerText = teksPeriode;
     document.getElementById('prevOmset').innerText = formatRupiah(omsetTotal);
     document.getElementById('prevModal').innerText = formatRupiah(modalTotal);
-    document.getElementById('prevProfit').innerText = formatRupiah(profitSiapBagi);
-    document.getElementById('prevPartner').innerText = formatRupiah(hakPartner);
-    document.getElementById('prevAnda').innerText = formatRupiah(hakAnda);
-    document.getElementById('prevNoticeOps').innerText = noticeOperasional;
+    document.getElementById('prevLabaKotor').innerText = formatRupiah(profitKotorTotal);
+    document.getElementById('prevPengeluaran').innerText = formatRupiah(pengeluaranTotal);
+    document.getElementById('prevGaji').innerText = formatRupiah(gajiTotal);
+    document.getElementById('prevLabaBersih').innerText = formatRupiah(profitBersih);
 
     const tbody = document.getElementById('prevTbodyProduk');
     tbody.innerHTML = '';
