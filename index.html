@@ -491,74 +491,106 @@
                 </div>
             </div>
         </div>
-       <div id="viewLaporanBerkala" style="display:none; margin-bottom: 40px; padding: 15px;">
+        <div id="viewLaporanBerkala" style="display:none; margin-bottom: 40px; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; border-radius: 12px; min-height: 80vh;">
     
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-        <h2 style="margin: 0; font-size: 20px;">📊 Cetak Laporan Berkala</h2>
-        <div style="display: flex; gap: 10px;">
-            <button onclick="cetakPDFBerkala()" style="background-color: #ef4444; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🖨️ Cetak PDF</button>
-            <button onclick="bagikanWABerkala()" style="background-color: #10b981; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">📤 Bagikan WA</button>
+    <style>
+        .btn-modern { transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); filter: brightness(1.05); }
+        .card-modern { transition: all 0.3s ease; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); }
+        .card-modern:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .input-modern:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        .tabel-modern tr { transition: background-color 0.2s ease; }
+        .tabel-modern tbody tr:hover { background-color: #f1f5f9; }
+    </style>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <h2 style="margin: 0; font-size: 22px; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+            <span style="background: #10b981; color: white; padding: 8px; border-radius: 8px; font-size: 18px;">📊</span> 
+            Laporan Berkala
+        </h2>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-modern" onclick="cetakPDFBerkala()" style="background-color: #ef4444; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                🖨️ Cetak PDF
+            </button>
+            <button class="btn-modern" onclick="bagikanWABerkala()" style="background-color: #10b981; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                📤 Bagikan WA
+            </button>
         </div>
     </div>
 
-    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb;">
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-            <div>
-                <label style="font-size: 13px; font-weight: bold; color: #4b5563;">Mulai Tanggal:</label><br>
-                <input type="date" id="filterBerkalaMulai" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-top: 5px;">
+    <div class="card-modern" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid #3b82f6;">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 200px;">
+                <label style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Mulai Tanggal</label><br>
+                <input type="date" id="filterBerkalaMulai" class="input-modern" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 8px; font-family: inherit; color: #334155;">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <label style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Sampai Tanggal</label><br>
+                <input type="date" id="filterBerkalaAkhir" class="input-modern" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 8px; font-family: inherit; color: #334155;">
             </div>
             <div>
-                <label style="font-size: 13px; font-weight: bold; color: #4b5563;">Sampai Tanggal:</label><br>
-                <input type="date" id="filterBerkalaAkhir" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-top: 5px;">
-            </div>
-            <div>
-                <button onclick="prosesTampilLaporanBerkala()" style="background-color: #3b82f6; color: white; padding: 9px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Tampilkan Data</button>
+                <button class="btn-modern" onclick="prosesTampilLaporanBerkala()" style="background-color: #3b82f6; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;">
+                    Tampilkan Data
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="areaCetakLaporan" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+    <div id="areaCetakLaporan" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
         
-        <h3 style="text-align: center; margin-bottom: 5px; text-transform: uppercase;">LAPORAN PENJUALAN BAKSO MBAK SAE'AH</h3>
-        <p id="teksPeriodeLaporan" style="text-align: center; color: #6b7280; margin-top: 0; margin-bottom: 25px; font-size: 14px;">Periode: Belum dipilih</p>
+        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px dashed #e2e8f0;">
+            <h3 style="margin: 0 0 5px 0; font-size: 24px; color: #0f172a; text-transform: uppercase; letter-spacing: 1px;">LAPORAN PENJUALAN</h3>
+            <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #475569;">BAKSO MBAK SAE'AH</h4>
+            <span id="teksPeriodeLaporan" style="display: inline-block; background: #f1f5f9; color: #64748b; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;">Periode: Belum dipilih</span>
+        </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-            <div style="background: #ecfdf5; padding: 15px; border-radius: 8px; border: 1px solid #a7f3d0; text-align: center; page-break-inside: avoid;">
-                <h4 style="margin: 0 0 10px 0; color: #065f46; font-size: 14px;">Total Omset</h4>
-                <h2 id="teksOmsetLaporan" style="margin: 0; color: #059669; font-size: 22px;">Rp 0</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 35px;">
+            <div class="card-modern" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; page-break-inside: avoid;">
+                <div style="font-size: 24px; margin-bottom: 5px;">📈</div>
+                <h4 style="margin: 0 0 10px 0; font-weight: 500; font-size: 15px; opacity: 0.9;">Total Omset</h4>
+                <h2 id="teksOmsetLaporan" style="margin: 0; font-size: 26px; font-weight: 700;">Rp 0</h2>
             </div>
-            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; text-align: center; page-break-inside: avoid;">
-                <h4 style="margin: 0 0 10px 0; color: #991b1b; font-size: 14px;">Total Pengeluaran</h4>
-                <h2 id="teksPengeluaranLaporan" style="margin: 0; color: #dc2626; font-size: 22px;">Rp 0</h2>
+            <div class="card-modern" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; page-break-inside: avoid;">
+                <div style="font-size: 24px; margin-bottom: 5px;">📉</div>
+                <h4 style="margin: 0 0 10px 0; font-weight: 500; font-size: 15px; opacity: 0.9;">Total Pengeluaran</h4>
+                <h2 id="teksPengeluaranLaporan" style="margin: 0; font-size: 26px; font-weight: 700;">Rp 0</h2>
             </div>
-            <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center; page-break-inside: avoid;">
-                <h4 style="margin: 0 0 10px 0; color: #1e40af; font-size: 14px;">Profit Bersih</h4>
-                <h2 id="teksProfitLaporan" style="margin: 0; color: #2563eb; font-size: 22px;">Rp 0</h2>
+            <div class="card-modern" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px; border-radius: 12px; text-align: center; color: white; page-break-inside: avoid;">
+                <div style="font-size: 24px; margin-bottom: 5px;">💎</div>
+                <h4 style="margin: 0 0 10px 0; font-weight: 500; font-size: 15px; opacity: 0.9;">Profit Bersih</h4>
+                <h2 id="teksProfitLaporan" style="margin: 0; font-size: 26px; font-weight: 700;">Rp 0</h2>
             </div>
         </div>
 
-        <h4 style="margin-bottom: 10px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; color: #374151;">Rincian Penjualan Produk</h4>
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 500px;">
-                <thead>
-                    <tr style="background-color: #f3f4f6; border-bottom: 2px solid #d1d5db;">
-                        <th style="padding: 10px; text-align: left; font-size: 14px; color: #374151;">Nama Produk</th>
-                        <th style="padding: 10px; text-align: center; font-size: 14px; color: #374151;">Terjual</th>
-                        <th style="padding: 10px; text-align: right; font-size: 14px; color: #374151;">Subtotal Omset</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelLaporanBerkala">
-                    <tr>
-                        <td colspan="3" style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">
-                            Silakan pilih tanggal dan klik "Tampilkan Data"
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+            <div style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;">
+                <h4 style="margin: 0; color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                    🛒 Rincian Penjualan Produk
+                </h4>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="tabel-modern" style="width: 100%; border-collapse: collapse; min-width: 500px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #e2e8f0;">
+                            <th style="padding: 15px 20px; text-align: left; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase;">Nama Produk</th>
+                            <th style="padding: 15px 20px; text-align: center; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase;">Terjual</th>
+                            <th style="padding: 15px 20px; text-align: right; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase;">Subtotal Omset</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelLaporanBerkala">
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+                                <div style="font-size: 32px; margin-bottom: 10px;">📅</div>
+                                Silakan pilih rentang tanggal dan klik "Tampilkan Data"
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
     </div>
-</div>           
+</div>    
         <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #8b5cf6;">
                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
