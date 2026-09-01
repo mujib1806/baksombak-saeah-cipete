@@ -429,7 +429,7 @@
                 <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
             </button>
             <div id="grupPengaturan" style="display: none;">
-                <li id="menuCetakBerkala"><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
+                <li id="menuCetakBerkala"><button onclick="pilihMenuNav('laporanBerkala')" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
                 <li id="menuProduk"><button onclick="pilihMenuNav('produk')">⚙️ Master Produk</button></li>
                 <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
@@ -491,7 +491,8 @@
                 </div>
             </div>
         </div>
-
+        <div id="viewLaporanBerkala" style="display:none; margin-bottom: 40px;">
+    </div>            
         <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #8b5cf6;">
                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
@@ -1599,6 +1600,7 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewOrderVendor').style.display = 'none'; 
         document.getElementById('viewRiwayatAktivitas').style.display = 'none';
         document.getElementById('layar-produk').style.display = 'none';
+        document.getElementById('viewLaporanBerkala').style.display = 'none';
 
         // 2. SEMBUNYIKAN KARTU KHUSUS SECARA DEFAULT (Supaya tidak bocor ke halaman lain)
         if (document.getElementById('cardSetoranDapur')) {
@@ -1644,7 +1646,13 @@ function pilihMenuNav(jenis) {
         } else if (jenis === 'produk') {
             document.getElementById('layar-produk').style.display = 'block';
             if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-        }
+        }} else if (jenis === 'produk') {
+    document.getElementById('layar-produk').style.display = 'block';
+    if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+} else if (jenis === 'laporanBerkala') {
+    // Membuka halaman laporan berkala
+    document.getElementById('viewLaporanBerkala').style.display = 'block';
+}
     }
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
