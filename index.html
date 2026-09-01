@@ -25,9 +25,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
     <style>
-        tr {
-    page-break-inside: avoid !important;
-}
         :root { --primary: #3b82f6; --primary-dark: #2563eb; --bg-body: #f1f5f9; --card-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0; --sidebar-bg: #0f172a; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         html { font-size: 13px; }
@@ -432,7 +429,7 @@
                 <span style="font-size: 0.7rem; background: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 6px;">▼ Menu</span>
             </button>
             <div id="grupPengaturan" style="display: none;">
-                <li id="menuCetakBerkala"><button onclick="pilihMenuNav('cetakBerkala')" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
+                <li id="menuCetakBerkala"><button onclick="bukaModalGabungan()" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
                 <li id="menuProduk"><button onclick="pilihMenuNav('produk')">⚙️ Master Produk</button></li>
                 <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
@@ -875,64 +872,10 @@
 </div>
 
 <div class="modal" id="modalKelolaAkun"><div class="modal-content"><h3 style="font-size:1.1rem; font-weight:800; color:#d97706;">👥 Manajemen Akun Karyawan</h3><form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:12px; border-radius:8px; border:1px solid #fde68a; margin-bottom:15px;"><div class="form-group"><label>Nama Kasir/Karyawan:</label><input type="text" id="inAkunNama" required></div><div class="form-group"><label>No. HP:</label><input type="tel" id="inAkunHp" required></div><div class="grid-mobile"><div class="form-group"><label>Password:</label><input type="text" id="inAkunPass" required></div><div class="form-group"><label>Jabatan (Role):</label><select id="inAkunRole"><option value="kasir">🧑‍🍳 Kasir</option><option value="owner">👑 Owner</option><option value="dapur">🔪 Dapur</option></select></div></div><button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Tambahkan Akun</button></form><div class="table-wrapper" style="max-height:200px; overflow-y:auto;"><table><thead><tr><th>Nama</th><th>No. HP</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="tbodyDaftarAkun"></tbody></table></div><button type="button" class="btn btn-outline" onclick="tutupModalKelolaAkun()">Tutup</button></div></div>
-  <div id="viewCetakBerkala" style="display:none; margin-bottom: 40px;">
-    <div class="card" style="border-top: 4px solid #10b981;">
-        <h2 style="color: #047857; margin-bottom: 15px;">📊 Laporan Rekapitulasi</h2>
+<div class="modal" id="modalCetakPeriode">
+    <div class="modal-content">
+        <h3 style="font-size:1.1rem; font-weight:800; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Cetak Laporan Berkala</h3>
         
-        <div style="background:#f2fbf4; border:1px solid #a3d9a5; padding:15px; border-radius:12px; margin-bottom:15px;">
-            <div class="grid-mobile">
-                <div class="form-group">
-                    <label>JENIS LAPORAN:</label>
-                    <select id="cbJenisLaporanBaru" onchange="toggleFilterJenisLaporan()" style="font-weight:bold;">
-                        <option value="rentang">📅 Rentang Tanggal (Mingguan)</option>
-                        <option value="bulanan">📆 Bulanan (Satu Bulan Penuh)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="grupFilterRentang" style="display:flex; gap:8px;">
-                    <div style="flex:1;"><label>DARI TANGGAL:</label><input type="date" id="cbTglAwal"></div>
-                    <div style="flex:1;"><label>SAMPAI TANGGAL:</label><input type="date" id="cbTglAkhir"></div>
-                </div>
-                <div class="form-group" id="grupFilterBulan" style="display:none;">
-                    <label>PILIH BULAN:</label>
-                    <input type="month" id="cbBulanLaporan">
-                </div>
-            </div>
-            <button onclick="prosesPreviewBerkala()" class="btn btn-success" style="width:100%; margin-top:10px; padding:12px; font-size:0.9rem;">🔍 TAMPILKAN PREVIEW LAPORAN</button>
-        </div>
-
-        <div id="areaPreviewBerkala" style="display:none; padding:15px; border:1px solid #cbd5e1; border-radius:12px; background:#fff;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:2px solid #e2e8f0; padding-bottom:10px;">
-                <h3 id="prevTeksPeriode" style="color:#0f172a; margin:0; font-size:1rem;">Periode: -</h3>
-                <button id="btnTrigCetak" onclick="cetakPDFBerkalaBaru()" class="btn btn-pdf" style="width:auto; padding:8px 16px; margin:0;">🖨️ Cetak PDF</button>
-            </div>
-
-            <div class="grid-mobile" style="margin-bottom:20px;">
-                <div class="summary-box" style="background:#fffdf5; border-color:#fde89d;">
-                    <div class="summary-item"><span>Total Omset:</span><span id="prevOmset" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
-                    <div class="summary-item"><span>Modal Belanja:</span><span id="prevModal" style="font-weight:bold; color:#d97706;">Rp 0</span></div>
-                    <div class="summary-item bold" style="color:#0284c7; font-size:1.1rem; border-top:1px dashed #fde89d; padding-top:8px;">
-                        <span>Laba Kotor:</span><span id="prevLabaKotor">Rp 0</span>
-                    </div>
-                </div>
-                <div class="summary-box" style="background:#fef2f2; border-color:#fca5a5;">
-                    <div class="summary-item"><span>Pengeluaran Harian:</span><span id="prevPengeluaran" style="font-weight:bold; color:#ef4444;">Rp 0</span></div>
-                    <div class="summary-item"><span>Gaji Karyawan:</span><span id="prevGaji" style="font-weight:bold; color:#ef4444;">Rp 0</span></div>
-                    <div class="summary-item bold" style="color:#16a34a; font-size:1.1rem; border-top:1px dashed #fca5a5; padding-top:8px;">
-                        <span>LABA BERSIH:</span><span id="prevLabaBersih">Rp 0</span>
-                    </div>
-                </div>
-            </div>div>
-
-            <h4 style="font-size:0.85rem; font-weight:800; color:#334155; margin-bottom:8px;">📦 Detail Barang Terjual</h4>
-            <div class="table-wrapper" style="max-height:none;">
-                <table style="width:100%;">
-                    <thead><tr><th>NAMA PRODUK</th><th>KATEGORI</th><th>TERJUAL</th><th style="text-align:right;">TOTAL OMSET</th><th style="text-align:right;">PROFIT BERSIH</th></tr></thead>
-                    <tbody id="prevTbodyProduk"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
         <!-- Pilihan Jenis Laporan -->
         <div class="form-group" style="margin-top: 15px;">
             <label style="font-weight: bold; color: #0f172a;">Pilih Jenis Laporan:</label>
@@ -1656,8 +1599,7 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewOrderVendor').style.display = 'none'; 
         document.getElementById('viewRiwayatAktivitas').style.display = 'none';
         document.getElementById('layar-produk').style.display = 'none';
-        if(document.getElementById('viewCetakBerkala')) document.getElementById('viewCetakBerkala').style.display = 'none';
-    
+
         // 2. SEMBUNYIKAN KARTU KHUSUS SECARA DEFAULT (Supaya tidak bocor ke halaman lain)
         if (document.getElementById('cardSetoranDapur')) {
             document.getElementById('cardSetoranDapur').style.display = 'none';
@@ -1702,8 +1644,6 @@ function pilihMenuNav(jenis) {
         } else if (jenis === 'produk') {
             document.getElementById('layar-produk').style.display = 'block';
             if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-        } else if (jenis === 'cetakBerkala') {
-            document.getElementById('viewCetakBerkala').style.display = 'block';
         }
     }
     // ==========================================
@@ -2692,94 +2632,134 @@ function terapkanFilterReseller() {
     // ==========================================
     // FUNGSI CETAK PDF
     // ==========================================
-    function toggleFilterJenisLaporan() {
-    const jenis = document.getElementById('cbJenisLaporanBaru').value;
-    document.getElementById('grupFilterRentang').style.display = jenis === 'rentang' ? 'flex' : 'none';
-    document.getElementById('grupFilterBulan').style.display = jenis === 'bulanan' ? 'block' : 'none';
-    document.getElementById('areaPreviewBerkala').style.display = 'none'; 
-}
-
-function prosesPreviewBerkala() {
-    const jenis = document.getElementById('cbJenisLaporanBaru').value;
-    let validKeys = [];
-    let teksPeriode = "";
-
-    if (jenis === 'rentang') {
-        const start = document.getElementById('cbTglAwal').value;
-        const end = document.getElementById('cbTglAkhir').value;
-        if(!start || !end) return alert("Pilih tanggal awal dan akhir!");
-        Object.keys(dbStok).forEach(tgl => { if(tgl >= start && tgl <= end) validKeys.push(tgl); });
-        teksPeriode = `Periode: ${start} s/d ${end}`;
-    } else {
-        const bln = document.getElementById('cbBulanLaporan').value;
-        if(!bln) return alert("Pilih bulan terlebih dahulu!");
-        Object.keys(dbStok).forEach(tgl => { if(tgl.startsWith(bln)) validKeys.push(tgl); });
-        teksPeriode = `Periode: Bulan ${bln}`;
+    function bukaModalCetakPeriode(jenis) { toggleSidebar(); document.getElementById('jenisCetakPeriode').value = jenis; if(jenis === 'mingguan') { document.getElementById('modalCetakJudul').innerText = "📊 Cetak Rekap Mingguan"; document.getElementById('formCetakMingguan').style.display = 'block'; document.getElementById('formCetakBulanan').style.display = 'none'; } else { document.getElementById('modalCetakJudul').innerText = "📈 Cetak Rekap Bulanan"; document.getElementById('formCetakMingguan').style.display = 'none'; document.getElementById('formCetakBulanan').style.display = 'block'; } document.getElementById('modalCetakPeriode').classList.add('active'); }
+    function tutupModalCetakPeriode() { document.getElementById('modalCetakPeriode').classList.remove('active'); }
+    function bukaModalGabungan() {
+        if (typeof toggleSidebar === 'function') toggleSidebar(); // Tutup sidebar jika di HP
+        document.getElementById('modalCetakPeriode').classList.add('active');
+        gantiTampilanModalLaporan(); // Pastikan tampilan sesuai pilihan awal
     }
 
-    let omsetTotal = 0, modalTotal = 0, profitKotorTotal = 0, pengeluaranTotal = 0, gajiTotal = 0;
-    let rekapProduk = masterProduk.map(p => ({ ...p, totalTerjual: 0, totalOmset: 0, totalProfit: 0 }));
-
-    validKeys.forEach(tgl => {
-        (dbStok[tgl] || []).forEach((p, idx) => {
-            const awal = parseFloat(p.awal) || 0;
-            const tambah = parseFloat(p.tambah) || 0;
-            const kurang = parseFloat(p.kurang) || 0;
-            const totalStok = awal + tambah - kurang;
-            const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;
-            if (sisa !== null && sisa <= totalStok) {
-                const terjual = totalStok - sisa;
-                if(rekapProduk[idx]) {
-                    rekapProduk[idx].totalTerjual += terjual;
-                    rekapProduk[idx].totalOmset += (terjual * p.jual);
-                    rekapProduk[idx].totalProfit += (terjual * p.margin);
-                }
-                omsetTotal += (terjual * p.jual);
-                modalTotal += (terjual * p.modal);
-                profitKotorTotal += (terjual * p.margin);
+    function gantiTampilanModalLaporan() {
+        const jenis = document.getElementById('jenisCetakPeriode').value;
+        if(jenis === 'mingguan') {
+            document.getElementById('formCetakMingguan').style.display = 'block';
+            document.getElementById('formCetakBulanan').style.display = 'none';
+        } else {
+            document.getElementById('formCetakMingguan').style.display = 'none';
+            document.getElementById('formCetakBulanan').style.display = 'block';
+        }
+    }
+    function eksekusiCetakPeriode() { 
+        if (typeof html2pdf === 'undefined') return; 
+        tutupModalCetakPeriode(); 
+        
+        const jenis = document.getElementById('jenisCetakPeriode').value; 
+        let validKeys = []; 
+        let judulKet = ""; 
+        
+        if (jenis === 'mingguan') { 
+            const start = document.getElementById('cetakTglAwal').value; 
+            const end = document.getElementById('cetakTglAkhir').value; 
+            if(!start || !end) return; 
+            Object.keys(dbStok).forEach(tgl => { 
+                if(tgl >= start && tgl <= end) validKeys.push(tgl); 
+            }); 
+            judulKet = `Periode: ${start} s/d ${end}`; 
+        } else { 
+            const bln = document.getElementById('cetakBulan').value; 
+            if(!bln) return; 
+            Object.keys(dbStok).forEach(tgl => { 
+                if(tgl.startsWith(bln)) validKeys.push(tgl); 
+            }); 
+            judulKet = `Periode: Bulan ${bln}`; 
+        } 
+        
+        let omsetBakso = 0, omsetReseller = 0, modalTotal = 0, profitKotorTotal = 0, pengeluaranTotal = 0, gajiTotal = 0, pengeluaranHarianSaja = 0; 
+        let rekapProduk = masterProduk.map(p => ({ ...p, totalTerjual: 0, totalOmset: 0, totalProfit: 0 })); 
+        
+        validKeys.forEach(tgl => { 
+            dbStok[tgl].forEach((p, idx) => { 
+                const awal = parseFloat(p.awal) || 0; 
+                const tambah = parseFloat(p.tambah) || 0; 
+                const kurang = parseFloat(p.kurang) || 0; 
+                const totalStok = awal + tambah - kurang; 
+                const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+                if (sisa !== null && sisa <= totalStok) { 
+                    const terjual = totalStok - sisa; 
+                    if(rekapProduk[idx]) { 
+                        rekapProduk[idx].totalTerjual += terjual; 
+                        rekapProduk[idx].totalOmset += (terjual * p.jual); 
+                        rekapProduk[idx].totalProfit += (terjual * p.margin); 
+                    } 
+                    modalTotal += (terjual * p.modal); 
+                    profitKotorTotal += (terjual * p.margin); 
+                    if (p.kategori === 'Bakso Malang') omsetBakso += (terjual * p.jual); 
+                    else omsetReseller += (terjual * p.jual); 
+                } 
+            }); 
+            dbPengeluaranHarian.forEach(p => { 
+                if (p.tgl === tgl) pengeluaranHarianSaja += p.nominal; 
+            }); 
+            const dataSetoran = dbSetoranDapur[tgl] || { pengeluaran: 0 }; 
+            pengeluaranTotal += (dataSetoran.pengeluaran || 0); 
+            gajiTotal += (dbGajiHarian[tgl]?.nominal || 0); 
+        }); 
+        
+        const profitBersihTotal = profitKotorTotal - gajiTotal - pengeluaranHarianSaja; 
+        const basisAlokasiPdf = Math.max(0, profitBersihTotal); 
+        
+        document.getElementById('pdfJudulPeriode').innerText = jenis === 'mingguan' ? 'LAPORAN MINGGUAN' : 'LAPORAN BULANAN'; 
+        document.getElementById('pdfTglPeriode').innerText = judulKet; 
+        document.getElementById('pdfOmsetBakso').innerText = formatRupiah(omsetBakso); 
+        document.getElementById('pdfOmsetReseller').innerText = formatRupiah(omsetReseller); 
+        document.getElementById('pdfTotalOmset').innerText = formatRupiah(omsetBakso + omsetReseller); 
+        document.getElementById('pdfTotalModal').innerText = formatRupiah(modalTotal); 
+        document.getElementById('pdfTotalPengeluaran').innerText = formatRupiah(pengeluaranTotal + pengeluaranHarianSaja); 
+        document.getElementById('pdfTotalProfitKotor').innerText = formatRupiah(profitKotorTotal); 
+        document.getElementById('pdfTotalGaji').innerText = formatRupiah(gajiTotal); 
+        document.getElementById('pdfTotalPengeluaranHarian').innerText = formatRupiah(pengeluaranHarianSaja); 
+        document.getElementById('pdfTotalProfitBersih').innerText = formatRupiah(profitBersihTotal); 
+        document.getElementById('pdfAllocDarurat').innerText = formatRupiah(basisAlokasiPdf * 0.20); 
+        document.getElementById('pdfAllocAnak').innerText = formatRupiah(basisAlokasiPdf * 0.40); 
+        document.getElementById('pdfAllocLabaBersih').innerText = formatRupiah(basisAlokasiPdf * 0.40); 
+        
+        const pdfTbody = document.getElementById('pdfTbodyProdukPeriode'); 
+        pdfTbody.innerHTML = ''; 
+        rekapProduk.filter(p => p.totalTerjual > 0).forEach(p => { 
+            pdfTbody.innerHTML += `<tr><td>${p.kategori}</td><td><strong>${p.nama}</strong></td><td style="text-align:center;">${p.totalTerjual}</td><td style="text-align:right;">${formatRupiah(p.totalOmset)}</td><td style="text-align:right;">${formatRupiah(p.totalProfit)}</td></tr>`; 
+        }); 
+        
+        const element = document.getElementById('pdfAreaPeriode'); 
+        element.style.display = 'block'; 
+        
+        // --- KODE BARU: SHARE WA LAPORAN MINGGUAN/BULANAN ---
+        html2pdf().set({ 
+            margin: 5, 
+            filename: `Rekap_${jenis}.pdf`, 
+            html2canvas: { scale: 2 }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        }).from(element).output('blob').then(function(pdfBlob) { 
+            element.style.display = 'none'; 
+            
+            const namaFile = `Rekap_${jenis}.pdf`;
+            const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
+            
+            // Format teks WA menyesuaikan jenis laporannya
+            const labelJenis = jenis === 'mingguan' ? 'Mingguan' : 'Bulanan';
+            
+            if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
+                navigator.share({
+                    files: [filePdf],
+                    title: `Laporan ${labelJenis}`,
+                    text: `Berikut terlampir dokumen Laporan ${labelJenis} (${judulKet}).`
+                }).catch(console.error);
+            } else {
+                const urlObj = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
             }
         });
-        dbPengeluaranHarian.forEach(p => { if (p.tgl === tgl) pengeluaranTotal += p.nominal; });
-        gajiTotal += (dbGajiHarian[tgl]?.nominal || 0);
-    });
-
-    const profitBersih = profitKotorTotal - pengeluaranTotal - gajiTotal;
-
-    document.getElementById('prevTeksPeriode').innerText = teksPeriode;
-    document.getElementById('prevOmset').innerText = formatRupiah(omsetTotal);
-    document.getElementById('prevModal').innerText = formatRupiah(modalTotal);
-    document.getElementById('prevLabaKotor').innerText = formatRupiah(profitKotorTotal);
-    document.getElementById('prevPengeluaran').innerText = formatRupiah(pengeluaranTotal);
-    document.getElementById('prevGaji').innerText = formatRupiah(gajiTotal);
-    document.getElementById('prevLabaBersih').innerText = formatRupiah(profitBersih);
-
-    const tbody = document.getElementById('prevTbodyProduk');
-    tbody.innerHTML = '';
-    rekapProduk.filter(p => p.totalTerjual > 0).forEach(p => {
-        tbody.innerHTML += `<tr><td><strong>${p.nama}</strong></td><td>${p.kategori}</td><td style="text-align:center;">${p.totalTerjual}</td><td style="text-align:right;">${formatRupiah(p.totalOmset)}</td><td style="text-align:right;">${formatRupiah(p.totalProfit)}</td></tr>`;
-    });
-
-    document.getElementById('areaPreviewBerkala').style.display = 'block';
-}
-
-function cetakPDFBerkalaBaru() {
-    const element = document.getElementById('areaPreviewBerkala');
-    const btnCetak = document.getElementById('btnTrigCetak');
-    const namaFileTgl = document.getElementById('cbJenisLaporanBaru').value === 'rentang' ? document.getElementById('cbTglAwal').value : document.getElementById('cbBulanLaporan').value;
-    
-    btnCetak.style.display = 'none'; // Sembunyikan tombol sebelum jepret PDF
-
-    html2pdf().set({
-        margin: [10, 10, 10, 10],
-        filename: `Rekapitulasi_Cipete_${namaFileTgl}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    }).from(element).save().then(() => {
-        btnCetak.style.display = 'block'; // Munculkan kembali tombol
-    });
-}
+    }
     function generatePDFHarian() { if (typeof html2pdf === 'undefined') return; const tgl = document.getElementById('tglOps').value; const isOwner = currentUser && currentUser.role === 'owner'; document.getElementById('pdfHrTitleProfit').style.display = isOwner ? 'block' : 'none'; document.getElementById('pdfHrBoxProfit').style.display = isOwner ? 'block' : 'none'; const pdfTHead = document.getElementById('pdfTHeadHarianBarang'); pdfTHead.innerHTML = `<tr><th>Produk</th><th style="text-align:center;">Laku</th><th style="text-align:right;">Omset</th>${isOwner ? '<th style="text-align:right;">Profit</th>' : ''}</tr>`; const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0 }; const totalMasuk = (kas.cash||0)+(kas.qris||0)+(kas.gojek||0)+(kas.grab||0)+(kas.shopee||0)+(kas.petty||0); let totalKeluar = 0, txtKeluar = ""; dbPengeluaranHarian.filter(p => p.tgl === tgl).forEach(p => { totalKeluar += p.nominal; txtKeluar += `<div class="pdf-row"><span>${p.ket}</span><span>${formatRupiah(p.nominal)}</span></div>`; }); const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; if(dataSetoran.pengeluaran > 0) { totalKeluar += dataSetoran.pengeluaran; txtKeluar += `<div class="pdf-row"><span>${dataSetoran.ket || 'Keluar Dapur'} (Dapur)</span><span>${formatRupiah(dataSetoran.pengeluaran)}</span></div>`; } document.getElementById('pdfHariTgl').innerText = `Tanggal: ${tgl}`; document.getElementById('pdfHrCash').innerText = formatRupiah(kas.cash); document.getElementById('pdfHrQris').innerText = formatRupiah(kas.qris); document.getElementById('pdfHrGojek').innerText = formatRupiah(kas.gojek); document.getElementById('pdfHrGrab').innerText = formatRupiah(kas.grab); document.getElementById('pdfHrShopee').innerText = formatRupiah(kas.shopee); document.getElementById('pdfHrPetty').innerText = formatRupiah(kas.petty); document.getElementById('pdfHrTotalMasuk').innerText = formatRupiah(totalMasuk); document.getElementById('pdfHrListPengeluaran').innerHTML = txtKeluar || "<small>Tidak ada pengeluaran harian</small>"; document.getElementById('pdfHrTotalKeluar').innerText = formatRupiah(totalKeluar); let profitKotor = 0; const pdfTbody = document.getElementById('pdfTbodyHarianBarang'); pdfTbody.innerHTML = ''; (dbStok[tgl] || []).forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const laku = totalStok - sisa; if(laku > 0) { const o = laku * p.jual; const pr = laku * p.margin; profitKotor += pr; pdfTbody.innerHTML += `<tr><td><strong>${p.nama}</strong><br><small style="color:#64748b;">${p.kategori}</small></td><td style="text-align:center;">${laku}</td><td style="text-align:right;">${formatRupiah(o)}</td>${isOwner ? `<td style="text-align:right;">${formatRupiah(pr)}</td>` : ''}</tr>`; } } }); const pengeluaranHarianSaja = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const gaji = (dbGajiHarian[tgl] || {nominal: 0}).nominal; const profitBersih = profitKotor - gaji - pengeluaranHarianSaja; const basis = Math.max(0, profitBersih); document.getElementById('pdfHrKotor').innerText = formatRupiah(profitKotor); document.getElementById('pdfHrGaji').innerText = formatRupiah(gaji); document.getElementById('pdfHrPengeluaranHarian').innerText = formatRupiah(pengeluaranHarianSaja); document.getElementById('pdfHrBersih').innerText = formatRupiah(profitBersih); document.getElementById('pdfHrDarurat').innerText = formatRupiah(basis * 0.20); document.getElementById('pdfHrAnak').innerText = formatRupiah(basis * 0.40); document.getElementById('pdfHrLaba').innerText = formatRupiah(basis * 0.40); const element = document.getElementById('pdfAreaHarian'); element.style.display = 'block'; html2pdf().set({ margin: 5, filename: `Kasir_Harian_${tgl}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(() => { element.style.display = 'none'; }); }
 
     function generatePDFBaksoHarian() { 
