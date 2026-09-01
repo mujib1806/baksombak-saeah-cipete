@@ -1600,7 +1600,8 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewOrderVendor').style.display = 'none'; 
         document.getElementById('viewRiwayatAktivitas').style.display = 'none';
         document.getElementById('layar-produk').style.display = 'none';
-        document.getElementById('viewLaporanBerkala').style.display = 'none';
+        // INI TAMBAHAN UNTUK HALAMAN BARU
+        document.getElementById('viewLaporanBerkala').style.display = 'none'; 
 
         // 2. SEMBUNYIKAN KARTU KHUSUS SECARA DEFAULT (Supaya tidak bocor ke halaman lain)
         if (document.getElementById('cardSetoranDapur')) {
@@ -1646,14 +1647,11 @@ function pilihMenuNav(jenis) {
         } else if (jenis === 'produk') {
             document.getElementById('layar-produk').style.display = 'block';
             if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-        }} else if (jenis === 'produk') {
-    document.getElementById('layar-produk').style.display = 'block';
-    if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-} else if (jenis === 'laporanBerkala') {
-    // Membuka halaman laporan berkala
-    document.getElementById('viewLaporanBerkala').style.display = 'block';
+        } else if (jenis === 'laporanBerkala') {
+            // INI TAMBAHAN UNTUK BUKA HALAMAN BARU
+            document.getElementById('viewLaporanBerkala').style.display = 'block';
+        }
 }
-    }
     // ==========================================
     // FUNGSI BARU: FORM ORDER VENDOR
     // ==========================================
