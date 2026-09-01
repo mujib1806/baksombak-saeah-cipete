@@ -3236,6 +3236,90 @@ function cetakPDFProduk() {
                 }
             });
         }
+        // ==========================================
+// KODE UNTUK HALAMAN LAPORAN BERKALA
+// ==========================================
+
+// 1. Fungsi Tampilkan Data & Filter Tanggal
+function prosesTampilLaporanBerkala() {
+    const tglMulai = document.getElementById('filterBerkalaMulai').value;
+    const tglAkhir = document.getElementById('filterBerkalaAkhir').value;
+
+    if (!tglMulai || !tglAkhir) {
+        alert('Mohon pilih Tanggal Mulai dan Tanggal Akhir terlebih dahulu!');
+        return;
+    }
+
+    if (tglMulai > tglAkhir) {
+        alert('Tanggal Mulai tidak boleh lebih besar dari Tanggal Akhir!');
+        return;
+    }
+
+    // Ubah teks periode di tampilan
+    document.getElementById('teksPeriodeLaporan').innerText = `Periode: ${tglMulai} s/d ${tglAkhir}`;
+
+    // ---------------------------------------------------------
+    // AREA INTEGRASI DATABASE (FIREBASE)
+    // ---------------------------------------------------------
+    // Catatan: Pindahkan atau sesuaikan logika perhitungan (omset, 
+    // pengeluaran/kurir Lalamove, dsb.) yang sebelumnya ada di 
+    // fungsi bukaModalGabungan() ke dalam area ini.
+    
+    /* CONTOH LOGIKA PENGISIAN ANGKA (Hanya Simulasi)
+       document.getElementById('teksOmsetLaporan').innerText = "Rp 10.000.000";
+       document.getElementById('teksPengeluaranLaporan').innerText = "Rp 3.000.000";
+       document.getElementById('teksProfitLaporan').innerText = "Rp 7.000.000";
+       
+       document.getElementById('tabelLaporanBerkala').innerHTML = `
+           <tr>
+               <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">Bakso Urat</td>
+               <td style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">50 porsi</td>
+               <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e5e7eb;">Rp 1.000.000</td>
+           </tr>
+       `;
+    */
+    
+    console.log("Filter dijalankan untuk periode:", tglMulai, "sampai", tglAkhir);
+}
+
+// 2. Fungsi Cetak PDF (Anti Terpotong)
+function cetakPDFBerkala() {
+    const elemen = document.getElementById('areaCetakLaporan');
+    const periode = document.getElementById('teksPeriodeLaporan').innerText.replace('Periode: ', '').replace(' s/d ', '_');
+    
+    // Konfigurasi ini memastikan tabel tidak terbelah di tengah halaman
+    const konfigurasiPDF = {
+        margin:       0.5,
+        filename:     `Laporan_Cabang_Cipete_${periode}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Kunci agar rapi
+    };
+
+    // Eksekusi pembuatan PDF
+    html2pdf().set(konfigurasiPDF).from(elemen).save();
+}
+
+// 3. Fungsi Bagikan Ringkasan ke WhatsApp
+function bagikanWABerkala() {
+    const periode = document.getElementById('teksPeriodeLaporan').innerText;
+    const omset = document.getElementById('teksOmsetLaporan').innerText;
+    const pengeluaran = document.getElementById('teksPengeluaranLaporan').innerText;
+    const profit = document.getElementById('teksProfitLaporan').innerText;
+
+    // Membentuk teks yang akan dikirim via WA
+    let teksWA = `*📊 LAPORAN BAKSO MBAK SAE'AH CAB. CIPETE* 📊\n`;
+    teksWA += `${periode}\n\n`;
+    teksWA += `🟢 *Total Omset:* ${omset}\n`;
+    teksWA += `🔴 *Pengeluaran:* ${pengeluaran}\n`;
+    teksWA += `🔵 *Profit Bersih:* ${profit}\n\n`;
+    teksWA += `_Rincian penjualan produk selengkapnya dapat dilihat pada lampiran PDF atau sistem Web._`;
+
+    // Membuka tab baru ke WhatsApp (bisa mendeteksi WA Web di PC atau Aplikasi di HP)
+    const urlWA = `https://wa.me/?text=${encodeURIComponent(teksWA)}`;
+    window.open(urlWA, '_blank');
+}
     </script>
 </body>
 </html>
