@@ -534,20 +534,19 @@
                     <div class="chart-container"><canvas id="chartTren"></canvas></div>
                 </div>
 
-                <div class="grid-mobile">
-                    <div class="summary-box" style="background:#fff7ed; border-color:#fdba74;">
-    <h4 style="font-size:0.85rem; color:#ea580c; margin-bottom:12px; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
-    <!-- Wadah ini disamakan gayanya dengan Reseller -->
-    <div style="position: relative; height: 250px; background: #fff; border-radius: 8px; padding: 10px 0;">
+                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding:10px;">
+    <h4 style="font-size:0.75rem; color:#ea580c; margin:0 0 8px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
+    <div style="position: relative; height: 160px; background: #fff; border-radius: 6px; padding: 5px;">
         <canvas id="chartTopBakso"></canvas>
     </div>
 </div>
-                  <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-        <h4 style="font-size:0.85rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
-        <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:5px 10px; border-radius:6px; font-size:0.7rem; font-weight:bold; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">⚙️ Filter</button>
+
+<div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding:10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+        <h4 style="font-size:0.75rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
+        <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.65rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
     </div>
-    <div style="position: relative; height: 300px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 8px; padding: 10px 0;">
+    <div style="position: relative; max-height: 220px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 6px; padding: 5px;">
         <canvas id="chartTopReseller"></canvas>
     </div>
 </div>
@@ -2587,24 +2586,37 @@ function terapkanFilterReseller() {
             .filter(nama => !produkResellerDisembunyikan.includes(nama))
             .map(nama => ({nama: nama, qty: produkReseller[nama]}))
             .sort((a,b) => b.qty - a.qty);
-        
-        const optHorizontalBar = { indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 35 } }, plugins: { legend: { display: false }, datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 10 }, formatter: (val) => val + ' pcs' } }, scales: { x: { beginAtZero: true, display: false }, y: { grid: { display: false } } } };
+       // --- PENGATURAN GRAFIK YANG DIRAMPINGKAN ---
+        const optHorizontalBar = { 
+            indexAxis: 'y', 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            layout: { padding: { right: 30 } }, 
+            plugins: { 
+                legend: { display: false }, 
+                datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 9 }, formatter: (val) => val + ' pcs' } 
+            }, 
+            scales: { 
+                x: { beginAtZero: true, display: false }, 
+                y: { grid: { display: false }, ticks: { font: { size: 9 } } } 
+            } 
+        };
         
         if(chartTopBakso) chartTopBakso.destroy(); 
         const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); 
-        chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 4 }] }, options: optHorizontalBar });
+        // maxBarThickness: 15 agar batang grafik tidak terlalu tebal/gemuk
+        chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
         
         if(chartTopReseller) chartTopReseller.destroy(); 
         const canvasReseller = document.getElementById('chartTopReseller');
         
-        // Tinggi dinamis agar area grafik otomatis memanjang ke bawah kalau produk ada banyak
-        const tinggiDibutuhkan = Math.max(250, resellerDifilter.length * 35); 
+        // Jarak antar baris dirapatkan menjadi 25px (sebelumnya 35px)
+        const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
         canvasReseller.style.height = tinggiDibutuhkan + 'px';
         const ctxReseller = canvasReseller.getContext('2d'); 
         
-        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 4 }] }, options: optHorizontalBar });
-    }
-
+        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar }); 
+       
     // ==========================================
     // FUNGSI CETAK PDF
     // ==========================================
