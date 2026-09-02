@@ -1397,7 +1397,7 @@
     <div class="pdf-box"><div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;">Rp 1.500.000</span></div><div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div><div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div></div>
     <div style="margin-top:40px; text-align:right; font-size:0.85rem;"><p>Jakarta, <span id="pdfSgTglCetak"></span></p><br><br><br><p style="font-weight:bold;">( Owner / Pengelola )</p></div>
 </div>
-    <script>
+   <script>
     // ==========================================
     // VARIABEL GLOBAL & FIREBASE
     // ==========================================
@@ -1416,40 +1416,38 @@
     }
     const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
 
-    // --- TAMBAHKAN LANGKAH 1 TEPAT DI BAWAH SINI ---
     const configSistem = firebase.app().options; 
     const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
 
     const defaultMasterProduk = [
-        { nama: "Bakso Sapi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Tahu", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Siomay", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Bakso Goreng", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Bakwan Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Roll Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Kerupuk Kaleng Putih", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000 },
-        { nama: "Kerupuk Kaleng Coklat", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000 },
-        { nama: "Jeruk Peras", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000 },
-        { nama: "Mineral Botol", kategori: "Reseller", modal: 2000, jual: 4000, margin: 2000 },
-        { nama: "Tebs Botol", kategori: "Reseller", modal: 2200, jual: 5000, margin: 2800 },
-        { nama: "Teh Botol", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000 },
-        { nama: "Lontong", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500 },
-        { nama: "Kacang", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000 },
-        { nama: "Mie Goreng", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000 },
-        { nama: "Mie Soto", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000 },
-        { nama: "Mie Kari", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000 },
-        { nama: "Fruit Tea Blackcurrent", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000 },
-        { nama: "Fruit Tea Apel", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000 },
-        { nama: "Papperbowl", kategori: "Reseller", modal: 1400, jual: 2000, margin: 600 },
-        { nama: "Gelas 16 Oz", kategori: "Reseller", modal: 600, jual: 1000, margin: 400 },
-        { nama: "Makroni", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000 },
-        { nama: "Makroni Pedes", kategori: "Reseller", modal: 3000, jual: 4000, margin: 1000 },
-        { nama: "Lebihan Bakso", kategori: "Reseller", modal: 2000, jual: 2500, margin: 500 },
-        { nama: "Teh Manis", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500 }
+        { nama: "Bakso Sapi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Tahu", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Siomay", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Bakso Goreng", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Bakwan Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Roll Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Kerupuk Kaleng Putih", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 20, batasMinimum: 10 },
+        { nama: "Kerupuk Kaleng Coklat", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 20, batasMinimum: 10 },
+        { nama: "Jeruk Peras", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 20, batasMinimum: 10 },
+        { nama: "Mineral Botol", kategori: "Reseller", modal: 2000, jual: 4000, margin: 2000, stokGudang: 24, batasMinimum: 12 },
+        { nama: "Tebs Botol", kategori: "Reseller", modal: 2200, jual: 5000, margin: 2800, stokGudang: 24, batasMinimum: 12 },
+        { nama: "Teh Botol", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 12 },
+        { nama: "Lontong", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Kacang", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Mie Goreng", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Mie Soto", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Mie Kari", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Fruit Tea Blackcurrent", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 10 },
+        { nama: "Fruit Tea Apel", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 10 },
+        { nama: "Papperbowl", kategori: "Reseller", modal: 1400, jual: 2000, margin: 600, stokGudang: 50, batasMinimum: 20 },
+        { nama: "Gelas 16 Oz", kategori: "Reseller", modal: 600, jual: 1000, margin: 400, stokGudang: 50, batasMinimum: 20 },
+        { nama: "Makroni", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Makroni Pedes", kategori: "Reseller", modal: 3000, jual: 4000, margin: 1000, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Lebihan Bakso", kategori: "Reseller", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
+        { nama: "Teh Manis", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500, stokGudang: 0, batasMinimum: 0 }
     ];
     const defaultKategori = ["Bakso Malang", "Reseller"];
 
-    // DATA DEFAULT VENDOR
     const defaultVendorCatalog = [
         { nama: "Prima Mineral", kemasan: "Botol Pelastik", vol: "600 Ml", isi: "24", rasa: "Original", harga: 38000, qty: "" },
         { nama: "Teh Botol Sosro", kemasan: "Botol Beling", vol: "220 Ml", isi: "24", rasa: "Original", harga: 48000, qty: "" },
@@ -1480,7 +1478,7 @@
     let chartTren = null, chartTopBakso = null, chartTopReseller = null;
 
     // ==========================================
-    // DETEKSI KONEKSI INTERNET (OFFLINE / ONLINE)
+    // DETEKSI KONEKSI INTERNET
     // ==========================================
     window.addEventListener('offline', () => {
         const banner = document.getElementById('offlineBanner');
@@ -1495,40 +1493,32 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-        // ... kode Auth yang tadi ...
-   firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        let savedUser = localStorage.getItem('baksoUser');
-
-        if (savedUser) { 
-            currentUser = JSON.parse(savedUser); 
-            bukaLayarAplikasi(); 
-        } else {
-            // JIKA MEMORI KOSONG, KITA AMBIL DARI DATABASE
-            // user.email bentuknya "08111111111@bakso.com", kita buang @bakso.com nya
-            const noHp = user.email.split('@')[0];
-
-            db.collection('users').doc(noHp).get().then(doc => {
-                if (doc.exists) {
-                    currentUser = doc.data();
-                    currentUser.email = user.email;
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                let savedUser = localStorage.getItem('baksoUser');
+                if (savedUser) { 
+                    currentUser = JSON.parse(savedUser); 
+                    bukaLayarAplikasi(); 
                 } else {
-                    currentUser = { nama: "Kasir", role: "kasir", hp: noHp, email: user.email };
+                    const noHp = user.email.split('@')[0];
+                    db.collection('users').doc(noHp).get().then(doc => {
+                        if (doc.exists) {
+                            currentUser = doc.data();
+                            currentUser.email = user.email;
+                        } else {
+                            currentUser = { nama: "Kasir", role: "kasir", hp: noHp, email: user.email };
+                        }
+                        localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+                        bukaLayarAplikasi();
+                    }).catch(err => { console.error("Gagal menarik data user:", err); });
                 }
-                localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-                bukaLayarAplikasi();
-            }).catch(err => {
-                console.error("Gagal menarik data user:", err);
-            });
-        }
-    } else {
-        document.getElementById('loginScreen').style.display = 'flex'; 
-        document.getElementById('appScreen').style.display = 'none';
-        localStorage.removeItem('baksoUser'); 
-    }
-});
-
-}); // <--- TAMBAHKAN BARIS INI (Kurung tutup yang sempat hilang)
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex'; 
+                document.getElementById('appScreen').style.display = 'none';
+                localStorage.removeItem('baksoUser'); 
+            }
+        });
+    });
 
     function showToast(message) {
         const toast = document.getElementById('toastNotif');
@@ -1539,70 +1529,51 @@
     // ==========================================
     // FUNGSI AKUN & LOGIN
     // ==========================================
-   // Fungsi ini dikosongkan karena akun master sekarang dibuat aman dari Firebase Console
-function cekDanBuatAkunMaster() { 
-    console.log("Sistem akun kini diamankan oleh Firebase Auth."); 
-}
+    function cekDanBuatAkunMaster() { console.log("Sistem akun kini diamankan oleh Firebase Auth."); }
 
-function prosesLogin(e) { 
-    e.preventDefault(); 
+    function prosesLogin(e) { 
+        e.preventDefault(); 
+        const noHp = document.getElementById('inLoginHp').value.trim(); 
+        const pass = document.getElementById('inLoginPass').value; 
+        const btn = document.getElementById('btnLoginBtn'); 
 
-    // Ambil input dari layar (Sekarang karyawan cukup ketik Nomor HP)
-    const noHp = document.getElementById('inLoginHp').value.trim(); 
-    const pass = document.getElementById('inLoginPass').value; 
-    const btn = document.getElementById('btnLoginBtn'); 
+        if(!firebase) return; 
 
-    if(!firebase) return; 
+        btn.innerText = "MEMERIKSA KUNCI..."; 
+        btn.disabled = true; 
 
-    btn.innerText = "MEMERIKSA KUNCI..."; 
-    btn.disabled = true; 
+        const emailPalsu = noHp + "@bakso.com";
 
-    // TRIK RAHASIA: Gabungkan nomor HP dengan email palsu
-    const emailPalsu = noHp + "@bakso.com";
+        firebase.auth().signInWithEmailAndPassword(emailPalsu, pass)
+        .then((userCredential) => {
+            return db.collection('users').doc(noHp).get();
+        })
+        .then(doc => {
+            if (doc.exists) {
+                currentUser = doc.data();
+                currentUser.email = emailPalsu; 
+            } else {
+                currentUser = { nama: "Pengguna " + noHp, role: 'kasir', hp: noHp, email: emailPalsu };
+            }
+            localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+            if (typeof catatAktivitas === "function") {
+                catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
+            }
+            bukaLayarAplikasi(); 
+            btn.innerText = "MASUK"; 
+            btn.disabled = false; 
+        })
+        .catch(err => { 
+            console.error("Error Login:", err);
+            alert("Gagal Masuk! Pastikan Nomor HP dan Sandi Anda sudah betul."); 
+            btn.innerText = "MASUK"; 
+            btn.disabled = false; 
+        }); 
+    }
 
-    // 1. Cek kunci ke Firebase Auth pakai email palsu
-    firebase.auth().signInWithEmailAndPassword(emailPalsu, pass)
-    .then((userCredential) => {
-        // 2. Kunci cocok! Karena Satpam sudah kasih izin, kita ambil data jabatannya dari database
-        return db.collection('users').doc(noHp).get();
-    })
-    .then(doc => {
-        if (doc.exists) {
-            // Jika nomor HP ada di database lama, pakai data aslinya
-            currentUser = doc.data();
-            currentUser.email = emailPalsu; // simpan cadangan
-        } else {
-            // Jika belum ada di database, buatkan standar
-            currentUser = {
-                nama: "Pengguna " + noHp, 
-                role: 'kasir',
-                hp: noHp,
-                email: emailPalsu
-            };
-        }
-
-        localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-
-        if (typeof catatAktivitas === "function") {
-            catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
-        }
-
-        bukaLayarAplikasi(); 
-
-        btn.innerText = "MASUK"; 
-        btn.disabled = false; 
-    })
-    .catch(err => { 
-        console.error("Error Login:", err);
-        alert("Gagal Masuk! Pastikan Nomor HP dan Sandi Anda sudah betul."); 
-        btn.innerText = "MASUK"; 
-        btn.disabled = false; 
-    }); 
-}
-  function bukaLayarAplikasi() {        
+    function bukaLayarAplikasi() {        
         document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
         document.getElementById('namaUserAktif').innerText = currentUser.nama;        
-
         const isOwner = currentUser.role === 'owner'; const isDapur = currentUser.role === 'dapur';        
         document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
 
@@ -1614,21 +1585,12 @@ function prosesLogin(e) {
         document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';  
         document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
-
-        // ---> INI YANG KITA UBAH (Gabungan dari menuCetak1 dan menuCetak2) <---
         document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        // -----------------------------------------------------------------------
-
-        // ---> TAMBAHKAN DUA BARIS INI UNTUK JUDUL KELOMPOK MENU <---
         document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
         document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
-        // ----------------------------------------------------------
 
         document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
         document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
-        // HAPUS ATAU BERI TANDA // PADA DUA BARIS INI:
-        // document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
-        // document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';        
         document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
 
         pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
@@ -1640,86 +1602,68 @@ function prosesLogin(e) {
 
         try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
     }
-function prosesLogout() { 
-    if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
-        if (currentUser) {
-            catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
-        }
 
-        // Perintah WAJIB agar Firebase memutus kunci/sesi Anda
-        firebase.auth().signOut().then(() => {
-            // Setelah Firebase berhasil diputus, baru kita bersihkan sisanya
-            localStorage.removeItem('baksoUser'); 
-            currentUser = null; 
-
-            // Reload halaman agar kembali bersih ke tampilan Login
-            window.location.reload(); 
-        }).catch((error) => {
-            console.error("Logout Error:", error);
-            alert("Gagal keluar dari sistem. Periksa koneksi internet Anda.");
-        });
-    } 
-}
+    function prosesLogout() { 
+        if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
+            if (currentUser) {
+                catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
+            }
+            firebase.auth().signOut().then(() => {
+                localStorage.removeItem('baksoUser'); 
+                currentUser = null; 
+                window.location.reload(); 
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+                alert("Gagal keluar dari sistem. Periksa koneksi internet Anda.");
+            });
+        } 
+    }
+    
     function bukaModalKelolaAkun() { if (currentUser.role !== 'owner') return; toggleSidebar(); document.getElementById('modalKelolaAkun').classList.add('active'); muatDaftarAkun(); }
     function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').classList.remove('active'); }
+    
     function muatDaftarAkun() { if(!db) return; db.collection('users').get().then(snap => { listAkunKasir = []; const tbody = document.getElementById('tbodyDaftarAkun'); tbody.innerHTML = ''; snap.forEach(doc => { const data = doc.data(); listAkunKasir.push(data); const roleBadge = data.role === 'owner' ? '<span style="color:#d97706;font-weight:bold;">👑 Owner</span>' : (data.role === 'dapur' ? '<span style="color:#ef4444;font-weight:bold;">🔪 Dapur</span>' : '🧑‍🍳 Kasir'); const aksiBtn = data.hp === currentUser.hp ? '<i>(Anda)</i>' : `<button onclick="hapusAkunUser('${data.hp}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem; margin:0; width:auto;">Hapus</button>`; tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; }); }); }
+    
     function simpanAkunBaru(e) { 
-    e.preventDefault(); 
+        e.preventDefault(); 
+        const nama = document.getElementById('inAkunNama').value.trim(); 
+        const hp = document.getElementById('inAkunHp').value.trim(); 
+        const password = document.getElementById('inAkunPass').value.trim(); 
+        const role = document.getElementById('inAkunRole').value; 
 
-    const nama = document.getElementById('inAkunNama').value.trim(); 
-    const hp = document.getElementById('inAkunHp').value.trim(); 
-    const password = document.getElementById('inAkunPass').value.trim(); 
-    const role = document.getElementById('inAkunRole').value; 
-
-    if(!db || !aplikasiPendaftaran) {
-        alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
-        return; 
-    }
-
-    if(!hp || !password) {
-        alert("Nomor HP dan Password wajib diisi!");
-        return;
-    }
-
-    // Trik email palsu
-    const emailPalsu = hp + "@bakso.com";
-
-    // 1. Daftarkan akun ke Satpam Firebase lewat pintu belakang
-    aplikasiPendaftaran.auth().createUserWithEmailAndPassword(emailPalsu, password)
-    .then((userCredential) => {
-        // 2. Simpan profil ke database 
-        // (Catatan Keamanan: Kita tidak lagi menyimpan teks password di database, biar Firebase Auth yang jaga)
-        return db.collection('users').doc(hp).set({ 
-            nama: nama, 
-            hp: hp, 
-            role: role,
-            email: emailPalsu
-        });
-    })
-    .then(() => { 
-        alert(`Akun berhasil dibuat!\nHP: ${hp}\nPassword: ${password}`); 
-
-        // Bersihkan kolom isian
-        document.getElementById('inAkunNama').value = ''; 
-        document.getElementById('inAkunHp').value = ''; 
-        document.getElementById('inAkunPass').value = ''; 
-
-        // Muat ulang daftar tabel di layar
-        if(typeof muatDaftarAkun === 'function') muatDaftarAkun(); 
-
-        // Logout aplikasi pendaftaran agar memori bersih
-        aplikasiPendaftaran.auth().signOut();
-    })
-    .catch(err => {
-        console.error("Gagal buat akun:", err);
-        // Pesan error khusus jika nomor HP sudah ada
-        if (err.code === 'auth/email-already-in-use') {
-            alert("Gagal! Nomor HP ini sudah pernah didaftarkan.");
-        } else {
-            alert("Gagal menambahkan akun: " + err.message);
+        if(!db || !aplikasiPendaftaran) {
+            alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
+            return; 
         }
-    }); 
-}
+
+        if(!hp || !password) {
+            alert("Nomor HP dan Password wajib diisi!");
+            return;
+        }
+
+        const emailPalsu = hp + "@bakso.com";
+
+        aplikasiPendaftaran.auth().createUserWithEmailAndPassword(emailPalsu, password)
+        .then((userCredential) => {
+            return db.collection('users').doc(hp).set({ nama: nama, hp: hp, role: role, email: emailPalsu });
+        })
+        .then(() => { 
+            alert(`Akun berhasil dibuat!\nHP: ${hp}\nPassword: ${password}`); 
+            document.getElementById('inAkunNama').value = ''; 
+            document.getElementById('inAkunHp').value = ''; 
+            document.getElementById('inAkunPass').value = ''; 
+            if(typeof muatDaftarAkun === 'function') muatDaftarAkun(); 
+            aplikasiPendaftaran.auth().signOut();
+        })
+        .catch(err => {
+            if (err.code === 'auth/email-already-in-use') {
+                alert("Gagal! Nomor HP ini sudah pernah didaftarkan.");
+            } else {
+                alert("Gagal menambahkan akun: " + err.message);
+            }
+        }); 
+    }
+    
     function hapusAkunUser(hp) { if(confirm(`PERINGATAN: Hapus akses untuk pengguna dengan No HP ${hp}?`)) { db.collection('users').doc(hp).delete().then(() => { muatDaftarAkun(); }); } }
 
     // ==========================================
@@ -1739,12 +1683,8 @@ function prosesLogout() {
         db.collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
 
         db.collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
-            if (doc.exists && doc.data().list) { 
-                vendorCatalog = doc.data().list; 
-            } else { 
-                db.collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); 
-                vendorCatalog = defaultVendorCatalog; 
-            } 
+            if (doc.exists && doc.data().list) { vendorCatalog = doc.data().list; } 
+            else { db.collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); vendorCatalog = defaultVendorCatalog; } 
             renderFormOrderVendor(); 
         });
 
@@ -1775,13 +1715,13 @@ function prosesLogout() {
     // FUNGSI NAVIGASI
     // ==========================================
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-function pilihMenuNav(jenis) { 
+    
+    function pilihMenuNav(jenis) { 
         if (typeof toggleSidebar === 'function') toggleSidebar(); 
 
         const isOwner = currentUser && currentUser.role === 'owner';
         const isDapur = currentUser && currentUser.role === 'dapur';
 
-        // 1. Sembunyikan semua kontainer halaman utama
         document.getElementById('viewHarian').style.display = 'none'; 
         document.getElementById('viewSetoranBakso').style.display = 'none'; 
         document.getElementById('viewRekapTransfer').style.display = 'none'; 
@@ -1791,10 +1731,8 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewOrderVendor').style.display = 'none'; 
         document.getElementById('viewRiwayatAktivitas').style.display = 'none';
         document.getElementById('layar-produk').style.display = 'none';
-        // INI TAMBAHAN UNTUK HALAMAN BARU
         document.getElementById('viewLaporanBerkala').style.display = 'none'; 
 
-        // 2. SEMBUNYIKAN KARTU KHUSUS SECARA DEFAULT (Supaya tidak bocor ke halaman lain)
         if (document.getElementById('cardSetoranDapur')) {
             document.getElementById('cardSetoranDapur').style.display = 'none';
         }
@@ -1802,18 +1740,12 @@ function pilihMenuNav(jenis) {
             document.getElementById('cardAlokasiHarian').style.display = 'none';
         }
 
-        // 3. Munculkan halaman yang dipanggil DAN atur kembali visibilitas kartu khusus jika di halaman 'harian'
         if (jenis === 'harian') { 
             document.getElementById('viewHarian').style.display = 'block'; 
-
-            // Munculkan kartu hanya jika berada di halaman Entry Stok Harian & sesuai Role User
-            if (document.getElementById('cardSetoranDapur')) {
-                document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
-            }
-            if (document.getElementById('cardAlokasiHarian')) {
-                document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
-            }
-
+            if (document.getElementById('cardSetoranDapur')) document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
+            if (document.getElementById('cardAlokasiHarian')) document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
+            // Pastikan banner terupdate saat tab harian dibuka
+            cekPeringatanStok();
         } else if (jenis === 'setoranBakso') { 
             document.getElementById('viewSetoranBakso').style.display = 'block'; 
             renderViewSetoranBakso(); 
@@ -1832,6 +1764,7 @@ function pilihMenuNav(jenis) {
         } else if (jenis === 'orderVendor') {
             document.getElementById('viewOrderVendor').style.display = 'block';
             renderFormOrderVendor();
+            cekPeringatanStok(); // Pastikan banner order muncul saat di form vendor
         } else if (jenis === 'riwayatAktivitas') {
             document.getElementById('viewRiwayatAktivitas').style.display = 'block';
             muatDataRiwayat();
@@ -1839,25 +1772,17 @@ function pilihMenuNav(jenis) {
             document.getElementById('layar-produk').style.display = 'block';
             if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
         } else if (jenis === 'laporanBerkala') {
-            // INI TAMBAHAN UNTUK BUKA HALAMAN BARU
             document.getElementById('viewLaporanBerkala').style.display = 'block';
         }
-}
-    // ==========================================
-    // FUNGSI BARU: FORM ORDER VENDOR
-    // ==========================================
-function renderFormOrderVendor() {
-        // --- GEMBOK ANTI KEYBOARD TUTUP ---
-        // Cek apakah user sedang aktif mengetik (kursor ada di dalam input)
-        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-            // Jika iya, BATALKAN proses menggambar ulang tabel agar keyboard tidak hilang!
-            return; 
-        }
-        // -----------------------------------
+    }
 
-        // --- KODE BARU: Mengurutkan daftar barang dari A sampai Z ---
+    // ==========================================
+    // FUNGSI FORM ORDER VENDOR
+    // ==========================================
+    function renderFormOrderVendor() {
+        if (document.activeElement && document.activeElement.tagName === 'INPUT') return; 
+
         vendorCatalog.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
-        // ------------------------------------------------------------
 
         const tbody = document.getElementById('tbodyOrderVendor');
         tbody.innerHTML = '';
@@ -1877,40 +1802,25 @@ function renderFormOrderVendor() {
                 <td>${item.vol}</td>
                 <td style="text-align:center;">${item.isi}</td>
                 <td>${item.rasa || '-'}</td>
-
-                <td style="background:#eff6ff;">
-                    <input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" oninput="updateItemVendor(${index}, 'qty', this.value)">
-                </td>
-
-                <td style="background:#fefce8;">
-                    <input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)">
-                </td>
-
+                <td style="background:#eff6ff;"><input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" oninput="updateItemVendor(${index}, 'qty', this.value)"></td>
+                <td style="background:#fefce8;"><input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)"></td>
                 <td id="vendor-total-${index}" style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
-
-                <td style="text-align:center;">
-                    <button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button>
-                </td>
+                <td style="text-align:center;"><button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button></td>
             `;
             tbody.appendChild(tr);
         });
         document.getElementById('vendorGrandTotal').innerText = formatRupiah(grandTotal);
     }
+    
     function updateItemVendor(index, field, value) {
-        // 1. Catat perubahan angka
         vendorCatalog[index][field] = value;
-
-        // 2. Hitung ulang total BARIS INI SAJA (Tanpa render ulang seluruh tabel!)
         const qty = parseInt(vendorCatalog[index].qty) || 0;
         const harga = parseInt(vendorCatalog[index].harga) || 0;
         const totalBaris = qty * harga;
 
         const tdTotal = document.getElementById(`vendor-total-${index}`);
-        if (tdTotal) {
-            tdTotal.innerText = formatRupiah(totalBaris);
-        }
+        if (tdTotal) tdTotal.innerText = formatRupiah(totalBaris);
 
-        // 3. Hitung ulang GRAND TOTAL bawah
         let grandTotal = 0;
         vendorCatalog.forEach(item => {
             const q = parseInt(item.qty) || 0;
@@ -1919,13 +1829,9 @@ function renderFormOrderVendor() {
         });
         document.getElementById('vendorGrandTotal').innerText = formatRupiah(grandTotal);
 
-        // 4. Simpan ke database perlahan di latar belakang
         clearTimeout(vendorSaveTimeout);
         vendorSaveTimeout = setTimeout(() => {
-            if(db) {
-                db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog })
-                  .then(() => showToast('✅ Perubahan Order Tersimpan!'));
-            }
+            if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }).then(() => showToast('✅ Perubahan Order Tersimpan!'));
         }, 1000);
     }
 
@@ -1934,6 +1840,7 @@ function renderFormOrderVendor() {
         document.getElementById('inVendorIsi').value = ''; document.getElementById('inVendorRasa').value = ''; document.getElementById('inVendorHarga').value = '';
         document.getElementById('modalTambahVendor').classList.add('active');
     }
+    
     function tutupModalTambahVendor() { document.getElementById('modalTambahVendor').classList.remove('active'); }
 
     function simpanProdukVendorBaru(e) {
@@ -1963,124 +1870,68 @@ function renderFormOrderVendor() {
         }
     }
 
-function kirimWhatsAppOrder() {
+    function kirimWhatsAppOrder() {
         let orderItems = vendorCatalog.filter(item => parseInt(item.qty) > 0);
-        if (orderItems.length === 0) {
-            alert("Belum ada qty pesanan yang diisi!");
-            return;
-        }
+        if (orderItems.length === 0) { alert("Belum ada qty pesanan yang diisi!"); return; }
 
         const tglOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const tglKirim = new Date().toLocaleDateString('id-ID', tglOptions);
         const tglFile = new Date().toISOString().split('T')[0];
 
-        // 1. Masukkan data ke kerangka PDF
         document.getElementById('pdfVendorTgl').innerText = 'Tanggal Pesanan: ' + tglKirim;
-
         const tbody = document.getElementById('pdfTbodyVendor');
         tbody.innerHTML = '';
         let grandTotal = 0;
 
         orderItems.forEach((item, index) => {
-            const qty = parseInt(item.qty);
-            const harga = parseInt(item.harga);
-            const total = qty * harga;
-            grandTotal += total;
-
+            const qty = parseInt(item.qty); const harga = parseInt(item.harga); const total = qty * harga; grandTotal += total;
             const rasaTxt = item.rasa ? ` - ${item.rasa}` : '';
             const namaLengkap = `${item.nama} (${item.vol}${rasaTxt})`;
-
-            tbody.innerHTML += `
-                <tr>
-                    <td style="text-align: center;">${index + 1}</td>
-                    <td><strong>${namaLengkap}</strong></td>
-                    <td style="text-align: center;">${item.kemasan}</td>
-                    <td style="text-align: center; font-weight: bold; color: #15803d; font-size: 13px;">${qty}</td>
-                    <td style="text-align: right;">${formatRupiah(harga)}</td>
-                    <td style="text-align: right; font-weight: bold; color: #d97706;">${formatRupiah(total)}</td>
-                </tr>
-            `;
+            tbody.innerHTML += `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${namaLengkap}</strong></td><td style="text-align: center;">${item.kemasan}</td><td style="text-align: center; font-weight: bold; color: #15803d; font-size: 13px;">${qty}</td><td style="text-align: right;">${formatRupiah(harga)}</td><td style="text-align: right; font-weight: bold; color: #d97706;">${formatRupiah(total)}</td></tr>`;
         });
 
         document.getElementById('pdfVendorTotal').innerText = formatRupiah(grandTotal);
 
-        // --- KODE BARU: MEMBACA NAMA PEMESAN & TANGGAL CETAK ---
         let namaPemesan = document.getElementById('inputNamaPemesanVendor').value;
         if (!namaPemesan || namaPemesan.trim() === "") {
             namaPemesan = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
             document.getElementById('inputNamaPemesanVendor').value = namaPemesan;
         }
-
-        if (document.getElementById('pdfNamaPemesanCetak')) {
-            document.getElementById('pdfNamaPemesanCetak').innerText = namaPemesan;
-        }
-
+        if (document.getElementById('pdfNamaPemesanCetak')) document.getElementById('pdfNamaPemesanCetak').innerText = namaPemesan;
         const hariIni = new Date();
         const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-        if (document.getElementById('pdfTanggalCetakVendor')) {
-            document.getElementById('pdfTanggalCetakVendor').innerText = formatTanggal;
-        }
-        // --------------------------------------------------------
+        if (document.getElementById('pdfTanggalCetakVendor')) document.getElementById('pdfTanggalCetakVendor').innerText = formatTanggal;
 
-        // 2. Munculkan elemen untuk dirender html2pdf
         const element = document.getElementById('pdfAreaVendor');
         element.style.display = 'block';
 
-        // 3. Proses Cetak PDF & Share
         html2pdf().set({
-            margin: 5,
-            filename: `PO_Vendor_${tglFile}.pdf`,
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Agar tanda tangan tidak terpotong ke halaman 2
+            margin: 5, filename: `PO_Vendor_${tglFile}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
         }).from(element).output('blob').then(function(pdfBlob) {
-            element.style.display = 'none'; // Sembunyikan lagi kerangkanya
-
+            element.style.display = 'none'; 
             const namaFile = `PO_Vendor_${tglFile}.pdf`;
             const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
+            const resetForm = () => { vendorCatalog.forEach(item => item.qty = ""); if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }); renderFormOrderVendor(); };
 
-            // Fungsi kecil untuk mereset angka form setelah selesai share
-            const resetForm = () => {
-                vendorCatalog.forEach(item => item.qty = "");
-                if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog });
-                renderFormOrderVendor();
-            };
-
-            // Panggil Share WA
             if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
-                navigator.share({
-                    files: [filePdf],
-                    title: 'Purchase Order (PO)',
-                    text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
-                }).then(() => {
-                    resetForm(); // Reset form jika sukses share
-                }).catch((error) => {
-                    console.error('Batal bagikan:', error);
-                    // Tanya jika user membatalkan share tapi tetap mau reset form
-                    if(confirm("Batal membagikan. Apakah Anda tetap ingin mereset/mengosongkan form pemesanan?")) {
-                        resetForm();
-                    }
-                });
+                navigator.share({ files: [filePdf], title: 'Purchase Order (PO)', text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
+                }).then(() => { resetForm(); }).catch((error) => { console.error('Batal bagikan:', error); if(confirm("Batal membagikan. Tetap ingin mereset/mengosongkan form pemesanan?")) resetForm(); });
             } else {
-                // Fallback untuk desktop
                 const urlObj = URL.createObjectURL(pdfBlob);
                 const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
-                if(confirm("File PO telah didownload. Reset/kosongkan form pesanan sekarang?")) {
-                    resetForm();
-                }
+                if(confirm("File PO telah didownload. Reset/kosongkan form pesanan sekarang?")) resetForm();
             }
         });
     }
+
     // ==========================================
     // FUNGSI INTI STOK & KALKULASI
     // ==========================================
-
     function cekDanTarikDataKemarin(tgl) {
         if (isDataLocked(tgl)) return;
         let dateObj = new Date(tgl); dateObj.setDate(dateObj.getDate() - 1);
         let y = dateObj.getFullYear(); let m = String(dateObj.getMonth() + 1).padStart(2, '0'); let d = String(dateObj.getDate()).padStart(2, '0');
         let tglKemarin = `${y}-${m}-${d}`;
-
         let isKemarinLocked = dbStatusKunci[tglKemarin] === true;
         let needsUpdateUI = false;
 
@@ -2118,63 +1969,84 @@ function kirimWhatsAppOrder() {
         else { let currentStok = dbStok[tgl], newStokList = []; masterProduk.forEach(mp => { let found = currentStok.find(item => item.nama === mp.nama); if (found) newStokList.push({ ...mp, awal: found.awal, tambah: found.tambah || "", kurang: found.kurang || "", sisa: found.sisa }); else newStokList.push({ ...mp, awal: "", tambah: "", kurang: "", sisa: "" }); }); dbStok[tgl] = newStokList; } 
     }
 
-   function simpanStokKeFirebase() { 
-    const tgl = document.getElementById('tglOps').value; 
-    if(isDataLocked(tgl)) return; 
-    if(!db) return; 
+    function simpanStokKeFirebase() { 
+        const tgl = document.getElementById('tglOps').value; 
+        if(isDataLocked(tgl)) return; 
+        if(!db) return; 
 
-    // 1. Ambil angka profit bersih yang sedang tampil di layar
-    let elemenProfit = document.getElementById('totalProfitBersih').innerText;
+        let elemenProfit = document.getElementById('totalProfitBersih').innerText;
+        let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,""));
+        let profitSiapBagi = Math.max(0, profitAngka);
 
-    // 2. Bersihkan tulisan "Rp" dan titik, ubah jadi murni angka matematika
-    let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,""));
-    let profitSiapBagi = Math.max(0, profitAngka);
+        db.collection('stokHarian').doc(tgl).set({ 
+            items: dbStok[tgl],
+            profitBersih: profitSiapBagi,
+            danaDarurat: profitSiapBagi * 0.20,
+            tabunganAnak: profitSiapBagi * 0.40,
+            labaBersih: profitSiapBagi * 0.40
+        }, { merge: true }).then(() => { 
+            showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
+        }); 
+    }
 
-    // 3. Simpan stok DAN hasil hitungan 20-40-40 ke database menggunakan merge: true
-    db.collection('stokHarian').doc(tgl).set({ 
-        items: dbStok[tgl],
-        profitBersih: profitSiapBagi,
-        danaDarurat: profitSiapBagi * 0.20,
-        tabunganAnak: profitSiapBagi * 0.40,
-        labaBersih: profitSiapBagi * 0.40
-    }, { merge: true }).then(() => { 
-        showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
-    }); 
-}
- function updateNilaiStokLokal(idx, tipe, val) { 
+    function updateNilaiStokLokal(idx, tipe, val) { 
         const tgl = document.getElementById('tglOps').value; 
         if (!dbStok[tgl]) syncStokDenganMaster(tgl); 
-        if (tipe === 'awal') dbStok[tgl][idx].awal = val; 
-        if (tipe === 'tambah') dbStok[tgl][idx].tambah = val; 
-        if (tipe === 'kurang') dbStok[tgl][idx].kurang = val; 
-        if (tipe === 'sisa') dbStok[tgl][idx].sisa = val; 
-
-        // --- Trik agar angka Total & Terjual langsung berubah tanpa kedip ---
+        
         const p = dbStok[tgl][idx];
-        const awal = parseFloat(p.awal) || 0;
-        const tambah = parseFloat(p.tambah) || 0;
-        const kurang = parseFloat(p.kurang) || 0;
-        const totalStok = awal + tambah - kurang;
-        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;
-        let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;
+        
+        // --- KODE BARU: AUTO-CUT GUDANG (SMART MATH) ---
+        if (tipe === 'tambah') {
+            const valBaru = parseFloat(val) || 0;
+            const valLama = parseFloat(p.tambah) || 0;
+            const selisih = valBaru - valLama; // Mencari selisih agar tidak dobel potong
+            
+            if (selisih !== 0) {
+                const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
+                if (masterIdx !== -1) {
+                    let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
+                    // Otomatis potong dari Master Produk
+                    masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
+                    
+                    // Simpan senyap di latar belakang ke database Firebase
+                    if(db) db.collection('appData').doc('masterProduk').set({ list: masterProduk });
+                }
+            }
+            dbStok[tgl][idx].tambah = valBaru;
+        } else {
+            if (tipe === 'awal') dbStok[tgl][idx].awal = val; 
+            if (tipe === 'kurang') dbStok[tgl][idx].kurang = val; 
+            if (tipe === 'sisa') dbStok[tgl][idx].sisa = val; 
+        }
+        // ------------------------------------------------
 
-        const elTotal = document.getElementById('td_total_' + idx);
-        if(elTotal) elTotal.innerText = totalStok;
+        // Trik agar angka Total & Terjual langsung berubah tanpa kedip
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
 
-        const elTerjual = document.getElementById('td_terjual_' + idx);
-        if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';
-        // -------------------------------------------------------------------
+        const elTotal = document.getElementById('td_total_' + idx); 
+        if(elTotal) elTotal.innerText = totalStok; 
+
+        const elTerjual = document.getElementById('td_terjual_' + idx); 
+        if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-'; 
 
         updateKalkulasi(); 
-        clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { simpanStokKeFirebase(); }, 1000);
+        clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { simpanStokKeFirebase(); }, 1000); 
     }
+
     function loadDataTanggalLocal() { 
         const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
         renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
     }
 
     function isDataLocked(tgl) { return dbStatusKunci[tgl] === true; }
+    
     function toggleLock() { const tgl = document.getElementById('tglOps').value; const currentlyLocked = isDataLocked(tgl); if (currentlyLocked) { if(confirm("Buka gembok data hari ini?")) { setLockStatus(tgl, false); } } else { if(confirm("Kunci data hari ini?")) { setLockStatus(tgl, true); } } }
+    
     function setLockStatus(tgl, status) { 
         if(db) { 
             db.collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
@@ -2209,9 +2081,10 @@ function kirimWhatsAppOrder() {
     }
 
     function simpanAbsensi() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const utama = document.getElementById('inAbsenUtama').value === 'ya'; const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; const nominal = (utama ? 50000 : 0) + (tambahan * 50000); const data = { utama, tambahan, nominal }; if(db) { db.collection('gajiHarian').doc(tgl).set(data).then(() => { showToast('✅ Absensi & Gaji Tersimpan!'); }); } else { dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); } }
+    
     function loadGajiUI() { const tgl = document.getElementById('tglOps').value; const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; document.getElementById('inAbsenUtama').value = d.utama ? 'ya' : 'tidak'; document.getElementById('inAbsenTambahan').value = d.tambahan; document.getElementById('txtTotalGajiHarian').innerText = formatRupiah(d.nominal); }
 
-  function renderTabelMatriks() {
+    function renderTabelMatriks() {
         const tgl = document.getElementById('tglOps').value; 
         const locked = isDataLocked(tgl); 
 
@@ -2240,7 +2113,6 @@ function kirimWhatsAppOrder() {
             const tr = document.createElement('tr'); 
             tr.className = classRow;
 
-            // Perhatikan ada tambahan id="td_total_${idx}" dan id="td_terjual_${idx}" di bawah ini
             tr.innerHTML = `
                 <td style="text-align:center; font-weight:700; color:#94a3b8;">${counter++}</td>
                 <td><div style="font-weight:700; color:var(--text-main); font-size:0.8rem;">${p.nama}</div>${badgeHTML}</td>
@@ -2255,6 +2127,7 @@ function kirimWhatsAppOrder() {
             tbody.appendChild(tr);
         });
     }
+
     function updateTehManisLokal() { 
         const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return;
         let idxTeh = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === 'teh manis'); 
@@ -2289,7 +2162,7 @@ function kirimWhatsAppOrder() {
         if(db) { db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); }
     }
 
-   function simpanModalBesokManual() { 
+    function simpanModalBesokManual() { 
         const tgl = document.getElementById('tglOps').value; 
         if(isDataLocked(tgl)) { alert("Data hari ini terkunci. Buka gembok dulu!"); return; } 
 
@@ -2300,6 +2173,7 @@ function kirimWhatsAppOrder() {
 
         showToast('✅ Modal Besok Sukses Disimpan!'); 
     }
+    
     function loadKasMasukUI() { 
         const kas = dbKasMasuk[document.getElementById('tglOps').value] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
         const formatTitik = (num) => num ? num.toLocaleString('id-ID') : '0';
@@ -2312,7 +2186,7 @@ function kirimWhatsAppOrder() {
         document.getElementById('inModalBesok').value = formatTitik(kas.modalBesok || 0); 
     }
 
-   function tambahPengeluaranHarian(e) { 
+    function tambahPengeluaranHarian(e) { 
         e.preventDefault(); const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; 
         const ket = document.getElementById('ketKeluarHarian').value; 
         const nominal = parseFloat(document.getElementById('nominalKeluarHarian').value.replace(/\./g, '')) || 0; 
@@ -2328,6 +2202,7 @@ function kirimWhatsAppOrder() {
         } 
         document.getElementById('ketKeluarHarian').value = ''; document.getElementById('nominalKeluarHarian').value = ''; 
     }
+    
     function hapusPengeluaranHarian(docId, idxLokal) { 
         if(isDataLocked(document.getElementById('tglOps').value)) return; 
         if (!confirm("Yakin ingin menghapus?")) return; 
@@ -2369,6 +2244,63 @@ function kirimWhatsAppOrder() {
         if(db) { db.collection('setoranDapur').doc(tgl).set(data).then(() => { showToast('✅ Data Dapur Tersimpan!'); }); } 
         else { dbSetoranDapur[tgl] = data; updateKalkulasi(); renderViewSetoranBakso(); } 
     }
+
+    // ==========================================
+    // FUNGSI BARU: SENSOR PERINGATAN GUDANG & ETALASE
+    // ==========================================
+    function cekPeringatanStok() {
+        const tgl = document.getElementById('tglOps').value;
+        const items = dbStok[tgl] || [];
+        
+        let htmlWarningRefill = "";
+        let htmlWarningOrder = "";
+        
+        items.forEach(p => {
+            if (p.kategori === "Bakso Malang" || p.nama.toLowerCase() === 'teh manis') return; 
+            
+            // Temukan produk di data Master untuk baca stok Gudang & Batas Min
+            const mProd = masterProduk.find(mp => mp.nama === p.nama) || {};
+            const stokGudang = parseFloat(mProd.stokGudang) || 0;
+            const batasMin = parseFloat(mProd.batasMinimum) || 10;
+            
+            const awal = parseFloat(p.awal) || 0;
+            const tambah = parseFloat(p.tambah) || 0;
+            const kurang = parseFloat(p.kurang) || 0;
+            const stokEtalase = awal + tambah - kurang; // Sisa fisik di rak depan
+            
+            // Lapis 1: Warning Kuning (Refill Etalase) -> Etalase <= 3 DAN Gudang > 0
+            if (stokEtalase <= 3 && stokGudang > 0) {
+                htmlWarningRefill += `<div style="margin-bottom:2px;">▪️ <strong>${p.nama}</strong> di etalase sisa ${stokEtalase} pcs. Ambil dari gudang! (Gudang: ${stokGudang})</div>`;
+            }
+            
+            // Lapis 2: Warning Merah (Order Vendor) -> Total Keseluruhan <= Batas Minimum
+            const totalKeseluruhan = stokEtalase + stokGudang;
+            if (totalKeseluruhan <= batasMin) {
+                htmlWarningOrder += `<div style="margin-bottom:2px;">▪️ <strong>${p.nama}</strong> sisa ${totalKeseluruhan} pcs (Batas Min: ${batasMin}). Waktunya order supplier!</div>`;
+            }
+        });
+        
+        // Tampilkan/Sembunyikan Banner Kuning di Kasir Harian
+        const bannerRefill = document.getElementById('bannerWarningRefill');
+        const textRefill = document.getElementById('textWarningRefill');
+        if (htmlWarningRefill !== "") {
+            if (textRefill) textRefill.innerHTML = htmlWarningRefill;
+            if (bannerRefill) bannerRefill.style.display = 'block';
+        } else if (bannerRefill) {
+            bannerRefill.style.display = 'none';
+        }
+        
+        // Tampilkan/Sembunyikan Banner Merah di Order Vendor
+        const bannerOrder = document.getElementById('bannerWarningGudang');
+        const textOrder = document.getElementById('textWarningGudang');
+        if (htmlWarningOrder !== "") {
+            if (textOrder) textOrder.innerHTML = htmlWarningOrder;
+            if (bannerOrder) bannerOrder.style.display = 'block';
+        } else if (bannerOrder) {
+            bannerOrder.style.display = 'none';
+        }
+    }
+
     function updateKalkulasi() {
         const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || [];
         let omsetPenjualan = 0, profitBakso = 0, profitReseller = 0, katData = {}; daftarKategori.forEach(k => { katData[k] = { omset: 0, modal: 0, profit: 0 }; });
@@ -2399,11 +2331,17 @@ function kirimWhatsAppOrder() {
         document.getElementById('totalProfitBersih').innerText = formatRupiah(totalProfitBersih); document.getElementById('allocDarurat').innerText = formatRupiah(profitAlokasiBasis * 0.20); document.getElementById('allocAnak').innerText = formatRupiah(profitAlokasiBasis * 0.40); document.getElementById('allocLabaBersih').innerText = formatRupiah(profitAlokasiBasis * 0.40);
 
         hitungAkumulasiKasTotal(); renderViewRekapTransfer(); 
+        
+        // Panggil Sensor Peringatan Terbaru
+        cekPeringatanStok();
+
         if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'dapur')) { if(document.getElementById('viewDashboard').style.display === 'block') renderDashboardGrafik(); }
     }
-function formatRupiah(angka) { 
-    return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
-}
+    
+    function formatRupiah(angka) { 
+        return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
+    }
+
     function renderViewSetoranBakso() {
         const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || []; const tbody = document.getElementById('tbodyBaksoSetoran'); tbody.innerHTML = ''; let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumSisa = 0; 
         items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; const valSisa = sisa !== null ? sisa : 0; const omset = terjual * p.jual; const modal = terjual * p.modal; const profit = terjual * p.margin; totalPorsi += terjual; totalOmset += omset; totalModal += modal; totalKeuntungan += profit; sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumSisa += valSisa; const tr = document.createElement('tr'); tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`; tbody.appendChild(tr); });
@@ -2458,7 +2396,6 @@ function formatRupiah(angka) {
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
 
-        // PERBAIKAN: Samakan pemotongan gaji default 50.000 dengan sistem rekap
         const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
         const pBersih = pKotor - gajiHarian - pengeluaranHarianBulan; 
         const basis = Math.max(0, pBersih); 
@@ -2489,6 +2426,7 @@ function formatRupiah(angka) {
 }
 
     function gantiTabKas(jenis, el) { activeKasTab = jenis; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); if(el) el.classList.add('active'); renderMutasiTabKas(jenis); }
+    
     function renderMutasiTabKas(jenis) { 
     document.getElementById('txtNamaTabKas').innerText = `Kas ${jenis}`; 
     const tbody = document.getElementById('tbodyMutasiKas'); 
@@ -2516,8 +2454,6 @@ function formatRupiah(angka) {
         }); 
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-
-        // PERBAIKAN: Samakan pemotongan gaji default 50.000 di rincian tabel
         const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
         const pB = Math.max(0, pKotor - gajiHarian - pengeluaranHarianBulan); 
 
@@ -2532,34 +2468,25 @@ function formatRupiah(angka) {
         if (l.jenis === jenis) mutasiList.push({ ...l, auto: false }); 
     }); 
 
-    // KODE PENGGANTI DIMULAI DARI SINI
     mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl)); 
     let saldoTotal = 0; 
 
-    // Ambil bulan yang sedang dipilih di kotak HTML
     const filterBulan = document.getElementById('inputFilterBulan') ? document.getElementById('inputFilterBulan').value : ''; 
 
-    // Hitung dulu seluruh saldo dari awal buka warung agar hitungan tidak rusak
     mutasiList.forEach(m => { 
         saldoTotal += (m.tipe === 'masuk' ? m.nominal : -m.nominal); 
-        m.saldoSaatIni = saldoTotal; // Simpan nilai saldo
+        m.saldoSaatIni = saldoTotal; 
     }); 
 
-    // Tampilkan ke tabel HANYA jika bulannya cocok
     mutasiList.forEach(m => { 
-        // Jika kotak filter diisi, dan tanggalnya tidak cocok, maka lewati
         if (filterBulan && !m.tgl.startsWith(filterBulan)) {
             return; 
         }
-
         const tr = document.createElement('tr'); 
         tr.innerHTML = `<td>${m.tgl}</td><td><span style="color:${m.tipe==='masuk'?'#16a34a':'#dc2626'}; font-weight:800; font-size:0.65rem;">${m.tipe==='masuk'?'🟢 IN':'🔴 OUT'}</span></td><td style="font-weight:600;">${m.ket}</td><td style="font-weight:800; text-align:right;">${formatRupiah(m.nominal)}</td><td style="font-weight:800; color:#2563eb; text-align:right;">${formatRupiah(m.saldoSaatIni)}</td><td style="text-align:center;">${!m.auto ? `<button onclick="hapusMutasiKas('${m.id}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem;">Del</button>` : `<small style="font-weight:bold; color:#64748b;">Auto</small>`}</td>`; 
-
-        // Memastikan data terbaru selalu di urutan atas
         tbody.prepend(tr); 
     }); 
 
-    // Update teks total saldo
     document.getElementById('txtTotalTabKas').innerText = formatRupiah(saldoTotal); 
 }
 
@@ -2567,10 +2494,31 @@ function hapusMutasiKas(docId) {
     if(db && confirm("Hapus transaksi kas ini?")) db.collection('logKas').doc(docId).delete(); 
 }
 
-    function bukaModalKelolaProduk() { const select=document.getElementById('selectKategoriProduk'); select.innerHTML=''; daftarKategori.forEach(k=>{select.innerHTML+=`<option value="${k}">${k}</option>`}); document.getElementById('editIndexProduk').value="-1"; document.getElementById('inputNamaProduk').value=""; document.getElementById('inputModalProduk').value=""; document.getElementById('inputJualProduk').value=""; document.getElementById('inputMarginProduk').value=""; document.getElementById('btnSimpanProduk').innerText="Simpan"; renderTabelMasterProduk(); document.getElementById('modalKelolaProduk').classList.add('active'); }
+    // ==========================================
+    // FUNGSI MASTER PRODUK & GUDANG
+    // ==========================================
+    function bukaModalKelolaProduk() { 
+        const select=document.getElementById('selectKategoriProduk'); select.innerHTML=''; daftarKategori.forEach(k=>{select.innerHTML+=`<option value="${k}">${k}</option>`}); 
+        document.getElementById('editIndexProduk').value="-1"; 
+        document.getElementById('inputNamaProduk').value=""; 
+        document.getElementById('inputModalProduk').value=""; 
+        document.getElementById('inputJualProduk').value=""; 
+        document.getElementById('inputMarginProduk').value=""; 
+        // Mengosongkan form gudang
+        document.getElementById('inputStokGudang').value="0"; 
+        document.getElementById('inputBatasMinimum').value="10"; 
+        
+        document.getElementById('btnSimpanProduk').innerText="Simpan"; 
+        renderTabelMasterProduk(); 
+        document.getElementById('modalKelolaProduk').classList.add('active'); 
+    }
+    
     function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk').classList.remove('active'); }
+    
     function tambahKategoriBaruPrompt() { const k=prompt("Nama Kategori Baru:"); if(k&&k.trim()){ daftarKategori.push(k.trim()); if(db)db.collection('appData').doc('daftarKategori').set({list:daftarKategori}); bukaModalKelolaProduk(); } }
+    
     function hitungMarginForm() { document.getElementById('inputMarginProduk').value=Math.max(0,(parseFloat(document.getElementById('inputJualProduk').value)||0)-(parseFloat(document.getElementById('inputModalProduk').value)||0)); }
+    
     function simpanProdukBaru(e) { 
         e.preventDefault(); 
         const p = {
@@ -2578,7 +2526,9 @@ function hapusMutasiKas(docId) {
             kategori: document.getElementById('selectKategoriProduk').value, 
             modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
             jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
-            margin: 0
+            margin: 0,
+            stokGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
+            batasMinimum: parseFloat(document.getElementById('inputBatasMinimum').value) || 10
         }; 
         p.margin = p.jual - p.modal; 
 
@@ -2599,29 +2549,58 @@ function hapusMutasiKas(docId) {
             alert("Lokal OK"); 
         } 
     }
-    function renderTabelMasterProduk() { const t=document.getElementById('tbodyMasterProduk'); t.innerHTML=''; masterProduk.forEach((p,i)=>{ t.innerHTML+=`<tr><td>${i+1}</td><td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td><td>${p.modal}</td><td>${p.jual}</td><td><button onclick="editProdukMaster(${i})">✏️</button><button onclick="hapusProdukMaster(${i})">🗑️</button></td></tr>`; }); }
-    function editProdukMaster(i) { const p=masterProduk[i]; document.getElementById('editIndexProduk').value=i; document.getElementById('inputNamaProduk').value=p.nama; document.getElementById('selectKategoriProduk').value=p.kategori; document.getElementById('inputModalProduk').value=p.modal; document.getElementById('inputJualProduk').value=p.jual; hitungMarginForm(); document.getElementById('btnSimpanProduk').innerText="Update"; }
+    
+    function renderTabelMasterProduk() { 
+        const t=document.getElementById('tbodyMasterProduk'); 
+        t.innerHTML=''; 
+        masterProduk.forEach((p,i)=>{ 
+            t.innerHTML+=`<tr>
+                <td style="text-align:center;">${i+1}</td>
+                <td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td>
+                <td style="text-align:right;">${p.modal}</td>
+                <td style="text-align:right;">${p.jual}</td>
+                <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">${p.stokGudang || 0}</td>
+                <td style="text-align:center;">
+                    <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit">✏️</button>
+                    <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
+                </td>
+            </tr>`; 
+        }); 
+    }
+    
+    function editProdukMaster(i) { 
+        const p=masterProduk[i]; 
+        document.getElementById('editIndexProduk').value=i; 
+        document.getElementById('inputNamaProduk').value=p.nama; 
+        document.getElementById('selectKategoriProduk').value=p.kategori; 
+        document.getElementById('inputModalProduk').value=p.modal; 
+        document.getElementById('inputJualProduk').value=p.jual; 
+        // Mengisi form gudang
+        document.getElementById('inputStokGudang').value = p.stokGudang || 0;
+        document.getElementById('inputBatasMinimum').value = p.batasMinimum || 10;
+        
+        hitungMarginForm(); 
+        document.getElementById('btnSimpanProduk').innerText="Update"; 
+    }
+    
     function hapusProdukMaster(i) { 
         if(confirm("Hapus produk dari master?")) { 
             const namaProd = masterProduk[i]?.nama || 'Produk';
             masterProduk.splice(i, 1); 
             catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
-
             if(db) db.collection('appData').doc('masterProduk').set({ list: masterProduk }); 
             renderTabelMasterProduk(); 
         } 
     }
+    
     function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
 
    function bukaModalKas(jenis, tipe) { 
     document.getElementById('modalJenisKas').value = jenis; 
     document.getElementById('modalTipeTx').value = tipe; 
     document.getElementById('modalKasJudul').innerText = `⚡ Kas ${jenis}`; 
-
-    // 2 Baris ini yang bertugas menyapu bersih angka yang nyangkut
     document.getElementById('modalNominalTx').value = ""; 
     document.getElementById('modalKetTx').value = ""; 
-
     document.getElementById('modalKas').classList.add('active'); 
 }
     function tutupModalKas() { document.getElementById('modalKas').classList.remove('active'); }
@@ -2630,10 +2609,11 @@ function hapusMutasiKas(docId) {
     function bukaModalFeedback() { document.getElementById('modalFeedback').classList.add('active'); }
     function tutupModalFeedback() { document.getElementById('modalFeedback').classList.remove('active'); document.getElementById('fbDeskripsi').value = ''; }
     function kirimFeedback(e) { e.preventDefault(); if(!db) { alert("Sistem Offline. Tidak bisa mengirim laporan."); return; } const jenis = document.getElementById('fbJenis').value; const deskripsi = document.getElementById('fbDeskripsi').value; const btn = document.getElementById('btnKirimFeedback'); btn.innerText = "Mengirim..."; btn.disabled = true; db.collection('laporanBugs').add({ waktu: new Date().toISOString(), user: currentUser ? currentUser.nama : 'Unknown', hp: currentUser ? currentUser.hp : '-', jenis: jenis, deskripsi: deskripsi }).then(() => { showToast('✅ Laporan Terkirim! Terima kasih atas masukannya.'); tutupModalFeedback(); }).catch(err => { alert("Gagal mengirim: " + err.message); }).finally(() => { btn.innerText = "Kirim Laporan"; btn.disabled = false; }); }
+
 // ==========================================
 // FITUR FILTER GRAFIK RESELLER
 // ==========================================
-let produkResellerDisembunyikan = []; // Menyimpan produk yang tidak dicentang
+let produkResellerDisembunyikan = []; 
 
 function bukaFilterReseller() {
     document.getElementById('modalFilterReseller').style.display = 'flex';
@@ -2645,10 +2625,9 @@ function bukaFilterReseller() {
         return;
     }
 
-    // Buat daftar checkbox
     window.listProdukResellerAktif.forEach(nama => {
         const isDisembunyikan = produkResellerDisembunyikan.includes(nama);
-        const isChecked = isDisembunyikan ? '' : 'checked'; // Jika disembunyikan, hilangkan centangnya
+        const isChecked = isDisembunyikan ? '' : 'checked'; 
 
         container.innerHTML += `
             <label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.85rem; color:#334155;">
@@ -2668,20 +2647,15 @@ function terapkanFilterReseller() {
     const checkboxes = document.querySelectorAll('.cb-reseller');
     checkboxes.forEach(cb => {
         if(!cb.checked) {
-            produkResellerDisembunyikan.push(cb.value); // Simpan nama yang centangnya dihapus
+            produkResellerDisembunyikan.push(cb.value); 
         }
     });
     tutupFilterReseller();
-    renderDashboardGrafik(); // Refresh grafik
+    renderDashboardGrafik(); 
 }
+
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS
-    // ==========================================
-    // ==========================================
-    // FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN FILTER)
-    // ==========================================
-    // ==========================================
-    // FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN FILTER & AUTO-SCROLL RESELLER)
     // ==========================================
     function renderDashboardGrafik() {
         const isDapur = currentUser && currentUser.role === 'dapur';
@@ -2799,13 +2773,11 @@ function terapkanFilterReseller() {
         const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
         const topBakso = sortSliceTop5(produkBakso); 
 
-        // --- LOGIKA BARU RESELLER (TANPA BATAS 5 & TERAPKAN FILTER) ---
-        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); // Simpan untuk checkbox popup
+        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
         let resellerDifilter = Object.keys(produkReseller)
             .filter(nama => !produkResellerDisembunyikan.includes(nama))
             .map(nama => ({nama: nama, qty: produkReseller[nama]}))
             .sort((a,b) => b.qty - a.qty);
-       // --- PENGATURAN GRAFIK YANG DIRAMPINGKAN ---
        const optHorizontalBar = { 
             indexAxis: 'y', 
             responsive: true, 
@@ -2826,7 +2798,7 @@ function terapkanFilterReseller() {
                 y: { 
                     grid: { display: false }, 
                     ticks: { 
-                        autoSkip: false, // INI KUNCINYA: Mencegah nama produk disembunyikan otomatis
+                        autoSkip: false, 
                         font: { size: 9 } 
                     } 
                 } 
@@ -2835,28 +2807,27 @@ function terapkanFilterReseller() {
 
         if(chartTopBakso) chartTopBakso.destroy(); 
         const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); 
-        // maxBarThickness: 15 agar batang grafik tidak terlalu tebal/gemuk
         chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
 
         if(chartTopReseller) chartTopReseller.destroy(); 
         const canvasReseller = document.getElementById('chartTopReseller');
 
-        // Jarak antar baris dirapatkan menjadi 25px (sebelumnya 35px)
         const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
         canvasReseller.style.height = tinggiDibutuhkan + 'px';
         const ctxReseller = canvasReseller.getContext('2d'); 
 
         chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar }); 
     }
+
     // ==========================================
     // FUNGSI CETAK PDF
     // ==========================================
     function bukaModalCetakPeriode(jenis) { toggleSidebar(); document.getElementById('jenisCetakPeriode').value = jenis; if(jenis === 'mingguan') { document.getElementById('modalCetakJudul').innerText = "📊 Cetak Rekap Mingguan"; document.getElementById('formCetakMingguan').style.display = 'block'; document.getElementById('formCetakBulanan').style.display = 'none'; } else { document.getElementById('modalCetakJudul').innerText = "📈 Cetak Rekap Bulanan"; document.getElementById('formCetakMingguan').style.display = 'none'; document.getElementById('formCetakBulanan').style.display = 'block'; } document.getElementById('modalCetakPeriode').classList.add('active'); }
     function tutupModalCetakPeriode() { document.getElementById('modalCetakPeriode').classList.remove('active'); }
     function bukaModalGabungan() {
-        if (typeof toggleSidebar === 'function') toggleSidebar(); // Tutup sidebar jika di HP
+        if (typeof toggleSidebar === 'function') toggleSidebar(); 
         document.getElementById('modalCetakPeriode').classList.add('active');
-        gantiTampilanModalLaporan(); // Pastikan tampilan sesuai pilihan awal
+        gantiTampilanModalLaporan(); 
     }
 
     function gantiTampilanModalLaporan() {
@@ -2869,6 +2840,7 @@ function terapkanFilterReseller() {
             document.getElementById('formCetakBulanan').style.display = 'block';
         }
     }
+    
     function eksekusiCetakPeriode() { 
         if (typeof html2pdf === 'undefined') return; 
         tutupModalCetakPeriode(); 
@@ -2952,7 +2924,6 @@ function terapkanFilterReseller() {
         const element = document.getElementById('pdfAreaPeriode'); 
         element.style.display = 'block'; 
 
-        // --- KODE BARU: SHARE WA LAPORAN MINGGUAN/BULANAN ---
         html2pdf().set({ 
             margin: 5, 
             filename: `Rekap_${jenis}.pdf`, 
@@ -2963,8 +2934,6 @@ function terapkanFilterReseller() {
 
             const namaFile = `Rekap_${jenis}.pdf`;
             const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
-
-            // Format teks WA menyesuaikan jenis laporannya
             const labelJenis = jenis === 'mingguan' ? 'Mingguan' : 'Bulanan';
 
             if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
@@ -2979,6 +2948,7 @@ function terapkanFilterReseller() {
             }
         });
     }
+
    function generatePDFHarian() { 
     if (typeof html2pdf === 'undefined') return; 
 
@@ -3050,7 +3020,6 @@ function terapkanFilterReseller() {
     document.getElementById('pdfHrAnak').innerText = formatRupiah(basis * 0.40); 
     document.getElementById('pdfHrLaba').innerText = formatRupiah(basis * 0.40); 
 
-    // --- KODE BARU: MEMBACA NAMA KASIR & TANGGAL ---
     let namaKasir = document.getElementById('inputNamaKasirHarian').value;
     if (!namaKasir || namaKasir.trim() === "") {
         namaKasir = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
@@ -3066,7 +3035,6 @@ function terapkanFilterReseller() {
     if (document.getElementById('pdfTanggalCetakHarian')) {
         document.getElementById('pdfTanggalCetakHarian').innerText = formatTanggal;
     }
-    // ------------------------------------------------
 
     const element = document.getElementById('pdfAreaHarian'); 
     element.style.display = 'block'; 
@@ -3076,11 +3044,12 @@ function terapkanFilterReseller() {
         filename: `Kasir_Harian_${tgl}.pdf`, 
         html2canvas: { scale: 2 }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Agar tanda tangan tidak terbelah
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
     }).from(element).save().then(() => { 
         element.style.display = 'none'; 
     }); 
 }
+
     function generatePDFBaksoHarian() { 
     if (typeof html2pdf === 'undefined') return; 
 
@@ -3126,7 +3095,6 @@ function terapkanFilterReseller() {
     document.getElementById('pdfBaksoTF').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.cash - dataSetoran.pengeluaran)); 
     document.getElementById('pdfBaksoTotalSetor').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.pengeluaran)); 
 
-    // --- KODE BARU: MEMBACA NAMA KASIR BAKSO & TANGGAL ---
     let namaKasir = document.getElementById('inputNamaKasirBakso').value;
     if (!namaKasir || namaKasir.trim() === "") {
         namaKasir = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
@@ -3142,7 +3110,6 @@ function terapkanFilterReseller() {
     if (document.getElementById('pdfTanggalCetakBakso')) {
         document.getElementById('pdfTanggalCetakBakso').innerText = formatTanggal;
     }
-    // -----------------------------------------------------
 
     const element = document.getElementById('pdfAreaBakso'); 
     element.style.display = 'block'; 
@@ -3152,8 +3119,8 @@ function terapkanFilterReseller() {
         filename: `Setoran_Bakso_${tgl}.pdf`, 
         html2canvas: { scale: 2 }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Agar tanda tangan aman
-    }).from(element).output('blob').then(function(pdfBlob) { 
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+    }).output('blob').then(function(pdfBlob) { 
         element.style.display = 'none';
 
         const namaFile = `Setoran_Bakso_${tgl}.pdf`;
@@ -3164,21 +3131,14 @@ function terapkanFilterReseller() {
                 files: [filePdf],
                 title: 'Laporan Setoran',
                 text: `Berikut Laporan Setoran Bakso Malang tanggal ${tgl}.`
-            }).then(() => {
-                console.log('PDF berhasil dibagikan');
-            }).catch((error) => {
-                console.error('Batal membagikan:', error);
-            });
+            }).catch((error) => { console.error('Batal membagikan:', error); });
         } else {
             const urlObj = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = urlObj;
-            link.download = namaFile;
-            link.click();
-            URL.revokeObjectURL(urlObj);
+            const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
         }
     });
 }
+
    function generatePDFTransfer() { 
         if (typeof html2pdf === 'undefined') return; 
 
@@ -3222,13 +3182,12 @@ function terapkanFilterReseller() {
         const element = document.getElementById('pdfAreaTransfer'); 
         element.style.display = 'block'; 
 
-        // --- KODE SHARE WA REKAP TRANSFER ---
         html2pdf().set({ 
             margin: 5, 
             filename: `Laporan_Transfer_${tgl}.pdf`, 
             html2canvas: { scale: 2 }, 
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-        }).from(element).output('blob').then(function(pdfBlob) { 
+        }).output('blob').then(function(pdfBlob) { 
             element.style.display = 'none'; 
 
             const namaFile = `Laporan_Transfer_${tgl}.pdf`;
@@ -3268,7 +3227,6 @@ function terapkanFilterReseller() {
         const element = document.getElementById('pdfAreaSlipGaji'); 
         element.style.display = 'block'; 
 
-        // --- KODE SHARE WA SLIP GAJI ---
         html2pdf().set({ 
             margin: 15, 
             filename: `Slip_Gaji_${bln}.pdf`, 
@@ -3276,7 +3234,7 @@ function terapkanFilterReseller() {
             html2canvas: { scale: 2 }, 
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
             pagebreak: { mode: 'avoid-all' } 
-        }).from(element).output('blob').then(function(pdfBlob) { 
+        }).output('blob').then(function(pdfBlob) { 
             element.style.display = 'none'; 
 
             const namaFile = `Slip_Gaji_${bln}.pdf`;
@@ -3294,6 +3252,7 @@ function terapkanFilterReseller() {
             }
         });
     }
+
     // ==========================================
     // FUNGSI CSV (IMPORT/EXPORT)
     // ==========================================
@@ -3309,41 +3268,25 @@ function terapkanFilterReseller() {
                 title: "Aplikasi Kasir Bakso Mbak Sae'ah",
                 text: "Ini link untuk mengakses Aplikasi Kasir Bakso Malang Mbak Sae'ah Cab. Cipete. Silakan buka dan simpan di HP kamu ya!",
                 url: window.location.href
-            }).then(() => {
-                showToast('✅ Berhasil membuka menu bagikan!');
-            }).catch(err => {
-                console.log('Gagal membagikan', err);
-            });
+            }).then(() => { showToast('✅ Berhasil membuka menu bagikan!'); }).catch(err => { console.log('Gagal membagikan', err); });
         } else {
-            const dummy = document.createElement('input');
-            document.body.appendChild(dummy);
-            dummy.value = window.location.href;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            alert('🔗 Link aplikasi berhasil disalin (dicopy)!\n\nSilakan paste (tempel) di WhatsApp atau chat lainnya.');
+            const dummy = document.createElement('input'); document.body.appendChild(dummy); dummy.value = window.location.href; dummy.select(); document.execCommand('copy'); document.body.removeChild(dummy); alert('🔗 Link aplikasi berhasil disalin (dicopy)!\n\nSilakan paste (tempel) di WhatsApp atau chat lainnya.');
         }
     }
+
     function catatAktivitas(aksi, detail) {
         if(!db) return;
         const namaUser = currentUser ? currentUser.nama : "Sistem";
         const waktuWIB = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-
-        db.collection('logAktivitas').add({
-            waktu: waktuWIB,
-            user: namaUser,
-            keterangan: `[${aksi}] ${detail}`,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).catch(err => console.error("Gagal mencatat log:", err));
+        db.collection('logAktivitas').add({ waktu: waktuWIB, user: namaUser, keterangan: `[${aksi}] ${detail}`, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(err => console.error("Gagal mencatat log:", err));
     }
 
     function muatDataRiwayat() {
         if(!db) return;
         db.collection('logAktivitas').orderBy('timestamp', 'desc').limit(50).get().then(snapshot => {
             let html = '';
-            if(snapshot.empty) {
-                html = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Belum ada riwayat aktivitas tercatat.</td></tr>`;
-            } else {
+            if(snapshot.empty) { html = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Belum ada riwayat aktivitas tercatat.</td></tr>`; } 
+            else {
                 snapshot.forEach(doc => {
                     const d = doc.data();
                     html += `<tr style="border-bottom: 1px solid #f1f5f9;">
@@ -3355,23 +3298,20 @@ function terapkanFilterReseller() {
             }
             document.getElementById('tabelRiwayatBody').innerHTML = html;
         }).catch(err => {
-            console.error("Gagal ambil log:", err);
             document.getElementById('tabelRiwayatBody').innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #ef4444;">Gagal memuat data riwayat.</td></tr>`;
         });
     }
+    
     function toggleDropdown(idGrup) {
         const el = document.getElementById(idGrup);
         if (el) {
-            if (el.style.display === "none" || el.style.display === "") {
-                el.style.display = "block";
-            } else {
-                el.style.display = "none";
-            }
+            if (el.style.display === "none" || el.style.display === "") el.style.display = "block";
+            else el.style.display = "none";
         }
     }
 </script>
-    <script>
-    // Mendaftarkan Service Worker agar aplikasi bisa Full Screen
+
+<script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
@@ -3380,7 +3320,7 @@ function terapkanFilterReseller() {
         });
     }
 </script>
-    <!-- SCRIPT KALKULATOR KASIR -->
+
 <script>
     function hitungOtomatis(elemen) {
         let nilai = elemen.value;
@@ -3398,39 +3338,18 @@ function terapkanFilterReseller() {
             formatRibuanInput(elemen);
         }
     }
-    // TAMBAHKAN FUNGSI INI DI BAWAHNYA:
     function inputKasirPintar(elemen) {
         let nilai = elemen.value;
-
-        // Jika kasir sedang mengetik rumus (+, -, =), biarkan saja dulu
-        if (nilai.includes('+') || nilai.includes('-') || nilai.includes('=')) {
-            return; 
-        }
-
-        // Jika hanya ngetik angka biasa, jalankan titik otomatisnya!
-        if (typeof formatRibuanInput === 'function') {
-            formatRibuanInput(elemen);
-        }
+        if (nilai.includes('+') || nilai.includes('-') || nilai.includes('=')) { return; }
+        if (typeof formatRibuanInput === 'function') { formatRibuanInput(elemen); }
     }
 </script>
-    <script>
-// FUNGSI EXPORT DAPATKAN DATA PRODUK KE CSV / EXCEL (KOLOM TERPISAH RAPI)
+
+<script>
 function exportProdukKeExcel() {
     let dataTarget = null;
-
-    // Otomatis mengecek berbagai variabel produk yang ada di sistem Anda
-    if (typeof daftarProduk !== 'undefined' && Array.isArray(daftarProduk) && daftarProduk.length > 0) {
-        dataTarget = daftarProduk;
-    } else if (typeof masterProduk !== 'undefined' && Array.isArray(masterProduk) && masterProduk.length > 0) {
+    if (typeof masterProduk !== 'undefined' && Array.isArray(masterProduk) && masterProduk.length > 0) {
         dataTarget = masterProduk;
-    } else if (typeof dbProduk !== 'undefined' && Array.isArray(dbProduk) && dbProduk.length > 0) {
-        dataTarget = dbProduk;
-    } else if (typeof listProduk !== 'undefined' && Array.isArray(listProduk) && listProduk.length > 0) {
-        dataTarget = listProduk;
-    } else if (typeof dataProduk !== 'undefined' && Array.isArray(dataProduk) && dataProduk.length > 0) {
-        dataTarget = dataProduk;
-    } else if (typeof produk !== 'undefined' && Array.isArray(produk) && produk.length > 0) {
-        dataTarget = produk;
     }
 
     if (!dataTarget || dataTarget.length === 0) {
@@ -3438,22 +3357,21 @@ function exportProdukKeExcel() {
         return;
     }
 
-    // Menggunakan Unicode \uFEFF & pemisah titik koma (;) agar Excel otomatis memisahkannya ke kolom terpisah
     let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-    csvContent += "No;Nama Produk;Kategori;Harga Modal (HPP);Harga Jual;Margin (Rp)\n";
+    csvContent += "No;Nama Produk;Kategori;Harga Modal (HPP);Harga Jual;Margin (Rp);Stok Gudang\n";
 
     dataTarget.forEach((p, index) => {
-        let namaVal = p.nama || p.namaProduk || p.title || '-';
-        let katVal = p.kategori || p.kat || p.category || '-';
-        let modalVal = p.modal || p.hpp || p.hargaModal || 0;
-        let jualVal = p.jual || p.harga || p.hargaJual || 0;
+        let namaVal = p.nama || '-';
+        let katVal = p.kategori || '-';
+        let modalVal = p.modal || 0;
+        let jualVal = p.jual || 0;
         let marginVal = jualVal - modalVal;
+        let gudangVal = p.stokGudang || 0;
 
         let namaFormat = `"${String(namaVal).replace(/"/g, '""')}"`;
         let katFormat = `"${String(katVal).replace(/"/g, '""')}"`;
 
-        // Gunakan titik koma (;) sebagai pemisah antar kolom
-        csvContent += `${index + 1};${namaFormat};${katFormat};${modalVal};${jualVal};${marginVal}\n`;
+        csvContent += `${index + 1};${namaFormat};${katFormat};${modalVal};${jualVal};${marginVal};${gudangVal}\n`;
     });
 
     let encodedUri = encodeURI(csvContent);
@@ -3464,90 +3382,40 @@ function exportProdukKeExcel() {
     link.click();
     document.body.removeChild(link);
 }
-// FUNGSI CETAK PDF DAFTAR PRODUK
-function cetakPDFProduk() {
-    window.print();
-}
+function cetakPDFProduk() { window.print(); }
 </script>
-    <!-- MODAL FILTER RESELLER -->
-<div id="modalFilterReseller" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:#fff; width:90%; max-width:400px; border-radius:10px; padding:20px; max-height:80vh; display:flex; flex-direction:column;">
-        <h3 style="margin-top:0; color:#334155; font-size:1.1rem; margin-bottom:5px;">⚙️ Sembunyikan Produk</h3>
-        <p style="font-size:0.8rem; color:#64748b; margin-top:0; margin-bottom:15px;">Hapus centang pada produk yang tidak ingin ditampilkan di grafik.</p>
 
-        <div id="listCheckboxReseller" style="overflow-y:auto; flex:1; margin-bottom:15px; border:1px solid #e2e8f0; padding:10px; border-radius:8px;">
-            <!-- Checkbox otomatis masuk ke sini -->
-        </div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDeveloper = urlParams.get('mode') === 'bos' || window.location.hostname === 'localhost';
 
-        <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="tutupFilterReseller()" style="padding:8px 15px; border:none; background:#e2e8f0; color:#475569; border-radius:6px; cursor:pointer; font-weight:bold;">Batal</button>
-            <button onclick="terapkanFilterReseller()" style="padding:8px 15px; border:none; background:#3b82f6; color:#fff; border-radius:6px; cursor:pointer; font-weight:bold;">Terapkan</button>
-        </div>
-    </div>
-</div>
-    <script>
-        // PINTU RAHASIA: Blokir akan aktif KECUALI link web diakhiri dengan "?mode=bos"
-        const urlParams = new URLSearchParams(window.location.search);
-        const isDeveloper = urlParams.get('mode') === 'bos' || window.location.hostname === 'localhost';
-
-        if (!isDeveloper) {
-            // Matikan Klik Kanan
-            document.addEventListener('contextmenu', function(e) {
+    if (!isDeveloper) {
+        document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+               (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+               (e.ctrlKey && e.key === 'U')) {
                 e.preventDefault();
-            });
+            }
+        });
+    }
 
-            // Matikan tombol F12, Ctrl+U, dll
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'F12' || 
-                   (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-                   (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-                   (e.ctrlKey && e.key === 'U')) {
-                    e.preventDefault();
-                }
-            });
-        }
-        // ==========================================
-// KODE UNTUK HALAMAN LAPORAN BERKALA
-// ==========================================
-
-// 1. Fungsi Tampilkan Data & Filter Tanggal
-// 1. Fungsi Tampilkan Data & Filter Tanggal (Versi Terintegrasi Database)
 function prosesTampilLaporanBerkala() {
     const tglMulai = document.getElementById('filterBerkalaMulai').value;
     const tglAkhir = document.getElementById('filterBerkalaAkhir').value;
 
-    if (!tglMulai || !tglAkhir) {
-        alert('Mohon pilih Tanggal Mulai dan Tanggal Akhir terlebih dahulu!');
-        return;
-    }
+    if (!tglMulai || !tglAkhir) { alert('Mohon pilih Tanggal Mulai dan Tanggal Akhir terlebih dahulu!'); return; }
+    if (tglMulai > tglAkhir) { alert('Tanggal Mulai tidak boleh lebih besar dari Tanggal Akhir!'); return; }
 
-    if (tglMulai > tglAkhir) {
-        alert('Tanggal Mulai tidak boleh lebih besar dari Tanggal Akhir!');
-        return;
-    }
-
-    // Ubah teks periode di tampilan UI
     document.getElementById('teksPeriodeLaporan').innerText = `Periode: ${tglMulai} s/d ${tglAkhir}`;
-
-    // --- MULAI TARIK DATA DARI FIREBASE ---
     let validKeys = [];
+    Object.keys(dbStok).forEach(tgl => { if(tgl >= tglMulai && tgl <= tglAkhir) validKeys.push(tgl); });
 
-    // Saring tanggal yang masuk dalam rentang pilihan kalender
-    Object.keys(dbStok).forEach(tgl => {
-        if(tgl >= tglMulai && tgl <= tglAkhir) validKeys.push(tgl);
-    });
-
-    let omsetTotal = 0;
-    let pengeluaranTotal = 0; 
-    let profitKotorTotal = 0; 
-    let gajiTotal = 0; 
-    let pengeluaranHarianSaja = 0;
-
-    // Siapkan wadah rekap produk berdasarkan data master
+    let omsetTotal = 0, pengeluaranTotal = 0, profitKotorTotal = 0, gajiTotal = 0, pengeluaranHarianSaja = 0;
     let rekapProduk = masterProduk.map(p => ({ ...p, totalTerjual: 0, totalOmset: 0, totalProfit: 0 }));
 
     validKeys.forEach(tgl => {
-        // 1. Hitung Penjualan dari Stok
         (dbStok[tgl] || []).forEach((p, idx) => {
             const awal = parseFloat(p.awal) || 0;
             const tambah = parseFloat(p.tambah) || 0;
@@ -3567,47 +3435,25 @@ function prosesTampilLaporanBerkala() {
             }
         });
 
-        // 2. Hitung Pengeluaran (Harian, Setoran Dapur, dan Gaji)
-        dbPengeluaranHarian.forEach(p => {
-            if (p.tgl === tgl) pengeluaranHarianSaja += p.nominal;
-        });
+        dbPengeluaranHarian.forEach(p => { if (p.tgl === tgl) pengeluaranHarianSaja += p.nominal; });
         const dataSetoran = dbSetoranDapur[tgl] || { pengeluaran: 0 };
         pengeluaranTotal += (dataSetoran.pengeluaran || 0);
         gajiTotal += (dbGajiHarian[tgl]?.nominal || 0);
     });
 
-    // Total seluruh arus keluar (Gaji + Belanja Harian + Setoran Dapur / Lalamove dll)
     const totalSemuaPengeluaran = pengeluaranHarianSaja + pengeluaranTotal + gajiTotal; 
-
-    // Perhitungan Profit Bersih (Mengikuti rumus asli sistem Anda)
     const profitBersihTotal = profitKotorTotal - gajiTotal - pengeluaranHarianSaja;
 
-    // --- TAMPILKAN HASILNYA KE LAYAR (KOTAK RINGKASAN) ---
     document.getElementById('teksOmsetLaporan').innerText = formatRupiah(omsetTotal);
     document.getElementById('teksPengeluaranLaporan').innerText = formatRupiah(totalSemuaPengeluaran);
     document.getElementById('teksProfitLaporan').innerText = formatRupiah(profitBersihTotal);
 
-    // --- TAMPILKAN HASILNYA KE LAYAR (TABEL BAWAH) ---
     const tbody = document.getElementById('tabelLaporanBerkala');
     tbody.innerHTML = '';
-
     let adaData = false;
     rekapProduk.filter(p => p.totalTerjual > 0).forEach(p => {
         adaData = true;
-        tbody.innerHTML += `
-            <tr>
-                <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
-                    <strong>${p.nama}</strong><br>
-                    <small style="color: #6b7280;">${p.kategori}</small>
-                </td>
-                <td style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">
-                    ${p.totalTerjual}
-                </td>
-                <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: bold; color: #059669;">
-                    ${formatRupiah(p.totalOmset)}
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML += `<tr><td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><strong>${p.nama}</strong><br><small style="color: #6b7280;">${p.kategori}</small></td><td style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">${p.totalTerjual}</td><td style="padding: 10px; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: bold; color: #059669;">${formatRupiah(p.totalOmset)}</td></tr>`;
     });
 
     if (!adaData) {
@@ -3615,51 +3461,38 @@ function prosesTampilLaporanBerkala() {
     }
 }
 
-// 2. Fungsi Cetak PDF (Anti Terpotong)
 function cetakPDFBerkala() {
     const elemen = document.getElementById('areaCetakLaporan');
     const periode = document.getElementById('teksPeriodeLaporan').innerText.replace('Periode: ', '').replace(' s/d ', '_');
 
-    // --- KODE BARU: MENGAMBIL NAMA KASIR ---
     let namaKasir = document.getElementById('inputNamaPembuatLaporan').value;
-
-    // Jika kolom kasir kosong, otomatis isi dengan 'Admin'
     if (!namaKasir || namaKasir.trim() === "") {
         namaKasir = "Admin";
         document.getElementById('inputNamaPembuatLaporan').value = namaKasir;
     }
-
-    // Masukkan nama kasir ke teks tanda tangan di bawah
     document.getElementById('pdfNamaPembuatCetak').innerText = namaKasir;
 
-    // Masukkan tanggal hari ini otomatis di atas tanda tangan
     const hariIni = new Date();
     const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     document.getElementById('pdfTanggalCetakLaporan').innerText = formatTanggal;
-    // ----------------------------------------
 
-    // Konfigurasi ini memastikan tabel tidak terbelah di tengah halaman
     const konfigurasiPDF = {
         margin:       0.5,
         filename:     `Laporan_Cabang_Cipete_${periode}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Kunci agar rapi
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } 
     };
-
-    // Eksekusi pembuatan PDF
     html2pdf().set(konfigurasiPDF).from(elemen).save();
 }
 
-// 3. Fungsi Bagikan Ringkasan ke WhatsApp
 function bagikanWABerkala() {
     const periode = document.getElementById('teksPeriodeLaporan').innerText;
     const omset = document.getElementById('teksOmsetLaporan').innerText;
     const pengeluaran = document.getElementById('teksPengeluaranLaporan').innerText;
     const profit = document.getElementById('teksProfitLaporan').innerText;
 
-    // Membentuk teks yang akan dikirim via WA
     let teksWA = `*📊 LAPORAN BAKSO MBAK SAE'AH CAB. CIPETE* 📊\n`;
     teksWA += `${periode}\n\n`;
     teksWA += `🟢 *Total Omset:* ${omset}\n`;
@@ -3667,10 +3500,9 @@ function bagikanWABerkala() {
     teksWA += `🔵 *Profit Bersih:* ${profit}\n\n`;
     teksWA += `_Rincian penjualan produk selengkapnya dapat dilihat pada lampiran PDF atau sistem Web._`;
 
-    // Membuka tab baru ke WhatsApp (bisa mendeteksi WA Web di PC atau Aplikasi di HP)
     const urlWA = `https://wa.me/?text=${encodeURIComponent(teksWA)}`;
     window.open(urlWA, '_blank');
 }
-    </script>
+</script>
 </body>
 </html>
