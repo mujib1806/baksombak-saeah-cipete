@@ -500,12 +500,26 @@
         .tabel-kompak td { border-bottom: 1px solid #e2e8f0; }
         .tabel-kompak tbody tr:nth-child(even) { background-color: #f8fafc; }
     </style>
+<div id="viewLaporanBerkala" style="display:none; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); min-height: 100vh; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    
+    <style>
+        .hover-pop { transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s; }
+        .hover-pop:hover { transform: scale(1.05); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .tabel-kompak th { background-color: #334155; color: white; border: none; }
+        .tabel-kompak td { border-bottom: 1px solid #e2e8f0; }
+        .tabel-kompak tbody tr:nth-child(even) { background-color: #f8fafc; }
+    </style>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; background: rgba(255, 255, 255, 0.8); padding: 15px 20px; border-radius: 12px; backdrop-filter: blur(5px);">
         <h2 style="margin: 0; font-size: 22px; color: #1e293b; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">
             🌟 Laporan Berkala
         </h2>
         <div style="display: flex; gap: 12px; align-items: center;">
+            
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <span style="font-size: 13px; font-weight: bold; color: #475569;">Kasir:</span>
+                <input type="text" id="inputNamaPembuatLaporan" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 100px; font-size: 14px;" placeholder="Nama...">
+            </div>
             <button class="hover-pop" onclick="cetakPDFBerkala()" style="background-color: #ef4444; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);">
                 🖨️ Cetak PDF
             </button>
@@ -586,8 +600,17 @@
             </div>
         </div>
         
-    </div>
+        <div style="margin-top: 50px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #0f172a;">
+            <div style="text-align: center; width: 220px;">
+                <p style="margin: 0; font-size: 14px;">Depok, <span id="pdfTanggalCetakLaporan">...</span></p>
+                <p style="margin: 5px 0 70px 0; font-size: 14px;">Dibuat Oleh,</p>
+                <p id="pdfNamaPembuatCetak" style="margin: 0; font-size: 16px; font-weight: 800; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+                <p style="margin: 3px 0 0 0; font-size: 12px; color: #475569;">Penanggung Jawab</p>
+            </div>
+        </div>
+        </div>
 </div>
+   
         <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #8b5cf6;">
                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
@@ -3378,25 +3401,43 @@ function prosesTampilLaporanBerkala() {
     }
 }
 
-// 2. Fungsi Cetak PDF (Anti Terpotong)
+// 2. Fungsi Cetak PDF (Versi dengan Nama Kasir & Tanggal Otomatis)
 function cetakPDFBerkala() {
     const elemen = document.getElementById('areaCetakLaporan');
     const periode = document.getElementById('teksPeriodeLaporan').innerText.replace('Periode: ', '').replace(' s/d ', '_');
     
-    // Konfigurasi ini memastikan tabel tidak terbelah di tengah halaman
+    // 1. Tarik nama dari kolom input kasir
+    let namaKasir = document.getElementById('inputNamaPembuatLaporan').value;
+    
+    // 2. Jika kasir lupa mengetik namanya (kotak kosong), berikan nama otomatis
+    if (!namaKasir || namaKasir.trim() === "") {
+        // Coba ambil dari data login (jika ada), kalau tidak ada tulis 'Admin'
+        namaKasir = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
+        // Isi kembali kotaknya di layar agar kasir tahu nama apa yang dipakai
+        document.getElementById('inputNamaPembuatLaporan').value = namaKasir;
+    }
+
+    // 3. Suntikkan nama tersebut ke area tanda tangan di bagian bawah kertas
+    document.getElementById('pdfNamaPembuatCetak').innerText = namaKasir;
+
+    // 4. Suntikkan tanggal hari ini otomatis di atas tanda tangan
+    const hariIni = new Date();
+    const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('pdfTanggalCetakLaporan').innerText = formatTanggal;
+
+    // 5. Konfigurasi PDF agar rapi dan tidak terpotong
     const konfigurasiPDF = {
         margin:       0.5,
-        filename:     `Laporan_Cabang_Cipete_${periode}.pdf`,
+        filename:     `Laporan_Berkala_${periode}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] } // Kunci agar rapi
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // Eksekusi pembuatan PDF
+    // 6. Eksekusi pembuatan PDF
     html2pdf().set(konfigurasiPDF).from(elemen).save();
 }
-
 // 3. Fungsi Bagikan Ringkasan ke WhatsApp
 function bagikanWABerkala() {
     const periode = document.getElementById('teksPeriodeLaporan').innerText;
