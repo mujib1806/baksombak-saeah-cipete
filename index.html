@@ -452,6 +452,17 @@
                     <button onclick="bukaModalTambahVendor()" class="btn btn-warning" style="width:auto; padding:8px 12px; margin:0; border-radius:12px; font-size: 0.75rem;">➕ Tambah Produk Baru</button>
                 </div>
                 
+                <!-- ==========================================
+                KODE BARU: BANNER WARNING ORDER VENDOR (UNTUK OWNER)
+                ========================================== -->
+                <div id="bannerWarningGudang" style="display: none; background: #fef2f2; border-left: 4px solid #ef4444; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #b91c1c;">🚨 PERINGATAN STOK MENIPIS (GUDANG + ETALASE)</div>
+                    <div id="textWarningGudang" style="font-size: 0.75rem; color: #991b1b; margin-top: 4px;">
+                        <!-- Teks akan diisi oleh JS, contoh: "Nutriboost total sisa 10 pcs (Batas min: 15). Waktunya order ke supplier!" -->
+                    </div>
+                </div>
+                <!-- KODE BARU SELESAI -->
+                
                 <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">
                     *Isi kolom <strong>Qty</strong> untuk memesan. <strong>Harga/Karton</strong> bisa diedit jika ada perubahan harga dari supplier. Semua perubahan otomatis tersimpan.
                 </div>
@@ -481,12 +492,10 @@
                     <div id="vendorGrandTotal" style="font-size: 2rem; font-weight: 900; color: #ea580c; margin: 8px 0;">Rp 0</div>
                     <p style="font-size: 0.75rem; color: #9a3412; margin-bottom: 15px;">*Siapkan uang sejumlah di atas saat kurir barang datang.</p>
                     
-                    <!-- KODE BARU: Input Nama Pemesan Vendor -->
                     <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px;">
                         <span style="font-size: 13px; font-weight: bold; color: #c2410c;">Dipesan Oleh:</span>
                         <input type="text" id="inputNamaPemesanVendor" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #fdba74; outline: none; font-weight: bold; color: #9a3412; width: 140px; text-align: center; background: #fff;" placeholder="Nama Anda...">
                     </div>
-                    <!-- KODE BARU SELESAI -->
                     
                     <button onclick="kirimWhatsAppOrder()" class="btn btn-wa" style="width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; border-radius: 12px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
@@ -702,17 +711,27 @@
                         <button onclick="document.getElementById('fileImportPagi').click()" class="btn btn-warning" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: #fbbf24; color:#78350f;">📥 Import CSV</button>
                         <button onclick="downloadTemplatePagi()" class="btn btn-outline" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; border-color:#cbd5e1; color:#475569;">📤 Export</button>
                        <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">
-                        
-                        <!-- KODE BARU: Input Nama Kasir -->
+                       
                         <div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px;">
                             <span style="font-size: 0.7rem; font-weight: bold; color: #475569;">Kasir:</span>
                             <input type="text" id="inputNamaKasirHarian" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 60px; font-size: 0.7rem;" placeholder="Nama...">
                         </div>
-                        <!-- KODE BARU SELESAI -->
-
+                        
                         <button onclick="generatePDFHarian()" class="btn btn-pdf" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px;">📄 Cetak</button>
                     </div>
                 </div>
+                
+                <!-- ==========================================
+                KODE BARU: BANNER WARNING REFILL (UNTUK KASIR)
+                ========================================== -->
+                <div id="bannerWarningRefill" style="display: none; background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #b45309;">⚠️ WAKTUNYA REFILL ETALASE!</div>
+                    <div id="textWarningRefill" style="font-size: 0.75rem; color: #92400e; margin-top: 4px;">
+                        <!-- Teks akan diisi oleh JS, contoh: "Nutriboost di etalase sisa 2 pcs. Silakan ambil dari gudang!" -->
+                    </div>
+                </div>
+                <!-- KODE BARU SELESAI -->
+
                 <div style="font-size: 0.75rem; color: #16a34a; font-weight: 700; margin-bottom: 8px; text-align: right;">
                     *Input stok akan otomatis tersimpan saat Anda berpindah kolom.
                 </div>
@@ -962,18 +981,18 @@
                     <div class="summary-box" style="background:#f8fafc; border-color:#cbd5e1;">
                         <h4 style="color:#334155; font-size:0.85rem; font-weight:800; margin-bottom:10px; text-transform:uppercase;">📥 (A) Rincian Tujuan Dompet Kas</h4>
                         <div class="summary-item"><span>TF Setoran Bakso:</span><strong id="rtTfBakso">Rp 0</span></div>
-                        <div class="summary-item"><span>Kas Reseller:</span><strong id="rtKasReseller" style="color:#3b82f6;">Rp 0</strong></div>
-                        <div class="summary-item"><span>Kas Plastik:</span><strong id="rtKasPlastik" style="color:#ca8a04;">Rp 0</strong></div>
-                        <div class="summary-item"><span>Dana Darurat:</span><strong id="rtKasDarurat" style="color:#ef4444;">Rp 0</strong></div>
-                        <div class="summary-item"><span>Laba Bersih:</span><strong id="rtKasLaba" style="color:#16a34a;">Rp 0</strong></div>
-                        <div class="summary-item"><span>Tabungan Anak:</span><strong id="rtKasAnak" style="color:#a855f7;">Rp 0</strong></div>
+                        <div class="summary-item"><span>Kas Reseller:</span><strong id="rtKasReseller" style="color:#3b82f6;">Rp 0</span></div>
+                        <div class="summary-item"><span>Kas Plastik:</span><strong id="rtKasPlastik" style="color:#ca8a04;">Rp 0</span></div>
+                        <div class="summary-item"><span>Dana Darurat:</span><strong id="rtKasDarurat" style="color:#ef4444;">Rp 0</span></div>
+                        <div class="summary-item"><span>Laba Bersih:</span><strong id="rtKasLaba" style="color:#16a34a;">Rp 0</span></div>
+                        <div class="summary-item"><span>Tabungan Anak:</span><strong id="rtKasAnak" style="color:#a855f7;">Rp 0</span></div>
                         <div class="summary-item bold" style="color:#0f172a; font-size:1.05rem; border-top:2px solid #94a3b8; padding-top:10px; margin-top:10px;"><span>TOTAL (A):</span><span id="rtTotalA">Rp 0</span></div>
                     </div>
                     <div class="summary-box" style="background:#f0fdf4; border-color:#86efac;">
                         <h4 style="color:#15803d; font-size:0.85rem; font-weight:800; margin-bottom:10px; text-transform:uppercase;">📱 (B) Uang Digital & Ditahan</h4>
-                        <div class="summary-item"><span>💳 QRIS:</span><strong id="rtQris">Rp 0</strong></div>
-                        <div class="summary-item"><span>🛵 Gojek:</span><strong id="rtGojek">Rp 0</strong></div>
-                        <div class="summary-item"><span>🛵 Grab:</span><strong id="rtGrab">Rp 0</strong></div>
+                        <div class="summary-item"><span>💳 QRIS:</span><strong id="rtQris">Rp 0</span></div>
+                        <div class="summary-item"><span>🛵 Gojek:</span><strong id="rtGojek">Rp 0</span></div>
+                        <div class="summary-item"><span>🛵 Grab:</span><strong id="rtGrab">Rp 0</span></div>
                         <div class="summary-item"><span>🛍️ Shopee:</span><strong id="rtShopee">Rp 0</strong></div>
                         <div class="summary-item bold" style="color:#854d0e; border-top:1px dashed #4ade80; padding-top:8px; margin-top:8px;">
                             <span>🪙 Modal Laci Besok:</span><strong id="rtModalBesok">Rp 0</strong>
@@ -1033,7 +1052,10 @@
         </div>
     </div>
 </div>
-<!-- 1. HALAMAN PENUH MASTER PRODUK -->
+
+<!-- ==========================================
+1. HALAMAN PENUH MASTER PRODUK (DIUPDATE)
+========================================== -->
 <div id="layar-produk" style="display: none; padding: 15px;">
     <!-- Bagian Header & Tombol Aksi -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
@@ -1062,6 +1084,7 @@
                     <th style="text-align: left;">Nama Produk</th>
                     <th style="text-align: right;">Modal</th>
                     <th style="text-align: right;">Jual</th>
+                    <th style="text-align: center; color: #0284c7;">📦 Gudang</th>
                     <th style="text-align: center;">Aksi</th>
                 </tr>
             </thead>
@@ -1071,7 +1094,9 @@
     </div>
 </div>
 
-<!-- 2. POP-UP (MODAL) KHUSUS FORM TAMBAH/EDIT -->
+<!-- ==========================================
+2. POP-UP (MODAL) KHUSUS FORM TAMBAH/EDIT (DIUPDATE)
+========================================== -->
 <div class="modal" id="modalKelolaProduk">
     <div class="modal-content">
         <h3 style="font-size:1.1rem; font-weight:800; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📝 Form Produk</h3>
@@ -1100,9 +1125,24 @@
             </div>
             <div class="form-group">
                 <label>Margin:</label>
-                <!-- Diberi warna latar hijau agar beda -->
                 <input type="number" id="inputMarginProduk" readonly style="color:#16a34a; background: #f0fdf4;">
             </div>
+            
+            <!-- KODE BARU: BAGIAN INVENTORY GUDANG -->
+            <div class="grid-mobile" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <div class="form-group">
+                    <label style="color: #0284c7;">📦 Stok Gudang Awal (Pcs):</label>
+                    <input type="number" id="inputStokGudang" min="0" value="0" required style="border-color: #7dd3fc; background: #f0f9ff;">
+                    <div style="font-size: 0.65rem; color: #0284c7; margin-top: 2px;">*Stok fisik di ruang penyimpanan belakang.</div>
+                </div>
+                <div class="form-group">
+                    <label style="color: #dc2626;">🚨 Batas Minimum (Warning):</label>
+                    <input type="number" id="inputBatasMinimum" min="0" value="10" required style="border-color: #fca5a5; background: #fef2f2;">
+                    <div style="font-size: 0.65rem; color: #dc2626; margin-top: 2px;">*Muncul warning order jika total stok &le; angka ini.</div>
+                </div>
+            </div>
+            <!-- KODE BARU SELESAI -->
+
             <div style="display:flex; gap:8px; margin-top:20px;">
                 <button type="button" class="btn btn-outline" onclick="tutupModalKelolaProduk()">Batal</button>
                 <button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button>
@@ -1110,6 +1150,7 @@
         </form>
     </div>
 </div>
+
 <div class="modal" id="modalKas"><div class="modal-content"><h3 id="modalKasJudul" style="font-size:1.1rem; font-weight:800;">Kelola Kas</h3><form onsubmit="prosesTransaksiKas(event)"><input type="hidden" id="modalJenisKas"><div class="form-group"><label>Tipe Transaksi:</label><select id="modalTipeTx"><option value="masuk">🟢 SETOR (+)</option><option value="keluar">🔴 TARIK (-)</option></select></div><div class="form-group"><label>Nominal (Rp):</label><input type="number" id="modalNominalTx" required min="1"></div><div class="form-group"><label>Catatan:</label><input type="text" id="modalKetTx" required></div><div style="display:flex; gap:8px; margin-top:16px;"><button type="button" class="btn btn-danger" onclick="tutupModalKas()">Batal</button><button type="submit" class="btn btn-success">Simpan</button></div></form></div></div>
 
 <div class="modal" id="modalFeedback">
@@ -1356,7 +1397,6 @@
     <div class="pdf-box"><div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;">Rp 1.500.000</span></div><div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div><div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div></div>
     <div style="margin-top:40px; text-align:right; font-size:0.85rem;"><p>Jakarta, <span id="pdfSgTglCetak"></span></p><br><br><br><p style="font-weight:bold;">( Owner / Pengelola )</p></div>
 </div>
-
     <script>
     // ==========================================
     // VARIABEL GLOBAL & FIREBASE
