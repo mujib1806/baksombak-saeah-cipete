@@ -3135,13 +3135,16 @@ function terapkanFilterReseller() {
     const element = document.getElementById('pdfAreaBakso'); 
     element.style.display = 'block'; 
 
+   const element = document.getElementById('pdfAreaBakso'); 
+    element.style.display = 'block'; 
+
     html2pdf().set({ 
         margin: 5, 
         filename: `Setoran_Bakso_${tgl}.pdf`, 
         html2canvas: { scale: 2 }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
-    }).output('blob').then(function(pdfBlob) { 
+    }).from(element).output('blob').then(function(pdfBlob) { 
         element.style.display = 'none';
 
         const namaFile = `Setoran_Bakso_${tgl}.pdf`;
