@@ -2647,13 +2647,14 @@ function bukaFilterReseller() {
     }
 
     window.listProdukResellerAktif.forEach(nama => {
+        const namaAman = nama.replace(/"/g, '&quot;'); // Cegah error jika ada tanda kutip
         const isDisembunyikan = produkResellerDisembunyikan.includes(nama);
         const isChecked = isDisembunyikan ? '' : 'checked'; 
 
         container.innerHTML += `
             <label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.85rem; color:#334155;">
-                <input type="checkbox" class="cb-reseller" value="${nama}" ${isChecked} style="width:16px; height:16px;">
-                ${nama}
+                <input type="checkbox" class="cb-reseller" value="${namaAman}" ${isChecked} style="width:16px; height:16px;">
+                ${namaAman}
             </label>
         `;
     });
@@ -2672,9 +2673,8 @@ function terapkanFilterReseller() {
         }
     });
     tutupFilterReseller();
-    renderDashboardGrafik(); 
+    renderDashboardGrafik(); // Refresh grafik otomatis
 }
-
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS
     // ==========================================
@@ -2794,11 +2794,12 @@ function terapkanFilterReseller() {
         const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
         const topBakso = sortSliceTop5(produkBakso); 
 
-        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
+                window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
         let resellerDifilter = Object.keys(produkReseller)
             .filter(nama => !produkResellerDisembunyikan.includes(nama))
             .map(nama => ({nama: nama, qty: produkReseller[nama]}))
             .sort((a,b) => b.qty - a.qty);
+
        const optHorizontalBar = { 
             indexAxis: 'y', 
             responsive: true, 
@@ -2830,15 +2831,29 @@ function terapkanFilterReseller() {
         const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); 
         chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
 
+        // TRIK JITU: Hapus elemen kanvas lama sepenuhnya dan buat yang baru agar tidak nyangkut
         if(chartTopReseller) chartTopReseller.destroy(); 
-        const canvasReseller = document.getElementById('chartTopReseller');
+        
+        const oldCanvasReseller = document.getElementById('chartTopReseller');
+        if (oldCanvasReseller) {
+            const parentReseller = oldCanvasReseller.parentNode;
+            oldCanvasReseller.remove();
+            
+            const newCanvasReseller = document.createElement('canvas');
+            newCanvasReseller.id = 'chartTopReseller';
+            const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
+            newCanvasReseller.style.height = tinggiDibutuhkan + 'px';
+            parentReseller.appendChild(newCanvasReseller);
 
-        const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
-        canvasReseller.style.height = tinggiDibutuhkan + 'px';
-        const ctxReseller = canvasReseller.getContext('2d'); 
-
-        chartTopReseller = new Chart(ctxReseller, { type: 'bar', data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar }); 
+            const ctxReseller = newCanvasReseller.getContext('2d'); 
+            chartTopReseller = new Chart(ctxReseller, { 
+                type: 'bar', 
+                data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, 
+                options: optHorizontalBar 
+            }); 
+        }
     }
+
 
     // ==========================================
     // FUNGSI CETAK PDF
