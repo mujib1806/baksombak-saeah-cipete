@@ -927,7 +927,14 @@
             <div class="card" style="border-top:4px solid #ea580c;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                     <h2 style="margin:0;">🍲 Jual Bakso Malang</h2>
-                    <button onclick="generatePDFBaksoHarian()" class="btn btn-pdf" style="width:auto; padding:8px 12px; margin:0; border-radius:12px;">🖨️ Cetak PDF</button>
+                    <!-- KODE BARU: Input Nama Kasir Bakso -->
+<div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; margin-right: 10px;">
+    <span style="font-size: 0.8rem; font-weight: bold; color: #475569;">Kasir:</span>
+    <input type="text" id="inputNamaKasirBakso" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 80px; font-size: 0.8rem;" placeholder="Nama...">
+</div>
+<!-- KODE BARU SELESAI -->
+
+<button onclick="generatePDFBaksoHarian()" class="btn btn-pdf" style="width:auto; padding:8px 12px; margin:0; border-radius:12px;">🖨️ Cetak PDF</button>
                 </div>
                 <div class="table-wrapper"><table class="table-freeze"><thead><tr><th>No</th><th style="text-align:left;">Varian Produk</th><th style="background:#ffedd5;">Awal</th><th style="background:#dcfce7; color:#166534;">Tambah</th><th style="background:#fee2e2; color:#991b1b;">Kurang</th><th style="background:#f1f5f9; color:#0f172a;">Total</th><th style="background:#e0e7ff;">Laku</th><th style="background:#fee2e2;">Sisa</th><th>Modal</th><th>Jual</th><th>Omset</th><th>Untung</th></tr></thead><tbody id="tbodyBaksoSetoran"></tbody></table></div>
             </div>
@@ -1294,6 +1301,16 @@
             </tbody>
         </table>
     </div>
+
+    <!-- KODE BARU: AREA TANDA TANGAN SETORAN BAKSO -->
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #000;">
+        <div style="text-align: center; width: 200px;">
+            <p style="margin: 0; font-size: 12px;">Jakarta Selatan, <span id="pdfTanggalCetakBakso">...</span></p>
+            <p style="margin: 5px 0 50px 0; font-size: 12px;">Diserahkan Oleh,</p>
+            <p id="pdfNamaPembuatBaksoCetak" style="margin: 0; font-size: 14px; font-weight: bold; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+        </div>
+    </div>
+    <!-- SELESAI TANDA TANGAN -->
     <div style="font-size: 12px; font-weight: bold; color: #ea580c; border-left: 4px solid #ea580c; padding-left: 8px; margin-bottom: 10px;">2. RINGKASAN SETORAN KE DAPUR</div>
     <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 15px; font-size: 12px;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px;">
@@ -3006,80 +3023,103 @@ function terapkanFilterReseller() {
     }); 
 }
     function generatePDFBaksoHarian() { 
-        if (typeof html2pdf === 'undefined') return; 
-        const tgl = document.getElementById('tglOps').value; 
-        const items = dbStok[tgl] || []; 
-        let no = 1; 
-        let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumLaku = 0, sumSisa = 0, sumSetoran = 0, sumProfit = 0; 
-        const tbody = document.getElementById('pdfTbodyBaksoHarian'); 
-        tbody.innerHTML = ''; 
+    if (typeof html2pdf === 'undefined') return; 
+    
+    const tgl = document.getElementById('tglOps').value; 
+    const items = dbStok[tgl] || []; 
+    let no = 1; 
+    let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumLaku = 0, sumSisa = 0, sumSetoran = 0, sumProfit = 0; 
+    
+    const tbody = document.getElementById('pdfTbodyBaksoHarian'); 
+    tbody.innerHTML = ''; 
+    
+    items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { 
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
+        const valSisa = sisa !== null ? sisa : 0; 
         
-        items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { 
-            const awal = parseFloat(p.awal) || 0; 
-            const tambah = parseFloat(p.tambah) || 0; 
-            const kurang = parseFloat(p.kurang) || 0; 
-            const totalStok = awal + tambah - kurang; 
-            const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
-            const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
-            const valSisa = sisa !== null ? sisa : 0; 
+        if (totalStok > 0 || terjual > 0) { 
+            const modalTotalItem = terjual * p.modal; 
+            const profitTotalItem = terjual * p.margin; 
+            sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumLaku += terjual; sumSisa += valSisa; sumSetoran += modalTotalItem; sumProfit += profitTotalItem; 
             
-            if (totalStok > 0 || terjual > 0) { 
-                const modalTotalItem = terjual * p.modal; 
-                const profitTotalItem = terjual * p.margin; 
-                sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumLaku += terjual; sumSisa += valSisa; sumSetoran += modalTotalItem; sumProfit += profitTotalItem; 
-                tbody.innerHTML += `<tr><td style="text-align:center;">${no++}</td><td><strong>${p.nama}</strong></td><td style="text-align:center;">${awal}</td><td style="text-align:center; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; font-weight:bold;">${totalStok}</td><td style="text-align:center; font-weight:bold; color:#0f172a;">${terjual}</td><td style="text-align:center; color:#dc2626; font-weight:bold;">${valSisa}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right; font-weight:bold; color:#d97706;">${formatRupiah(modalTotalItem)}</td><td style="text-align:right; font-weight:bold; color:#16a34a;">${formatRupiah(profitTotalItem)}</td></tr>`; 
-            } 
-        }); 
-        
-        if (sumTotalStok === 0 && sumLaku === 0) { 
-            alert("Belum ada data stok awal atau terjual untuk dicetak."); 
-            return; 
+            tbody.innerHTML += `<tr><td style="text-align:center;">${no++}</td><td><strong>${p.nama}</strong></td><td style="text-align:center;">${awal}</td><td style="text-align:center; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; font-weight:bold;">${totalStok}</td><td style="text-align:center; font-weight:bold; color:#0f172a;">${terjual}</td><td style="text-align:center; color:#dc2626; font-weight:bold;">${valSisa}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right; font-weight:bold; color:#d97706;">${formatRupiah(modalTotalItem)}</td><td style="text-align:right; font-weight:bold; color:#16a34a;">${formatRupiah(profitTotalItem)}</td></tr>`; 
         } 
-        
-        tbody.innerHTML += `<tr style="background:#fed7aa; font-weight:800; font-size:0.9rem; border-top: 2px solid #ea580c;"><td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${sumLaku}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td></td><td style="text-align:right; color:#b45309;">${formatRupiah(sumSetoran)}</td><td style="text-align:right; color:#15803d;">${formatRupiah(sumProfit)}</td></tr>`; 
-        
-        const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '-', pengeluaran: 0 }; 
-        document.getElementById('pdfBaksoTgl').innerText = `Tanggal Setoran: ${tgl}`; 
-        document.getElementById('pdfBaksoModal').innerText = formatRupiah(sumSetoran); 
-        document.getElementById('pdfBaksoCash').innerText = formatRupiah(dataSetoran.cash); 
-        document.getElementById('pdfBaksoKetKeluar').innerText = dataSetoran.ket || '-'; 
-        document.getElementById('pdfBaksoKeluar').innerText = formatRupiah(dataSetoran.pengeluaran); 
-        document.getElementById('pdfBaksoTF').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.cash - dataSetoran.pengeluaran)); 
-        document.getElementById('pdfBaksoTotalSetor').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.pengeluaran)); 
-        
-        const element = document.getElementById('pdfAreaBakso'); 
-        element.style.display = 'block'; 
-        html2pdf().set({ 
-            margin: 5, 
-            filename: `Setoran_Bakso_${tgl}.pdf`, 
-            html2canvas: { scale: 2 }, 
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-        }).from(element).output('blob').then(function(pdfBlob) { 
-            element.style.display = 'none';
-            
-            const namaFile = `Setoran_Bakso_${tgl}.pdf`;
-            const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
-            
-            if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
-                navigator.share({
-                    files: [filePdf],
-                    title: 'Laporan Setoran',
-                    text: `Berikut Laporan Setoran Bakso Malang tanggal ${tgl}.`
-                }).then(() => {
-                    console.log('PDF berhasil dibagikan');
-                }).catch((error) => {
-                    console.error('Batal membagikan:', error);
-                });
-            } else {
-                const urlObj = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.href = urlObj;
-                link.download = namaFile;
-                link.click();
-                URL.revokeObjectURL(urlObj);
-            }
-        });
+    }); 
+    
+    if (sumTotalStok === 0 && sumLaku === 0) { 
+        alert("Belum ada data stok awal atau terjual untuk dicetak."); 
+        return; 
+    } 
+    
+    tbody.innerHTML += `<tr style="background:#fed7aa; font-weight:800; font-size:0.9rem; border-top: 2px solid #ea580c;"><td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${sumLaku}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td></td><td style="text-align:right; color:#b45309;">${formatRupiah(sumSetoran)}</td><td style="text-align:right; color:#15803d;">${formatRupiah(sumProfit)}</td></tr>`; 
+    
+    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '-', pengeluaran: 0 }; 
+    document.getElementById('pdfBaksoTgl').innerText = `Tanggal Setoran: ${tgl}`; 
+    document.getElementById('pdfBaksoModal').innerText = formatRupiah(sumSetoran); 
+    document.getElementById('pdfBaksoCash').innerText = formatRupiah(dataSetoran.cash); 
+    document.getElementById('pdfBaksoKetKeluar').innerText = dataSetoran.ket || '-'; 
+    document.getElementById('pdfBaksoKeluar').innerText = formatRupiah(dataSetoran.pengeluaran); 
+    document.getElementById('pdfBaksoTF').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.cash - dataSetoran.pengeluaran)); 
+    document.getElementById('pdfBaksoTotalSetor').innerText = formatRupiah(Math.max(0, sumSetoran - dataSetoran.pengeluaran)); 
+    
+    // --- KODE BARU: MEMBACA NAMA KASIR BAKSO & TANGGAL ---
+    let namaKasir = document.getElementById('inputNamaKasirBakso').value;
+    if (!namaKasir || namaKasir.trim() === "") {
+        namaKasir = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
+        document.getElementById('inputNamaKasirBakso').value = namaKasir;
     }
+    
+    if (document.getElementById('pdfNamaPembuatBaksoCetak')) {
+        document.getElementById('pdfNamaPembuatBaksoCetak').innerText = namaKasir;
+    }
+    
+    const hariIni = new Date();
+    const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (document.getElementById('pdfTanggalCetakBakso')) {
+        document.getElementById('pdfTanggalCetakBakso').innerText = formatTanggal;
+    }
+    // -----------------------------------------------------
+
+    const element = document.getElementById('pdfAreaBakso'); 
+    element.style.display = 'block'; 
+    
+    html2pdf().set({ 
+        margin: 5, 
+        filename: `Setoran_Bakso_${tgl}.pdf`, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Agar tanda tangan aman
+    }).from(element).output('blob').then(function(pdfBlob) { 
+        element.style.display = 'none';
+        
+        const namaFile = `Setoran_Bakso_${tgl}.pdf`;
+        const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
+            navigator.share({
+                files: [filePdf],
+                title: 'Laporan Setoran',
+                text: `Berikut Laporan Setoran Bakso Malang tanggal ${tgl}.`
+            }).then(() => {
+                console.log('PDF berhasil dibagikan');
+            }).catch((error) => {
+                console.error('Batal membagikan:', error);
+            });
+        } else {
+            const urlObj = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = urlObj;
+            link.download = namaFile;
+            link.click();
+            URL.revokeObjectURL(urlObj);
+        }
+    });
+}
    function generatePDFTransfer() { 
         if (typeof html2pdf === 'undefined') return; 
         
