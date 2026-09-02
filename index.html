@@ -709,7 +709,15 @@
                     <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
                         <button onclick="document.getElementById('fileImportPagi').click()" class="btn btn-warning" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: #fbbf24; color:#78350f;">📥 Import CSV</button>
                         <button onclick="downloadTemplatePagi()" class="btn btn-outline" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; border-color:#cbd5e1; color:#475569;">📤 Export</button>
-                        <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">
+                       <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">
+                        
+                        <!-- KODE BARU: Input Nama Kasir -->
+                        <div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px;">
+                            <span style="font-size: 0.7rem; font-weight: bold; color: #475569;">Kasir:</span>
+                            <input type="text" id="inputNamaKasirHarian" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 60px; font-size: 0.7rem;" placeholder="Nama...">
+                        </div>
+                        <!-- KODE BARU SELESAI -->
+
                         <button onclick="generatePDFHarian()" class="btn btn-pdf" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px;">📄 Cetak</button>
                     </div>
                 </div>
@@ -1172,6 +1180,17 @@
     </div>
     <div class="pdf-section-title" style="border-left-color: #94a3b8;">DATA BARANG TERJUAL</div>
     <div><table><thead id="pdfTHeadHarianBarang"></thead><tbody id="pdfTbodyHarianBarang"></tbody></table></div>
+    
+    <!-- KODE BARU: AREA TANDA TANGAN KASIR HARIAN -->
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #000;">
+        <div style="text-align: center; width: 200px;">
+            <p style="margin: 0; font-size: 12px;">Depok, <span id="pdfTanggalCetakHarian">...</span></p>
+            <p style="margin: 5px 0 50px 0; font-size: 12px;">Kasir,</p>
+            <p id="pdfNamaPembuatHarianCetak" style="margin: 0; font-size: 14px; font-weight: bold; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+        </div>
+    </div>
+    <!-- SELESAI TANDA TANGAN -->
+
 </div>
     <div id="pdfAreaBakso" style="display: none; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff;">
     <!-- KERANGKA PDF ORDER VENDOR -->
@@ -2884,8 +2903,108 @@ function terapkanFilterReseller() {
             }
         });
     }
-    function generatePDFHarian() { if (typeof html2pdf === 'undefined') return; const tgl = document.getElementById('tglOps').value; const isOwner = currentUser && currentUser.role === 'owner'; document.getElementById('pdfHrTitleProfit').style.display = isOwner ? 'block' : 'none'; document.getElementById('pdfHrBoxProfit').style.display = isOwner ? 'block' : 'none'; const pdfTHead = document.getElementById('pdfTHeadHarianBarang'); pdfTHead.innerHTML = `<tr><th>Produk</th><th style="text-align:center;">Laku</th><th style="text-align:right;">Omset</th>${isOwner ? '<th style="text-align:right;">Profit</th>' : ''}</tr>`; const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0 }; const totalMasuk = (kas.cash||0)+(kas.qris||0)+(kas.gojek||0)+(kas.grab||0)+(kas.shopee||0)+(kas.petty||0); let totalKeluar = 0, txtKeluar = ""; dbPengeluaranHarian.filter(p => p.tgl === tgl).forEach(p => { totalKeluar += p.nominal; txtKeluar += `<div class="pdf-row"><span>${p.ket}</span><span>${formatRupiah(p.nominal)}</span></div>`; }); const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; if(dataSetoran.pengeluaran > 0) { totalKeluar += dataSetoran.pengeluaran; txtKeluar += `<div class="pdf-row"><span>${dataSetoran.ket || 'Keluar Dapur'} (Dapur)</span><span>${formatRupiah(dataSetoran.pengeluaran)}</span></div>`; } document.getElementById('pdfHariTgl').innerText = `Tanggal: ${tgl}`; document.getElementById('pdfHrCash').innerText = formatRupiah(kas.cash); document.getElementById('pdfHrQris').innerText = formatRupiah(kas.qris); document.getElementById('pdfHrGojek').innerText = formatRupiah(kas.gojek); document.getElementById('pdfHrGrab').innerText = formatRupiah(kas.grab); document.getElementById('pdfHrShopee').innerText = formatRupiah(kas.shopee); document.getElementById('pdfHrPetty').innerText = formatRupiah(kas.petty); document.getElementById('pdfHrTotalMasuk').innerText = formatRupiah(totalMasuk); document.getElementById('pdfHrListPengeluaran').innerHTML = txtKeluar || "<small>Tidak ada pengeluaran harian</small>"; document.getElementById('pdfHrTotalKeluar').innerText = formatRupiah(totalKeluar); let profitKotor = 0; const pdfTbody = document.getElementById('pdfTbodyHarianBarang'); pdfTbody.innerHTML = ''; (dbStok[tgl] || []).forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const laku = totalStok - sisa; if(laku > 0) { const o = laku * p.jual; const pr = laku * p.margin; profitKotor += pr; pdfTbody.innerHTML += `<tr><td><strong>${p.nama}</strong><br><small style="color:#64748b;">${p.kategori}</small></td><td style="text-align:center;">${laku}</td><td style="text-align:right;">${formatRupiah(o)}</td>${isOwner ? `<td style="text-align:right;">${formatRupiah(pr)}</td>` : ''}</tr>`; } } }); const pengeluaranHarianSaja = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const gaji = (dbGajiHarian[tgl] || {nominal: 0}).nominal; const profitBersih = profitKotor - gaji - pengeluaranHarianSaja; const basis = Math.max(0, profitBersih); document.getElementById('pdfHrKotor').innerText = formatRupiah(profitKotor); document.getElementById('pdfHrGaji').innerText = formatRupiah(gaji); document.getElementById('pdfHrPengeluaranHarian').innerText = formatRupiah(pengeluaranHarianSaja); document.getElementById('pdfHrBersih').innerText = formatRupiah(profitBersih); document.getElementById('pdfHrDarurat').innerText = formatRupiah(basis * 0.20); document.getElementById('pdfHrAnak').innerText = formatRupiah(basis * 0.40); document.getElementById('pdfHrLaba').innerText = formatRupiah(basis * 0.40); const element = document.getElementById('pdfAreaHarian'); element.style.display = 'block'; html2pdf().set({ margin: 5, filename: `Kasir_Harian_${tgl}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(() => { element.style.display = 'none'; }); }
+   function generatePDFHarian() { 
+    if (typeof html2pdf === 'undefined') return; 
+    
+    const tgl = document.getElementById('tglOps').value; 
+    const isOwner = currentUser && currentUser.role === 'owner'; 
+    
+    document.getElementById('pdfHrTitleProfit').style.display = isOwner ? 'block' : 'none'; 
+    document.getElementById('pdfHrBoxProfit').style.display = isOwner ? 'block' : 'none'; 
+    
+    const pdfTHead = document.getElementById('pdfTHeadHarianBarang'); 
+    pdfTHead.innerHTML = `<tr><th>Produk</th><th style="text-align:center;">Laku</th><th style="text-align:right;">Omset</th>${isOwner ? '<th style="text-align:right;">Profit</th>' : ''}</tr>`; 
+    
+    const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0 }; 
+    const totalMasuk = (kas.cash||0)+(kas.qris||0)+(kas.gojek||0)+(kas.grab||0)+(kas.shopee||0)+(kas.petty||0); 
+    
+    let totalKeluar = 0, txtKeluar = ""; 
+    dbPengeluaranHarian.filter(p => p.tgl === tgl).forEach(p => { 
+        totalKeluar += p.nominal; 
+        txtKeluar += `<div class="pdf-row"><span>${p.ket}</span><span>${formatRupiah(p.nominal)}</span></div>`; 
+    }); 
+    
+    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
+    if(dataSetoran.pengeluaran > 0) { 
+        totalKeluar += dataSetoran.pengeluaran; 
+        txtKeluar += `<div class="pdf-row"><span>${dataSetoran.ket || 'Keluar Dapur'} (Dapur)</span><span>${formatRupiah(dataSetoran.pengeluaran)}</span></div>`; 
+    } 
+    
+    document.getElementById('pdfHariTgl').innerText = `Tanggal: ${tgl}`; 
+    document.getElementById('pdfHrCash').innerText = formatRupiah(kas.cash); 
+    document.getElementById('pdfHrQris').innerText = formatRupiah(kas.qris); 
+    document.getElementById('pdfHrGojek').innerText = formatRupiah(kas.gojek); 
+    document.getElementById('pdfHrGrab').innerText = formatRupiah(kas.grab); 
+    document.getElementById('pdfHrShopee').innerText = formatRupiah(kas.shopee); 
+    document.getElementById('pdfHrPetty').innerText = formatRupiah(kas.petty); 
+    document.getElementById('pdfHrTotalMasuk').innerText = formatRupiah(totalMasuk); 
+    document.getElementById('pdfHrListPengeluaran').innerHTML = txtKeluar || "<small>Tidak ada pengeluaran harian</small>"; 
+    document.getElementById('pdfHrTotalKeluar').innerText = formatRupiah(totalKeluar); 
+    
+    let profitKotor = 0; 
+    const pdfTbody = document.getElementById('pdfTbodyHarianBarang'); 
+    pdfTbody.innerHTML = ''; 
+    (dbStok[tgl] || []).forEach(p => { 
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        if (sisa !== null && sisa <= totalStok) { 
+            const laku = totalStok - sisa; 
+            if(laku > 0) { 
+                const o = laku * p.jual; 
+                const pr = laku * p.margin; 
+                profitKotor += pr; 
+                pdfTbody.innerHTML += `<tr><td><strong>${p.nama}</strong><br><small style="color:#64748b;">${p.kategori}</small></td><td style="text-align:center;">${laku}</td><td style="text-align:right;">${formatRupiah(o)}</td>${isOwner ? `<td style="text-align:right;">${formatRupiah(pr)}</td>` : ''}</tr>`; 
+            } 
+        } 
+    }); 
+    
+    const pengeluaranHarianSaja = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+    const gaji = (dbGajiHarian[tgl] || {nominal: 0}).nominal; 
+    const profitBersih = profitKotor - gaji - pengeluaranHarianSaja; 
+    const basis = Math.max(0, profitBersih); 
+    
+    document.getElementById('pdfHrKotor').innerText = formatRupiah(profitKotor); 
+    document.getElementById('pdfHrGaji').innerText = formatRupiah(gaji); 
+    document.getElementById('pdfHrPengeluaranHarian').innerText = formatRupiah(pengeluaranHarianSaja); 
+    document.getElementById('pdfHrBersih').innerText = formatRupiah(profitBersih); 
+    document.getElementById('pdfHrDarurat').innerText = formatRupiah(basis * 0.20); 
+    document.getElementById('pdfHrAnak').innerText = formatRupiah(basis * 0.40); 
+    document.getElementById('pdfHrLaba').innerText = formatRupiah(basis * 0.40); 
 
+    // --- KODE BARU: MEMBACA NAMA KASIR & TANGGAL ---
+    let namaKasir = document.getElementById('inputNamaKasirHarian').value;
+    if (!namaKasir || namaKasir.trim() === "") {
+        namaKasir = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
+        document.getElementById('inputNamaKasirHarian').value = namaKasir;
+    }
+    
+    if (document.getElementById('pdfNamaPembuatHarianCetak')) {
+        document.getElementById('pdfNamaPembuatHarianCetak').innerText = namaKasir;
+    }
+    
+    const hariIni = new Date();
+    const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (document.getElementById('pdfTanggalCetakHarian')) {
+        document.getElementById('pdfTanggalCetakHarian').innerText = formatTanggal;
+    }
+    // ------------------------------------------------
+    
+    const element = document.getElementById('pdfAreaHarian'); 
+    element.style.display = 'block'; 
+    
+    html2pdf().set({ 
+        margin: 5, 
+        filename: `Kasir_Harian_${tgl}.pdf`, 
+        html2canvas: { scale: 2 }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Agar tanda tangan tidak terbelah
+    }).from(element).save().then(() => { 
+        element.style.display = 'none'; 
+    }); 
+}
     function generatePDFBaksoHarian() { 
         if (typeof html2pdf === 'undefined') return; 
         const tgl = document.getElementById('tglOps').value; 
