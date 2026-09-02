@@ -1398,6 +1398,30 @@
     <div class="pdf-box"><div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;">Rp 1.500.000</span></div><div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div><div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div></div>
     <div style="margin-top:40px; text-align:right; font-size:0.85rem;"><p>Jakarta, <span id="pdfSgTglCetak"></span></p><br><br><br><p style="font-weight:bold;">( Owner / Pengelola )</p></div>
 </div>
+
+    <!-- ==========================================
+     MODAL FILTER RESELLER
+========================================== -->
+<div id="modalFilterReseller" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: #ffffff; width: 100%; max-width: 350px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1rem; color: #0f172a;">🛠️ Filter Ranking Reseller</h3>
+            <button onclick="tutupFilterReseller()" style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">✖</button>
+        </div>
+        
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 10px;">
+            Hilangkan centang untuk menyembunyikan produk dari grafik:
+        </div>
+
+        <!-- Wadah List Checkbox -->
+        <div id="listCheckboxReseller" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+            <!-- JS akan mengisi daftar checkbox ke sini -->
+        </div>
+
+        <button onclick="terapkanFilterReseller()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">✅ Terapkan Filter</button>
+    </div>
+</div>
+
    <script>
     // ==========================================
     // VARIABEL GLOBAL & FIREBASE
