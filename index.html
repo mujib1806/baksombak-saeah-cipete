@@ -1083,9 +1083,10 @@
                     <th style="width: 40px; text-align: center;">No</th>
                     <th style="text-align: left;">Nama Produk</th>
                     <th style="text-align: right;">Modal</th>
-                    <th style="text-align: right;">Jual</th>
-                    <th style="text-align: center; color: #0284c7;">📦 Gudang</th>
-                    <th style="text-align: center;">Aksi</th>
+                   <th style="text-align: right;">Jual</th>
+                   <th style="text-align: center; color: #0284c7;">📦 Gudang</th>
+                   <th style="text-align: center; color: #dc2626;">🚨 Min.</th> <!-- INI TAMBAHANNYA -->
+                   <th style="text-align: center;">Aksi</th>
                 </tr>
             </thead>
             <!-- Target JavaScript lama Anda tetap tidak berubah -->
@@ -2551,15 +2552,24 @@ function hapusMutasiKas(docId) {
     }
     
     function renderTabelMasterProduk() { 
-        const t=document.getElementById('tbodyMasterProduk'); 
-        t.innerHTML=''; 
-        masterProduk.forEach((p,i)=>{ 
-            t.innerHTML+=`<tr>
+        const t = document.getElementById('tbodyMasterProduk'); 
+        t.innerHTML = ''; 
+        masterProduk.forEach((p, i) => { 
+            const gudang = parseFloat(p.stokGudang) || 0;
+            const batas = parseFloat(p.batasMinimum) || 0;
+            
+            // Logika Cerdas: Jika batas diatur, dan stok gudang <= batas, warna jadi merah!
+            let warnaBatas = (batas > 0 && gudang <= batas) 
+                ? 'color: #dc2626; font-weight: bold; background: #fef2f2;' // Merah Alert
+                : 'color: #64748b; background: #f8fafc; font-weight: 600;';  // Abu-abu Aman
+
+            t.innerHTML += `<tr>
                 <td style="text-align:center;">${i+1}</td>
                 <td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td>
                 <td style="text-align:right;">${p.modal}</td>
                 <td style="text-align:right;">${p.jual}</td>
-                <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">${p.stokGudang || 0}</td>
+                <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">${gudang}</td>
+                <td style="text-align:center; font-size:0.95rem; ${warnaBatas}">${batas}</td>
                 <td style="text-align:center;">
                     <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit">✏️</button>
                     <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
