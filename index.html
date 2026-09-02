@@ -2568,19 +2568,30 @@ function hapusMutasiKas(docId) {
         }); 
     }
     
-    function editProdukMaster(i) { 
-        const p=masterProduk[i]; 
-        document.getElementById('editIndexProduk').value=i; 
-        document.getElementById('inputNamaProduk').value=p.nama; 
-        document.getElementById('selectKategoriProduk').value=p.kategori; 
-        document.getElementById('inputModalProduk').value=p.modal; 
-        document.getElementById('inputJualProduk').value=p.jual; 
-        // Mengisi form gudang
+   function editProdukMaster(i) { 
+        // 1. Pastikan daftar dropdown kategori dimuat dulu
+        const select = document.getElementById('selectKategoriProduk'); 
+        select.innerHTML = ''; 
+        daftarKategori.forEach(k => { select.innerHTML += `<option value="${k}">${k}</option>` });
+        
+        // 2. Ambil data produk yang diklik
+        const p = masterProduk[i]; 
+        document.getElementById('editIndexProduk').value = i; 
+        document.getElementById('inputNamaProduk').value = p.nama; 
+        document.getElementById('selectKategoriProduk').value = p.kategori; 
+        document.getElementById('inputModalProduk').value = p.modal; 
+        document.getElementById('inputJualProduk').value = p.jual; 
+        
+        // 3. Mengisi form gudang
         document.getElementById('inputStokGudang').value = p.stokGudang || 0;
         document.getElementById('inputBatasMinimum').value = p.batasMinimum || 10;
         
+        // 4. Kalkulasi otomatis & ubah tombol
         hitungMarginForm(); 
-        document.getElementById('btnSimpanProduk').innerText="Update"; 
+        document.getElementById('btnSimpanProduk').innerText = "Update"; 
+        
+        // 5. INI YANG KETINGGALAN: Munculkan Modalnya!
+        document.getElementById('modalKelolaProduk').classList.add('active');
     }
     
     function hapusProdukMaster(i) { 
