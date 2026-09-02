@@ -506,6 +506,14 @@
             🌟 Laporan Berkala
         </h2>
         <div style="display: flex; gap: 12px; align-items: center;">
+            
+            <!-- KODE BARU DIMULAI DARI SINI -->
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.9); padding: 5px 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                <span style="font-size: 13px; font-weight: bold; color: #475569;">Kasir:</span>
+                <input type="text" id="inputNamaPembuatLaporan" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 100px; font-size: 14px;" placeholder="Nama...">
+            </div>
+            <!-- KODE BARU SELESAI DI SINI -->
+
             <button class="hover-pop" onclick="cetakPDFBerkala()" style="background-color: #ef4444; color: white; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);">
                 🖨️ Cetak PDF
             </button>
@@ -585,6 +593,17 @@
                 </table>
             </div>
         </div>
+        
+        <!-- KODE BARU TANDA TANGAN DIMULAI DARI SINI -->
+        <div style="margin-top: 50px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #0f172a;">
+            <div style="text-align: center; width: 220px;">
+                <p style="margin: 0; font-size: 14px;">Depok, <span id="pdfTanggalCetakLaporan">...</span></p>
+                <p style="margin: 5px 0 70px 0; font-size: 14px;">Dibuat Oleh,</p>
+                <p id="pdfNamaPembuatCetak" style="margin: 0; font-size: 16px; font-weight: 800; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+                <p style="margin: 3px 0 0 0; font-size: 12px; color: #475569;">Penanggung Jawab</p>
+            </div>
+        </div>
+        <!-- KODE BARU TANDA TANGAN SELESAI DI SINI -->
         
     </div>
 </div>
@@ -3382,6 +3401,24 @@ function prosesTampilLaporanBerkala() {
 function cetakPDFBerkala() {
     const elemen = document.getElementById('areaCetakLaporan');
     const periode = document.getElementById('teksPeriodeLaporan').innerText.replace('Periode: ', '').replace(' s/d ', '_');
+    
+    // --- KODE BARU: MENGAMBIL NAMA KASIR ---
+    let namaKasir = document.getElementById('inputNamaPembuatLaporan').value;
+    
+    // Jika kolom kasir kosong, otomatis isi dengan 'Admin'
+    if (!namaKasir || namaKasir.trim() === "") {
+        namaKasir = "Admin";
+        document.getElementById('inputNamaPembuatLaporan').value = namaKasir;
+    }
+
+    // Masukkan nama kasir ke teks tanda tangan di bawah
+    document.getElementById('pdfNamaPembuatCetak').innerText = namaKasir;
+
+    // Masukkan tanggal hari ini otomatis di atas tanda tangan
+    const hariIni = new Date();
+    const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('pdfTanggalCetakLaporan').innerText = formatTanggal;
+    // ----------------------------------------
     
     // Konfigurasi ini memastikan tabel tidak terbelah di tengah halaman
     const konfigurasiPDF = {
