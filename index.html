@@ -1759,6 +1759,10 @@ function renderFormOrderVendor() {
         }
         // -----------------------------------
 
+        // --- KODE BARU: Mengurutkan daftar barang dari A sampai Z ---
+        vendorCatalog.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
+        // ------------------------------------------------------------
+
         const tbody = document.getElementById('tbodyOrderVendor');
         tbody.innerHTML = '';
         let grandTotal = 0;
