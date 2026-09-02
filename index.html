@@ -2632,9 +2632,9 @@ function hapusMutasiKas(docId) {
     function kirimFeedback(e) { e.preventDefault(); if(!db) { alert("Sistem Offline. Tidak bisa mengirim laporan."); return; } const jenis = document.getElementById('fbJenis').value; const deskripsi = document.getElementById('fbDeskripsi').value; const btn = document.getElementById('btnKirimFeedback'); btn.innerText = "Mengirim..."; btn.disabled = true; db.collection('laporanBugs').add({ waktu: new Date().toISOString(), user: currentUser ? currentUser.nama : 'Unknown', hp: currentUser ? currentUser.hp : '-', jenis: jenis, deskripsi: deskripsi }).then(() => { showToast('✅ Laporan Terkirim! Terima kasih atas masukannya.'); tutupModalFeedback(); }).catch(err => { alert("Gagal mengirim: " + err.message); }).finally(() => { btn.innerText = "Kirim Laporan"; btn.disabled = false; }); }
 
 // ==========================================
-// FITUR FILTER GRAFIK RESELLER
+// FITUR FILTER GRAFIK RESELLER (VERSI KEBAL)
 // ==========================================
-let produkResellerDisembunyikan = []; 
+window.produkResellerDisembunyikan = window.produkResellerDisembunyikan || []; 
 
 function bukaFilterReseller() {
     document.getElementById('modalFilterReseller').style.display = 'flex';
@@ -2647,14 +2647,15 @@ function bukaFilterReseller() {
     }
 
     window.listProdukResellerAktif.forEach(nama => {
-        const namaAman = nama.replace(/"/g, '&quot;'); // Cegah error jika ada tanda kutip
-        const isDisembunyikan = produkResellerDisembunyikan.includes(nama);
+        // Cek apakah nama ini ada di daftar yang disembunyikan
+        const isDisembunyikan = window.produkResellerDisembunyikan.includes(nama);
         const isChecked = isDisembunyikan ? '' : 'checked'; 
 
+        // Kita gunakan data-nama agar aman dari karakter spasi/kutip
         container.innerHTML += `
             <label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.85rem; color:#334155;">
-                <input type="checkbox" class="cb-reseller" value="${namaAman}" ${isChecked} style="width:16px; height:16px;">
-                ${namaAman}
+                <input type="checkbox" class="cb-reseller-item" data-nama="${nama.replace(/"/g, '&quot;')}" ${isChecked} style="width:16px; height:16px;">
+                ${nama}
             </label>
         `;
     });
@@ -2665,15 +2666,19 @@ function tutupFilterReseller() {
 }
 
 function terapkanFilterReseller() {
-    produkResellerDisembunyikan = [];
-    const checkboxes = document.querySelectorAll('.cb-reseller');
+    window.produkResellerDisembunyikan = []; // Reset ulang
+    const container = document.getElementById('listCheckboxReseller');
+    const checkboxes = container.querySelectorAll('.cb-reseller-item');
+    
     checkboxes.forEach(cb => {
         if(!cb.checked) {
-            produkResellerDisembunyikan.push(cb.value); 
+            // Ambil dari data-nama yang aman
+            window.produkResellerDisembunyikan.push(cb.getAttribute('data-nama')); 
         }
     });
+    
     tutupFilterReseller();
-    renderDashboardGrafik(); // Refresh grafik otomatis
+    renderDashboardGrafik(); // Refresh grafik
 }
     // ==========================================
     // FUNGSI DASHBOARD GRAFIK CHART.JS
@@ -2794,9 +2799,9 @@ function terapkanFilterReseller() {
         const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
         const topBakso = sortSliceTop5(produkBakso); 
 
-                window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
+                        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
         let resellerDifilter = Object.keys(produkReseller)
-            .filter(nama => !produkResellerDisembunyikan.includes(nama))
+            .filter(nama => !(window.produkResellerDisembunyikan || []).includes(nama))
             .map(nama => ({nama: nama, qty: produkReseller[nama]}))
             .sort((a,b) => b.qty - a.qty);
 
@@ -2831,7 +2836,7 @@ function terapkanFilterReseller() {
         const ctxBakso = document.getElementById('chartTopBakso').getContext('2d'); 
         chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
 
-        // TRIK JITU: Hapus elemen kanvas lama sepenuhnya dan buat yang baru agar tidak nyangkut
+        // TRIK JITU: Hapus elemen kanvas lama sepenuhnya dan buat yang baru
         if(chartTopReseller) chartTopReseller.destroy(); 
         
         const oldCanvasReseller = document.getElementById('chartTopReseller');
@@ -2852,8 +2857,7 @@ function terapkanFilterReseller() {
                 options: optHorizontalBar 
             }); 
         }
-    }
-
+       }
 
     // ==========================================
     // FUNGSI CETAK PDF
