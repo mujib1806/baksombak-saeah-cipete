@@ -1703,15 +1703,17 @@
             if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
             applyLockUI(); 
         });
-        db.collection('appData').doc('masterProduk').onSnapshot(doc => { 
+db.collection('appData').doc('masterProduk').onSnapshot(doc => { 
     if (doc.exists && doc.data().list) { 
+        // Ambil murni apa adanya dari database Firestore
         masterProduk = doc.data().list; 
     } else { 
-        db.collection('appData').doc('masterProduk').set({ list: defaultMasterProduk }); 
-        masterProduk = defaultMasterProduk; 
+        // HANYA buat data default JIKA dokumen di database benar-benar kosong melompong (pertama kali instal)
+        masterProduk = [...defaultMasterProduk]; 
+        db.collection('appData').doc('masterProduk').set({ list: masterProduk }); 
     } 
     loadDataTanggalLocal(); 
-    renderTabelMasterProduk(); // Pastikan tabel ikut dirender ulang di sini!
+    renderTabelMasterProduk(); 
 });
         db.collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
 
