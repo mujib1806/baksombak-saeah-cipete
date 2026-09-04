@@ -2000,8 +2000,27 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
     }
 
     function syncStokDenganMaster(tgl) { 
-        if (!dbStok[tgl]) { dbStok[tgl] = masterProduk.map(p => ({ ...p, awal: "", tambah: "", kurang: "", sisa: "" })); } 
-        else { let currentStok = dbStok[tgl], newStokList = []; masterProduk.forEach(mp => { let found = currentStok.find(item => item.nama === mp.nama); if (found) newStokList.push({ ...mp, awal: found.awal, tambah: found.tambah || "", kurang: found.kurang || "", sisa: found.sisa }); else newStokList.push({ ...mp, awal: "", tambah: "", kurang: "", sisa: "" }); }); dbStok[tgl] = newStokList; } 
+        if (!dbStok[tgl]) { 
+            dbStok[tgl] = masterProduk.map(p => ({ ...p, awal: "", tambah: "", kurang: "", sisa: "" })); 
+        } else { 
+            let currentStok = dbStok[tgl]; 
+            let newStokList = []; 
+            masterProduk.forEach(mp => { 
+                let found = currentStok.find(item => item.nama === mp.nama); 
+                if (found) { 
+                    newStokList.push({ 
+                        ...mp, 
+                        awal: found.awal !== undefined ? found.awal : "", 
+                        tambah: found.tambah !== undefined ? found.tambah : "", 
+                        kurang: found.kurang !== undefined ? found.kurang : "", 
+                        sisa: found.sisa !== undefined ? found.sisa : "" 
+                    }); 
+                } else { 
+                    newStokList.push({ ...mp, awal: "", tambah: "", kurang: "", sisa: "" }); 
+                } 
+            }); 
+            dbStok[tgl] = newStokList; 
+        } 
     }
 
     function simpanStokKeFirebase() { 
