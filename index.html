@@ -1703,8 +1703,16 @@
             if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
             applyLockUI(); 
         });
-
-        db.collection('appData').doc('masterProduk').onSnapshot(doc => { if (doc.exists && doc.data().list && doc.data().list.length >= 25) { masterProduk = doc.data().list; } else { db.collection('appData').doc('masterProduk').set({ list: defaultMasterProduk }); masterProduk = defaultMasterProduk; } loadDataTanggalLocal(); });
+        db.collection('appData').doc('masterProduk').onSnapshot(doc => { 
+    if (doc.exists && doc.data().list) { 
+        masterProduk = doc.data().list; 
+    } else { 
+        db.collection('appData').doc('masterProduk').set({ list: defaultMasterProduk }); 
+        masterProduk = defaultMasterProduk; 
+    } 
+    loadDataTanggalLocal(); 
+    renderTabelMasterProduk(); // Pastikan tabel ikut dirender ulang di sini!
+});
         db.collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
 
         db.collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
