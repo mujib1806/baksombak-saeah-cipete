@@ -452,12 +452,17 @@
 
     <div class="container">
         
-        <div id="viewOrderVendor" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #f59e0b;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                    <h2 style="color: #d97706; margin:0;">🛒 Form Pemesanan Vendor (PO)</h2>
-                    <button onclick="bukaModalTambahVendor()" class="btn btn-warning" style="width:auto; padding:8px 12px; margin:0; border-radius:12px; font-size: 0.75rem;">➕ Tambah Produk Baru</button>
-                </div>
+    <!-- TOMBOL MIGRASI SEMENTARA -->
+    <button onclick="migrasiDataKeCabang()" style="background: red; color: white; padding: 10px; font-weight: bold; margin: 10px; width: 95%; border-radius: 8px; border: none; cursor: pointer;">
+        🚀 PINDAHKAN DATA LAMA KE CIPETE UTARA
+    </button>
+
+    <div id="viewOrderVendor" style="display:none; margin-bottom: 40px;">
+        <div class="card" style="border-top: 4px solid #f59e0b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <h2 style="color: #d97706; margin:0;">🛒 Form Pemesanan Vendor (PO)</h2>
+                <button onclick="bukaModalTambahVendor()" class="btn btn-warning" style="width:auto; padding:8px 12px; margin:0; border-radius:12px; font-size: 0.75rem;">➕ Tambah Produk Baru</button>
+            </div>
                 
                 <!-- ==========================================
                 KODE BARU: BANNER WARNING ORDER VENDOR (UNTUK OWNER)
