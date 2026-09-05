@@ -625,7 +625,7 @@
     </div>
 </div>
        
-        <!-- === 1. DASHBOARD ANALISA BISNIS (BERSIH) === -->
+        <!-- === 1. DASHBOARD ANALISA BISNIS === -->
 <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
     <div class="card" style="border-top: 4px solid #8b5cf6;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
@@ -638,12 +638,61 @@
                 <option value="semua">Semua Waktu</option>
             </select>
         </div>
-        <!-- Konten Dashboard Anda yang lain bisa ditaruh di sini -->
-    </div>
-</div> <!-- Penutup viewDashboard -->
+        
+        <!-- ISI DASHBOARD: KOTAK-KOTAK RINGKASAN DAN GRAFIK -->
+        <div class="grid-mobile" style="margin-bottom: 15px;">
+            <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
+                <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
+            </div>
+            <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
+                <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan (Darurat, Tabungan, Laba)</div>
+            </div>
+        </div>
+        
+        <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; margin-bottom: 15px;">
+            <div style="text-align:center; margin-bottom: 8px;">
+                <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
+                <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.7rem; color:#e11d48;">*(Rincian biaya yang memotong omset minggu ini)*</div>
+            </div>
+            <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan:</span><strong id="dashBebanGaji">Rp 0</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>▪️ 🍲 Belanja Dapur:</span><strong id="dashBebanDapur">Rp 0</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Biaya Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
+            </div>
+        </div>
+
+        <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
+            <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">TREN OMSET & PROFIT BERSIH</h4>
+            <div class="chart-container"><canvas id="chartTren"></canvas></div>
+        </div>
+
+        <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding:10px;">
+            <h4 style="font-size:0.75rem; color:#ea580c; margin:0 0 8px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
+            <div style="position: relative; height: 160px; background: #fff; border-radius: 6px; padding: 5px;">
+                <canvas id="chartTopBakso"></canvas>
+            </div>
+        </div>
+
+        <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                <h4 style="font-size:0.75rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
+                <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.65rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
+            </div>
+            <div style="position: relative; max-height: 220px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 6px; padding: 5px;">
+                <canvas id="chartTopReseller"></canvas>
+            </div>
+        </div>
+        
+    </div> <!-- Penutup .card -->
+</div> <!-- PENUTUP DARI viewDashboard -->
 
 
-<!-- === 2. PUSAT KONTROL OWNER (POSISI DI LUAR / SEJAJAR) === -->
+<!-- === 2. PUSAT KONTROL OWNER (BERDIRI SENDIRI) === -->
 <div id="viewPusatKontrol" style="display: none; padding: 15px;">
     <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
@@ -704,55 +753,6 @@
         </form>
     </div>
 </div> <!-- Penutup viewPusatKontrol -->
-                <div class="grid-mobile" style="margin-bottom: 15px;">
-                    <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
-                        <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
-                        <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
-                    </div>
-                    <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
-                        <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
-                        <div style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan (Darurat, Tabungan, Laba)</div>
-                    </div>
-                </div>
-                <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; margin-bottom: 15px;">
-                    <div style="text-align:center; margin-bottom: 8px;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
-                        <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
-                        <div style="font-size:0.7rem; color:#e11d48;">*(Rincian biaya yang memotong omset minggu ini)*</div>
-                    </div>
-                    <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
-                        <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan:</span><strong id="dashBebanGaji">Rp 0</strong></div>
-                        <div style="display:flex; justify-content:space-between;"><span>▪️ 🍲 Belanja Dapur:</span><strong id="dashBebanDapur">Rp 0</strong></div>
-                        <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Biaya Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
-                    </div>
-                </div>
-
-                <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
-                    <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">TREN OMSET & PROFIT BERSIH</h4>
-                    <div class="chart-container"><canvas id="chartTren"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding:10px;">
-    <h4 style="font-size:0.75rem; color:#ea580c; margin:0 0 8px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
-    <div style="position: relative; height: 160px; background: #fff; border-radius: 6px; padding: 5px;">
-        <canvas id="chartTopBakso"></canvas>
-    </div>
-</div>
-
-<div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding:10px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-        <h4 style="font-size:0.75rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
-        <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.65rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
-    </div>
-    <div style="position: relative; max-height: 220px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 6px; padding: 5px;">
-        <canvas id="chartTopReseller"></canvas>
-    </div>
-</div>
-                </div>
-            </div>
-        </div>
 
         <div id="viewGajiBulanan" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #f43f5e;">
