@@ -1,24 +1,27 @@
  
     // ==========================================
-    // VARIABEL GLOBAL & FIREBASE
-    // ==========================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyCBdZEmYbnIUuZ4Weu8vXFMh-EBPWmShNY",
-        authDomain: "stockbaksoapp2.firebaseapp.com",
-        databaseURL: "https://stockbaksoapp2-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "stockbaksoapp2",
-        storageBucket: "stockbaksoapp2.firebasestorage.app",
-        messagingSenderId: "762988721032",
-        appId: "1:762988721032:web:ece3972d70e1f79803c03d"
-    };
+// VARIABEL GLOBAL & FIREBASE
+// ==========================================
+const firebaseConfig = {
+    apiKey: "AIzaSyCBdZEmYbnIUuZ4Weu8vXFMh-EBPWmShNY",
+    authDomain: "stockbaksoapp2.firebaseapp.com",
+    databaseURL: "https://stockbaksoapp2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "stockbaksoapp2",
+    storageBucket: "stockbaksoapp2.firebasestorage.app",
+    messagingSenderId: "762988721032",
+    appId: "1:762988721032:web:ece3972d70e1f79803c03d"
+};
 
-    if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") { 
-        firebase.initializeApp(firebaseConfig); 
-    }
-    const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
+if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") { 
+    firebase.initializeApp(firebaseConfig); 
+}
+const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
 
-    const configSistem = firebase.app().options; 
-    const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
+// KODE BARU: Variabel Global Penangkap Cabang Aktif
+let CABANG_AKTIF = localStorage.getItem('cabangAktif') || 'cipete_utara';
+
+const configSistem = firebase.app().options; 
+const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
 
     const defaultMasterProduk = [
         { nama: "Bakso Sapi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
@@ -133,44 +136,70 @@
     function cekDanBuatAkunMaster() { console.log("Sistem akun kini diamankan oleh Firebase Auth."); }
 
     function prosesLogin(e) { 
-        e.preventDefault(); 
-        const noHp = document.getElementById('inLoginHp').value.trim(); 
-        const pass = document.getElementById('inLoginPass').value; 
-        const btn = document.getElementById('btnLoginBtn'); 
+    e.preventDefault(); 
+    
+    // 1. Tangkap elemen cabang
+    const cabangDropdown = document.getElementById('inLoginCabang');
+    const cabangPilihan = cabangDropdown.value;
+    const cabangNamaText = cabangDropdown.options[cabangDropdown.selectedIndex].text;
+    
+    const noHp = document.getElementById('inLoginHp').value.trim(); 
+    const pass = document.getElementById('inLoginPass').value; 
+    const btn = document.getElementById('btnLoginBtn'); 
 
-        if(!firebase) return; 
-
-        btn.innerText = "MEMERIKSA KUNCI..."; 
-        btn.disabled = true; 
-
-        const emailPalsu = noHp + "@bakso.com";
-
-        firebase.auth().signInWithEmailAndPassword(emailPalsu, pass)
-        .then((userCredential) => {
-            return db.collection('users').doc(noHp).get();
-        })
-        .then(doc => {
-            if (doc.exists) {
-                currentUser = doc.data();
-                currentUser.email = emailPalsu; 
-            } else {
-                currentUser = { nama: "Pengguna " + noHp, role: 'kasir', hp: noHp, email: emailPalsu };
-            }
-            localStorage.setItem('baksoUser', JSON.stringify(currentUser));
-            if (typeof catatAktivitas === "function") {
-                catatAktivitas('Akses Akun', `${currentUser.nama} login sistem baru`);  
-            }
-            bukaLayarAplikasi(); 
-            btn.innerText = "MASUK"; 
-            btn.disabled = false; 
-        })
-        .catch(err => { 
-            console.error("Error Login:", err);
-            alert("Gagal Masuk! Pastikan Nomor HP dan Sandi Anda sudah betul."); 
-            btn.innerText = "MASUK"; 
-            btn.disabled = false; 
-        }); 
+    // 2. Cegah login jika cabang belum dipilih
+    if (!cabangPilihan) {
+        alert("Silakan pilih cabang terlebih dahulu!");
+        cabangDropdown.focus();
+        return;
     }
+
+    if(!firebase) return; 
+
+    btn.innerText = "MEMERIKSA KUNCI..."; 
+    btn.disabled = true; 
+
+    const emailPalsu = noHp + "@bakso.com";
+
+    firebase.auth().signInWithEmailAndPassword(emailPalsu, pass)
+    .then((userCredential) => {
+        return db.collection('users').doc(noHp).get();
+    })
+    .then(doc => {
+        if (doc.exists) {
+            currentUser = doc.data();
+            currentUser.email = emailPalsu; 
+        } else {
+            currentUser = { nama: "Pengguna " + noHp, role: 'kasir', hp: noHp, email: emailPalsu };
+        }
+        
+        // 3. Simpan data user dan cabang ke memori perangkat
+        localStorage.setItem('baksoUser', JSON.stringify(currentUser));
+        localStorage.setItem('cabangAktif', cabangPilihan);
+        localStorage.setItem('namaCabangAktif', cabangNamaText);
+
+        // 4. Ubah teks nama cabang di header aplikasi secara dinamis
+        const headerCabang = document.getElementById('headerNamaCabang');
+        if (headerCabang) {
+            // Menghilangkan kata "Cabang " agar header tidak terlalu panjang
+            headerCabang.innerText = cabangNamaText.replace('Cabang ', ''); 
+        }
+
+        if (typeof catatAktivitas === "function") {
+            catatAktivitas('Akses Akun', `${currentUser.nama} login ke ${cabangNamaText}`);  
+        }
+        
+        bukaLayarAplikasi(); 
+        btn.innerText = "MASUK"; 
+        btn.disabled = false; 
+    })
+    .catch(err => { 
+        console.error("Error Login:", err);
+        alert("Gagal Masuk! Pastikan Nomor HP dan Sandi Anda sudah betul."); 
+        btn.innerText = "MASUK"; 
+        btn.disabled = false; 
+    }); 
+}
 
     function bukaLayarAplikasi() {        
         document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
@@ -776,21 +805,28 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         else { el.value = ''; }
     }
 
-    function simpanKasMasuk(isAutoTrigger = false) { 
-        const tgl = document.getElementById('tglOps').value; 
-        if(isDataLocked(tgl)) return; 
+   function simpanKasMasuk(isAutoTrigger = false) { 
+    const tgl = document.getElementById('tglOps').value; 
+    if(isDataLocked(tgl)) return; 
 
-        const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+    const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
 
-        const kasData = { 
-            cash: bersih('inCash'), qris: bersih('inQris'), gojek: bersih('inGojek'), 
-            grab: bersih('inGrab'), shopee: bersih('inShopee'), petty: bersih('inPettycash'), 
-            modalBesok: bersih('inModalBesok') 
-        }; 
-        dbKasMasuk[tgl] = kasData;
-        updateKalkulasi();
-        if(db) { db.collection('kasMasuk').doc(tgl).set(kasData).then(() => { if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } }); }
+    const kasData = { 
+        cash: bersih('inCash'), qris: bersih('inQris'), gojek: bersih('inGojek'), 
+        grab: bersih('inGrab'), shopee: bersih('inShopee'), petty: bersih('inPettycash'), 
+        modalBesok: bersih('inModalBesok') 
+    }; 
+    dbKasMasuk[tgl] = kasData;
+    updateKalkulasi();
+    
+    if(db) { 
+        // KODE BARU: Rute dialihkan ke sub-koleksi cabang aktif
+        db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').doc(tgl).set(kasData)
+        .then(() => { 
+            if(isAutoTrigger) { showToast('✅ Tersimpan otomatis!'); } 
+        }); 
     }
+}
 
     function simpanModalBesokManual() { 
         const tgl = document.getElementById('tglOps').value; 
@@ -1150,36 +1186,37 @@ function hapusMutasiKas(docId) {
     function hitungMarginForm() { document.getElementById('inputMarginProduk').value=Math.max(0,(parseFloat(document.getElementById('inputJualProduk').value)||0)-(parseFloat(document.getElementById('inputModalProduk').value)||0)); }
     
     function simpanProdukBaru(e) { 
-        e.preventDefault(); 
-        const p = {
-            nama: document.getElementById('inputNamaProduk').value.trim(), 
-            kategori: document.getElementById('selectKategoriProduk').value, 
-            modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
-            jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
-            margin: 0,
-            stokGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
-            batasMinimum: parseFloat(document.getElementById('inputBatasMinimum').value) || 10
-        }; 
-        p.margin = p.jual - p.modal; 
+    e.preventDefault(); 
+    const p = {
+        nama: document.getElementById('inputNamaProduk').value.trim(), 
+        kategori: document.getElementById('selectKategoriProduk').value, 
+        modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
+        jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
+        margin: 0,
+        stokGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
+        batasMinimum: parseFloat(document.getElementById('inputBatasMinimum').value) || 10
+    }; 
+    p.margin = p.jual - p.modal; 
 
-        const idx = parseInt(document.getElementById('editIndexProduk').value); 
-        const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}" (Jual: Rp ${p.jual.toLocaleString('id-ID')})` : `Menambahkan produk baru "${p.nama}"`;
+    const idx = parseInt(document.getElementById('editIndexProduk').value); 
+    const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}" (Jual: Rp ${p.jual.toLocaleString('id-ID')})` : `Menambahkan produk baru "${p.nama}"`;
 
-        if(idx >= 0) masterProduk[idx] = p; 
-        else masterProduk.push(p); 
-        catatAktivitas('Master Produk', aksiTeks);
+    if(idx >= 0) masterProduk[idx] = p; 
+    else masterProduk.push(p); 
+    catatAktivitas('Master Produk', aksiTeks);
 
-        if(db) {
-            db.collection('appData').doc('masterProduk').set({ list: masterProduk }).then(() => { 
-                bukaModalKelolaProduk(); 
-                alert("Berhasil disimpan!"); 
-            }); 
-        } else { 
+    if(db) {
+        // KODE BARU: Rute dialihkan ke sub-koleksi cabang aktif
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+        .then(() => { 
             bukaModalKelolaProduk(); 
-            alert("Lokal OK"); 
-        } 
-    }
-    
+            alert("Berhasil disimpan!"); 
+        }); 
+    } else { 
+        bukaModalKelolaProduk(); 
+        alert("Lokal OK"); 
+    } 
+}
     function renderTabelMasterProduk() { 
         const t = document.getElementById('tbodyMasterProduk'); 
         t.innerHTML = ''; 
