@@ -209,8 +209,8 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     }); 
 }
 
-   function bukaLayarAplikasi() {    
-    // KODE BARU: Bersihkan memori agar data cabang lama tidak bocor ke cabang baru
+   function bukaLayarAplikasi() {        
+    // 1. Bersihkan memori agar data cabang lama tidak bocor ke cabang baru
     dbStok = {};
     dbPengeluaranHarian = [];
     dbKasMasuk = {};
@@ -221,38 +221,47 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     masterProduk = [...defaultMasterProduk];
 
     document.getElementById('loginScreen').style.display = 'none'; 
-    document.getElementById('appScreen').style.display = 'block';    
-    // ... (lanjutan kode bawaan Anda di bawahnya biarkan saja)       
-        document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
-        document.getElementById('namaUserAktif').innerText = currentUser.nama;        
-        const isOwner = currentUser.role === 'owner'; const isDapur = currentUser.role === 'dapur';        
-        document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
+    document.getElementById('appScreen').style.display = 'block';        
+    
+    document.getElementById('namaUserAktif').innerText = currentUser.nama;        
+    const isOwner = currentUser.role === 'owner'; 
+    const isDapur = currentUser.role === 'dapur';        
+    document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
 
-        document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
-        document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
-        document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';        
-        document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
-        document.getElementById('menuKelolaAkun').style.display = isOwner ? 'block' : 'none';  
-        document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
-        document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
-        document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
-        document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
+    document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
+    
+    // KODE BARU: Mengaktifkan menu Pusat Kontrol khusus untuk Owner
+    document.getElementById('menuPusatKontrol').style.display = isOwner ? 'block' : 'none';  
 
-        document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
-        document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
-        document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
+    document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
+    document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
+    document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
 
-        pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
+    document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
+    document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
+    document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
 
-        const today = new Date(); document.getElementById('tglOps').valueAsDate = today;        
-        document.getElementById('cetakTglAwal').valueAsDate = today; document.getElementById('cetakTglAkhir').valueAsDate = today;        
-        document.getElementById('cetakBulan').value = today.toISOString().slice(0, 7);        
-        document.getElementById('filterBulanGaji').value = today.toISOString().slice(0, 7);        
+    pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
 
-        try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
-    }
+    const today = new Date(); 
+    document.getElementById('tglOps').valueAsDate = today;        
+    document.getElementById('cetakTglAwal').valueAsDate = today; 
+    document.getElementById('cetakTglAkhir').valueAsDate = today;        
+    document.getElementById('cetakBulan').value = today.toISOString().slice(0, 7);        
+    document.getElementById('filterBulanGaji').value = today.toISOString().slice(0, 7);        
+
+    try { 
+        inisiatisasiRealtimeListener(); 
+    } catch(e) { 
+        loadDataTanggalLocal(); 
+    }        
+}
 
    function prosesLogout() { 
     if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
@@ -405,66 +414,72 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     // ==========================================
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
     
-    function pilihMenuNav(jenis) { 
-        if (typeof toggleSidebar === 'function') toggleSidebar(); 
+    function pilihMenuNav(jenis) {    
+    if (typeof toggleSidebar === 'function') toggleSidebar();    
 
-        const isOwner = currentUser && currentUser.role === 'owner';
-        const isDapur = currentUser && currentUser.role === 'dapur';
+    const isOwner = currentUser && currentUser.role === 'owner';
+    const isDapur = currentUser && currentUser.role === 'dapur';
 
-        document.getElementById('viewHarian').style.display = 'none'; 
-        document.getElementById('viewSetoranBakso').style.display = 'none'; 
-        document.getElementById('viewRekapTransfer').style.display = 'none'; 
-        document.getElementById('viewMutasiKas').style.display = 'none'; 
-        document.getElementById('viewGajiBulanan').style.display = 'none';
-        document.getElementById('viewDashboard').style.display = 'none'; 
-        document.getElementById('viewOrderVendor').style.display = 'none'; 
-        document.getElementById('viewRiwayatAktivitas').style.display = 'none';
-        document.getElementById('layar-produk').style.display = 'none';
-        document.getElementById('viewLaporanBerkala').style.display = 'none'; 
+    document.getElementById('viewHarian').style.display = 'none';    
+    document.getElementById('viewSetoranBakso').style.display = 'none';    
+    document.getElementById('viewRekapTransfer').style.display = 'none';    
+    document.getElementById('viewMutasiKas').style.display = 'none';    
+    document.getElementById('viewGajiBulanan').style.display = 'none';
+    document.getElementById('viewDashboard').style.display = 'none';    
+    document.getElementById('viewOrderVendor').style.display = 'none';    
+    document.getElementById('viewRiwayatAktivitas').style.display = 'none';
+    document.getElementById('layar-produk').style.display = 'none';
+    document.getElementById('viewLaporanBerkala').style.display = 'none';    
+    
+    // KODE BARU: Sembunyikan halaman pusat kontrol terlebih dahulu
+    const viewPusat = document.getElementById('viewPusatKontrol');
+    if (viewPusat) viewPusat.style.display = 'none';
 
-        if (document.getElementById('cardSetoranDapur')) {
-            document.getElementById('cardSetoranDapur').style.display = 'none';
-        }
-        if (document.getElementById('cardAlokasiHarian')) {
-            document.getElementById('cardAlokasiHarian').style.display = 'none';
-        }
-
-        if (jenis === 'harian') { 
-            document.getElementById('viewHarian').style.display = 'block'; 
-            if (document.getElementById('cardSetoranDapur')) document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
-            if (document.getElementById('cardAlokasiHarian')) document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
-            // Pastikan banner terupdate saat tab harian dibuka
-            cekPeringatanStok();
-        } else if (jenis === 'setoranBakso') { 
-            document.getElementById('viewSetoranBakso').style.display = 'block'; 
-            renderViewSetoranBakso(); 
-        } else if (jenis === 'rekapTransfer') { 
-            document.getElementById('viewRekapTransfer').style.display = 'block'; 
-            renderViewRekapTransfer(); 
-        } else if (jenis === 'mutasiKas') { 
-            document.getElementById('viewMutasiKas').style.display = 'block'; 
-            hitungAkumulasiKasTotal(); 
-        } else if (jenis === 'gajiBulanan') {
-            document.getElementById('viewGajiBulanan').style.display = 'block';
-            renderRekapGajiBulanan();
-        } else if (jenis === 'dashboard') {
-            document.getElementById('viewDashboard').style.display = 'block';
-            renderDashboardGrafik();
-        } else if (jenis === 'orderVendor') {
-            document.getElementById('viewOrderVendor').style.display = 'block';
-            renderFormOrderVendor();
-            cekPeringatanStok(); // Pastikan banner order muncul saat di form vendor
-        } else if (jenis === 'riwayatAktivitas') {
-            document.getElementById('viewRiwayatAktivitas').style.display = 'block';
-            muatDataRiwayat();
-        } else if (jenis === 'produk') {
-            document.getElementById('layar-produk').style.display = 'block';
-            if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-        } else if (jenis === 'laporanBerkala') {
-            document.getElementById('viewLaporanBerkala').style.display = 'block';
-        }
+    if (document.getElementById('cardSetoranDapur')) {
+        document.getElementById('cardSetoranDapur').style.display = 'none';
+    }
+    if (document.getElementById('cardAlokasiHarian')) {
+        document.getElementById('cardAlokasiHarian').style.display = 'none';
     }
 
+    if (jenis === 'harian') {    
+        document.getElementById('viewHarian').style.display = 'block';    
+        if (document.getElementById('cardSetoranDapur')) document.getElementById('cardSetoranDapur').style.display = isDapur ? 'none' : 'block';
+        if (document.getElementById('cardAlokasiHarian')) document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
+        cekPeringatanStok();
+    } else if (jenis === 'setoranBakso') {    
+        document.getElementById('viewSetoranBakso').style.display = 'block';    
+        renderViewSetoranBakso();    
+    } else if (jenis === 'rekapTransfer') {    
+        document.getElementById('viewRekapTransfer').style.display = 'block';    
+        renderViewRekapTransfer();    
+    } else if (jenis === 'mutasiKas') {    
+        document.getElementById('viewMutasiKas').style.display = 'block';    
+        hitungAkumulasiKasTotal();    
+    } else if (jenis === 'gajiBulanan') {
+        document.getElementById('viewGajiBulanan').style.display = 'block';
+        renderRekapGajiBulanan();
+    } else if (jenis === 'dashboard') {
+        document.getElementById('viewDashboard').style.display = 'block';
+        renderDashboardGrafik();
+    } else if (jenis === 'orderVendor') {
+        document.getElementById('viewOrderVendor').style.display = 'block';
+        renderFormOrderVendor();
+        cekPeringatanStok(); 
+    } else if (jenis === 'riwayatAktivitas') {
+        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
+        muatDataRiwayat();
+    } else if (jenis === 'produk') {
+        document.getElementById('layar-produk').style.display = 'block';
+        if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+    } else if (jenis === 'laporanBerkala') {
+        document.getElementById('viewLaporanBerkala').style.display = 'block';
+    } else if (jenis === 'pusatKontrol') {
+        // KODE BARU: Tampilkan halaman pusat kontrol dan muat daftar akun kasir
+        if (viewPusat) viewPusat.style.display = 'block';
+        if (typeof muatDaftarAkun === 'function') muatDaftarAkun();
+    }
+}
     // ==========================================
     // FUNGSI FORM ORDER VENDOR
     // ==========================================
