@@ -233,6 +233,30 @@ function bukaLayarAplikasi() {
     const isDapur = currentUser.role === 'dapur';        
     document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
 
+    // ===============================================
+    // KODE BARU: LAMPU LALULINTAS & BANNER CABANG
+    // ===============================================
+    const savedNamaCabang = localStorage.getItem('namaCabangAktif') || 'Cabang Cipete Utara';
+    const bannerLabel = document.getElementById('labelCabangBanner');
+    if (bannerLabel) bannerLabel.innerText = savedNamaCabang.replace('Cabang ', '');
+
+    const dropdownPindah = document.getElementById('dropdownPindahCabang');
+    if (isOwner && dropdownPindah) {
+        dropdownPindah.style.display = 'block'; // Tampilkan saklar hanya untuk Owner
+        // Tarik daftar cabang untuk isi dropdown
+        if (db) {
+            db.collection('daftarCabang').get().then(snap => {
+                dropdownPindah.innerHTML = '<option value="">🔄 Pindah Cabang...</option>';
+                snap.forEach(doc => {
+                    const selected = (doc.id === CABANG_AKTIF) ? 'selected' : '';
+                    dropdownPindah.innerHTML += `<option value="${doc.id}" ${selected}>${doc.data().nama}</option>`;
+                });
+            });
+        }
+    } else if (dropdownPindah) {
+        dropdownPindah.style.display = 'none'; // Sembunyikan untuk Kasir/Dapur
+    }
+    // ===============================================
     document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
     document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
@@ -2518,5 +2542,32 @@ function hapusCabang(idCabang, namaCabang) {
                 }
             });
         }
+    }
+}
+// ==========================================
+// KODE BARU: FUNGSI OWNER PINDAH CABANG INSTAN
+// ==========================================
+function ownerPindahCabang(idCabangBaru) {
+    if (!idCabangBaru || idCabangBaru === CABANG_AKTIF) return;
+    
+    // Cari nama cabang dari pilihan dropdown
+    const dropdown = document.getElementById('dropdownPindahCabang');
+    const namaCabangBaru = dropdown.options[dropdown.selectedIndex].text;
+
+    if (confirm(`Pindah ke ${namaCabangBaru}?`)) {
+        // Putar Lampu Lalulintas (Ubah ingatan lokal)
+        localStorage.setItem('cabangAktif', idCabangBaru);
+        localStorage.setItem('namaCabangAktif', namaCabangBaru);
+        
+        // Catat di log aktivitas
+        if(typeof catatAktivitas === 'function'){
+            catatAktivitas('Pindah Cabang', `${currentUser.nama} pindah pantauan ke ${namaCabangBaru}`);
+        }
+        
+        // Refresh layar agar Firebase memuat data cabang baru dengan bersih
+        window.location.reload();
+    } else {
+        // Kembalikan pilihan jika owner batal (klik cancel)
+        dropdown.value = CABANG_AKTIF;
     }
 }
