@@ -209,7 +209,20 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     }); 
 }
 
-    function bukaLayarAplikasi() {        
+   function bukaLayarAplikasi() {    
+    // KODE BARU: Bersihkan memori agar data cabang lama tidak bocor ke cabang baru
+    dbStok = {};
+    dbPengeluaranHarian = [];
+    dbKasMasuk = {};
+    dbLogKas = [];
+    dbSetoranDapur = {};
+    dbGajiHarian = {};
+    dbStatusKunci = {};
+    masterProduk = [...defaultMasterProduk];
+
+    document.getElementById('loginScreen').style.display = 'none'; 
+    document.getElementById('appScreen').style.display = 'block';    
+    // ... (lanjutan kode bawaan Anda di bawahnya biarkan saja)       
         document.getElementById('loginScreen').style.display = 'none'; document.getElementById('appScreen').style.display = 'block';        
         document.getElementById('namaUserAktif').innerText = currentUser.nama;        
         const isOwner = currentUser.role === 'owner'; const isDapur = currentUser.role === 'dapur';        
