@@ -2373,9 +2373,8 @@ function buatCabangBaru() {
         return;
     }
 
-    const namaCabang = prompt("Masukkan nama cabang baru (Contoh: Cabang Kemang, Cabang Ampera):");
+    const namaCabang = prompt("Masukkan nama cabang baru (Contoh: Cabang Blok M, Cabang Ampera):");
     if(namaCabang && namaCabang.trim()) {
-        // Sistem otomatis membuat ID unik dengan huruf kecil dan spasi diubah jadi garis bawah (underscore)
         const idCabang = namaCabang.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
         
         if(db) {
@@ -2383,7 +2382,8 @@ function buatCabangBaru() {
                 id: idCabang,
                 nama: namaCabang.trim()
             }).then(() => {
-                alert(`✅ Cabang "${namaCabang.trim()}" berhasil ditambahkan! Cabang ini sekarang sudah bisa dipilih di halaman Login.`);
+                alert(`✅ Cabang "${namaCabang.trim()}" berhasil dibuat!\n\nSilakan pilih cabang ini pada menu login.`);
+                tutupModalKelolaAkun();
             });
         }
     }
