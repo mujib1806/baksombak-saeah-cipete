@@ -271,6 +271,8 @@ function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').cla
 
 function muatDaftarAkun() { 
     if(!db) return; 
+    
+    // 1. Memuat daftar akun (Kode lama Anda)
     db.collection('users').get().then(snap => { 
         listAkunKasir = []; 
         const tbody = document.getElementById('tbodyDaftarAkun'); 
@@ -284,6 +286,11 @@ function muatDaftarAkun() {
             tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; 
         }); 
     }); 
+
+    // 2. Memuat daftar cabang (KODE BARU YANG DISISIPKAN)
+    if (typeof muatDaftarCabangKontrol === 'function') {
+        muatDaftarCabangKontrol();
+    }
 }
 
 function simpanAkunBaru(e) { 
@@ -2400,24 +2407,55 @@ function muatDaftarCabangLogin() {
     });
 }
 
-// Fungsi untuk Owner membuat cabang baru langsung dari dalam aplikasi
 function buatCabangBaru() {
-    if (currentUser.role !== 'owner') {
-        alert("Hanya Owner yang dapat membuka cabang baru!");
-        return;
-    }
+    if (currentUser.role !== 'owner') return;
 
-    const namaCabang = prompt("Masukkan nama cabang baru (Contoh: Cabang Blok M, Cabang Ampera):");
+    const namaCabang = prompt("Masukkan nama cabang baru (Contoh: Cabang Blok M):");
     if(namaCabang && namaCabang.trim()) {
         const idCabang = namaCabang.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
-        
         if(db) {
-            db.collection('daftarCabang').doc(idCabang).set({
-                id: idCabang,
-                nama: namaCabang.trim()
-            }).then(() => {
-                alert(`✅ Cabang "${namaCabang.trim()}" berhasil dibuat!\n\nSilakan pilih cabang ini pada menu login.`);
-                tutupModalKelolaAkun();
+            db.collection('daftarCabang').doc(idCabang).set({ id: idCabang, nama: namaCabang.trim() }).then(() => {
+                alert(`✅ Cabang "${namaCabang.trim()}" berhasil dibuat!\n\nSistem akan mengeluarkan Anda (Logout) untuk membersihkan memori. Silakan login kembali ke cabang yang baru.`);
+                localStorage.removeItem('baksoUser'); 
+                localStorage.removeItem('cabangAktif');
+                window.location.reload();
+            });
+        }
+    }
+}
+
+function muatDaftarCabangKontrol() {
+    if(!db) return;
+    const tbody = document.getElementById('tbodyDaftarCabang');
+    if(!tbody) return;
+    
+    db.collection('daftarCabang').onSnapshot(snap => {
+        tbody.innerHTML = '';
+        snap.forEach(doc => {
+            const data = doc.data();
+            const btnHapus = (data.id === 'cipete_utara') ? 
+                `<span style="color:#94a3b8; font-size:0.75rem; font-style:italic;">Pusat (Patokan)</span>` : 
+                `<button onclick="hapusCabang('${data.id}', '${data.nama}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer;">Hapus</button>`;
+                
+            tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #e5e7eb;">
+                    <td style="padding: 8px;"><strong>${data.nama}</strong></td>
+                    <td style="padding: 8px; text-align: right;">${btnHapus}</td>
+                </tr>
+            `;
+        });
+    });
+}
+
+function hapusCabang(idCabang, namaCabang) {
+    if(confirm(`⚠️ PERINGATAN!\n\nYakin ingin menghapus "${namaCabang}"?\nCabang ini akan hilang permanen dari menu login.`)) {
+        if(db) {
+            db.collection('daftarCabang').doc(idCabang).delete().then(() => {
+                alert(`✅ ${namaCabang} telah dihapus.`);
+                if (CABANG_AKTIF === idCabang) {
+                    localStorage.removeItem('baksoUser');
+                    window.location.reload();
+                }
             });
         }
     }
