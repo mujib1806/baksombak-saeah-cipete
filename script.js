@@ -2304,3 +2304,25 @@ async function migrasiDataKeCabang() {
         alert("Terjadi kesalahan saat memindahkan data. Cek console browser.");
     }
 }
+async function migrasiSusulan() {
+    if(!confirm("Tarik sisa data mutasi kas, gaji, dan setoran ke Cipete Utara?")) return;
+
+    const koleksiTertinggal = ['logKas', 'gajiHarian', 'setoranDapur', 'statusHarian', 'logAktivitas'];
+    let totalPindah = 0;
+
+    try {
+        for (let namaKoleksi of koleksiTertinggal) {
+            console.log(`Memindahkan data ${namaKoleksi}...`);
+            const snapshot = await db.collection(namaKoleksi).get();
+
+            snapshot.forEach(doc => {
+                db.collection('cabang').doc('cipete_utara').collection(namaKoleksi).doc(doc.id).set(doc.data());
+                totalPindah++;
+            });
+        }
+        alert(`✅ SUKSES! Sisa ${totalPindah} data berhasil ditarik ke Cipete Utara. Silakan refresh.`);
+    } catch (error) {
+        console.error("Error migrasi:", error);
+        alert("Gagal menarik data. Cek console browser.");
+    }
+}
