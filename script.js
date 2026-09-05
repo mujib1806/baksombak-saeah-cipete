@@ -242,9 +242,14 @@ function bukaLayarAplikasi() {
     const bannerLabel = document.getElementById('labelCabangBanner');
     if (bannerLabel) bannerLabel.innerText = savedNamaCabang.replace('Cabang ', '');
 
-    // Sinkronisasi Header Lama (Teks di sebelah Logo) agar tidak bentrok
+   // Sinkronisasi Header Lama (Teks di sebelah Logo)
     const headerLama = document.getElementById('headerNamaCabang');
     if (headerLama) headerLama.innerText = savedNamaCabang.replace('Cabang ', '');
+
+    // KODE BARU: Sinkronisasi Semua Kop Surat PDF
+    document.querySelectorAll('.teks-cabang-pdf').forEach(el => {
+        el.innerText = savedNamaCabang;
+    });
 
     const dropdownPindah = document.getElementById('dropdownPindahCabang');
     if (isOwner && dropdownPindah) {
