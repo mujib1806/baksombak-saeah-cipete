@@ -355,8 +355,15 @@
     <div class="login-card">
         <img src="AGAK HIDUP.png" alt="Logo Warung" class="login-logo">
         <h1 class="login-title">Aplikasi Kasir</h1>
-        <p class="login-subtitle">Bakso Malang Mbak Sae'ah Cab. Cipete</p>
+        <p class="login-subtitle">Bakso Malang Mbak Sae'ah</p>
         <form onsubmit="prosesLogin(event)">
+            <!-- KODE BARU: Dropdown Pilihan Cabang -->
+            <select id="inLoginCabang" class="login-input" required style="cursor: pointer; font-weight: 600; color: #1e293b; appearance: none;">
+                <option value="" disabled selected>-- Pilih Cabang --</option>
+                <option value="cipete_utara">Cabang Cipete Utara</option>
+                <option value="cabang_baru">Cabang Baru (Contoh)</option>
+            </select>
+            
             <input type="tel" id="inLoginHp" class="login-input" placeholder="Nomor Handphone (08...)" required autocomplete="off">
             <input type="password" id="inLoginPass" class="login-input" placeholder="Kata Sandi / Password" required>
             <button type="submit" class="btn-login" id="btnLoginBtn">MASUK</button>
@@ -374,7 +381,7 @@
         <div class="header-right">
             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; cursor: pointer;" onclick="window.location.reload();" title="Klik untuk Refresh Aplikasi">
                 <img src="AGAK HIDUP.png" alt="Logo Mbak Sae'ah" style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); object-fit: cover;">
-                <span class="app-title-header" style="margin-bottom: 0;">Cipete Utara</span>
+               <span id="headerNamaCabang" class="app-title-header" style="margin-bottom: 0;">Cipete Utara</span>
             </div>
             <span class="status-sync" id="statusSyncText">🟢 ONLINE</span>
         </div>
