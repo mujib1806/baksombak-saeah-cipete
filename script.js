@@ -2403,3 +2403,20 @@ function buatCabangBaru() {
     }
 }
     }
+function muatDaftarCabangLogin() {
+    if(!db) return;
+    const select = document.getElementById('inLoginCabang');
+    if(!select) return;
+    
+    db.collection('daftarCabang').onSnapshot(snap => {
+        if (snap.empty) {
+            db.collection('daftarCabang').doc('cipete_utara').set({ id: 'cipete_utara', nama: 'Cabang Cipete Utara' });
+            return;
+        }
+        
+        select.innerHTML = '<option value="" disabled selected>-- Pilih Cabang --</option>';
+        snap.forEach(doc => {
+            select.innerHTML += `<option value="${doc.id}">${doc.data().nama}</option>`;
+        });
+    });
+}
