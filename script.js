@@ -2221,10 +2221,11 @@ function downloadTemplatePagi() { const tgl = document.getElementById('tglOps').
 function importStokPagi(event) { if(isDataLocked(document.getElementById('tglOps').value)) { alert("Data terkunci! Silakan buka gembok terlebih dahulu."); return; } const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const tgl = document.getElementById('tglOps').value; if (!dbStok[tgl]) syncStokDenganMaster(tgl); e.target.result.split('\n').forEach((line, index) => { if (index === 0 || !line.trim()) return; const cols = line.split(';'); if (cols.length >= 3) { const idx = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === cols[1].trim().toLowerCase()); if (idx !== -1) { dbStok[tgl][idx].awal = cols[2].trim(); if (cols[3]) dbStok[tgl][idx].tambah = cols[3].trim(); if (cols[4]) dbStok[tgl][idx].kurang = cols[4].trim(); if (cols[5]) dbStok[tgl][idx].sisa = cols[5].trim(); } } }); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import OK'); }); else { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import Lokal OK'); } }; reader.readAsText(file); }
 
 function bagikanAplikasi() {
+    const namaCabangShare = localStorage.getItem('namaCabangAktif') || 'Cabang Pusat';
     if (navigator.share) {
         navigator.share({
-            title: "Aplikasi Kasir Bakso Mbak Sae'ah",
-            text: "Ini link untuk mengakses Aplikasi Kasir Bakso Malang Mbak Sae'ah Cab. Cipete. Silakan buka dan simpan di HP kamu ya!",
+            title: `Aplikasi Kasir Bakso Mbak Sae'ah ${namaCabangShare}`,
+            text: `Ini link untuk mengakses Aplikasi Kasir Bakso Malang Mbak Sae'ah ${namaCabangShare}. Silakan buka dan simpan di HP kamu ya!`,
             url: window.location.href
         }).then(() => { showToast('✅ Berhasil membuka menu bagikan!'); }).catch(err => { console.log('Gagal membagikan', err); });
     } else {
@@ -2440,9 +2441,10 @@ function cetakPDFBerkala() {
     const elTglCetak = document.getElementById('pdfTanggalCetakLaporan');
     if(elTglCetak) elTglCetak.innerText = formatTanggal;
 
+   const namaCabangFile = (localStorage.getItem('namaCabangAktif') || CABANG_AKTIF).replace(/ /g, '_');
     const konfigurasiPDF = {
         margin:     0.5,
-        filename:   `Laporan_Cabang_Cipete_${periode}.pdf`,
+        filename:   `Laporan_${namaCabangFile}_${periode}.pdf`, // <-- Nama file kini dinamis
         image:      { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:      { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -2457,7 +2459,10 @@ function bagikanWABerkala() {
     const pengeluaran = document.getElementById('teksPengeluaranLaporan').innerText;
     const profit = document.getElementById('teksProfitLaporan').innerText;
 
-    let teksWA = `*📊 LAPORAN BAKSO MBAK SAE'AH CAB. CIPETE* 📊\n`;
+    // Ambil nama cabang aktif
+    const namaCabangWA = localStorage.getItem('namaCabangAktif') || 'Cabang Pusat';
+
+    let teksWA = `*📊 LAPORAN BAKSO MBAK SAE'AH ${namaCabangWA.toUpperCase()}* 📊\n`;
     teksWA += `${periode}\n\n`;
     teksWA += `🟢 *Total Omset:* ${omset}\n`;
     teksWA += `🔴 *Pengeluaran:* ${pengeluaran}\n`;
