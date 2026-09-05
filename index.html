@@ -359,10 +359,8 @@
         <form onsubmit="prosesLogin(event)">
             <!-- KODE BARU: Dropdown Pilihan Cabang -->
             <select id="inLoginCabang" class="login-input" required style="cursor: pointer; font-weight: 600; color: #1e293b; appearance: none;">
-                <option value="" disabled selected>-- Pilih Cabang --</option>
-                <option value="cipete_utara">Cabang Cipete Utara</option>
-                <option value="cabang_baru">Cabang Baru (Contoh)</option>
-            </select>
+    <!-- Kosongkan, nanti otomatis diisi oleh JavaScript -->
+</select>
             
             <input type="tel" id="inLoginHp" class="login-input" placeholder="Nomor Handphone (08...)" required autocomplete="off">
             <input type="password" id="inLoginPass" class="login-input" placeholder="Kata Sandi / Password" required>
@@ -438,7 +436,10 @@
             <div id="grupPengaturan" style="display: none;">
                 <li id="menuCetakBerkala"><button onclick="pilihMenuNav('laporanBerkala')" style="border-left: 3px solid #10b981;">📊 Cetak Laporan Berkala</button></li>
                 <li id="menuProduk"><button onclick="pilihMenuNav('produk')">⚙️ Master Produk</button></li>
-                <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
+               <li id="menuKelolaAkun"><button onclick="bukaModalKelolaAkun()" style="border-left: 3px solid #f59e0b; color: #fcd34d;">👥 Kelola Akun Kasir</button></li>
+
+                <!-- KODE BARU: Tambahkan di sini -->
+                <li id="menuKelolaCabang"><button onclick="buatCabangBaru()" style="border-left: 3px solid #3b82f6; color: #93c5fd;">🏪 ➕ Buka Cabang Baru</button></li>
                 <li id="menuRiwayat"><button onclick="pilihMenuNav('riwayatAktivitas')" style="border-left: 3px solid #0ea5e9; color: #7dd3fc;">🕰️ Riwayat Aktivitas</button></li>
             </div>
 
