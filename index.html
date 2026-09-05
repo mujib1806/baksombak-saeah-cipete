@@ -641,7 +641,7 @@
     <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
         
-        <!-- KELOLA CABANG -->
+        <!-- BAGIAN 1: BUKA CABANG -->
         <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
             <h4 style="color: #1e40af; margin-bottom: 6px; font-weight: 700;">🏪 Buka Cabang Usaha Baru</h4>
             <p style="font-size: 0.8rem; color: #475569; margin-bottom: 10px;">Tambah cabang instan. Cabang baru akan langsung aktif dan bisa dipilih saat login.</p>
@@ -652,7 +652,7 @@
 
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
 
-        <!-- KELOLA AKUN KASIR -->
+        <!-- BAGIAN 2: DAFTAR AKUN -->
         <h4 style="color: #0f172a; margin-bottom: 10px; font-weight: 700;">👥 Daftar Akun Kasir & Staf</h4>
         <div class="table-wrapper" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
             <table>
@@ -668,6 +668,7 @@
             </table>
         </div>
 
+        <!-- BAGIAN 3: FORM TAMBAH AKUN -->
         <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:15px; border-radius:8px; border:1px solid #fde68a;">
             <h4 style="color: #d97706; margin-bottom: 10px; font-weight: 700;">➕ Tambah Akun Baru</h4>
             <div class="form-group" style="margin-bottom:8px;"><label>Nama:</label><input type="text" id="inAkunNama" required></div>
@@ -678,8 +679,8 @@
             </div>
             <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
         </form>
-    </div>
-</div>
+    </div> <!-- Penutup card-bg -->
+</div> <!-- Penutup viewPusatKontrol -->
                 <div class="grid-mobile" style="margin-bottom: 15px;">
                     <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
                         <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
