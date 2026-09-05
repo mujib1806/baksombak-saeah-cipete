@@ -233,21 +233,25 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
         try { inisiatisasiRealtimeListener(); } catch(e) { loadDataTanggalLocal(); }        
     }
 
-    function prosesLogout() { 
-        if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
-            if (currentUser) {
-                catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
-            }
-            firebase.auth().signOut().then(() => {
-                localStorage.removeItem('baksoUser'); 
-                currentUser = null; 
-                window.location.reload(); 
-            }).catch((error) => {
-                console.error("Logout Error:", error);
-                alert("Gagal keluar dari sistem. Periksa koneksi internet Anda.");
-            });
-        } 
-    }
+   function prosesLogout() { 
+    if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
+        if (currentUser) {
+            catatAktivitas('Akses Akun', `${currentUser.nama} (${currentUser.role.toUpperCase()}) KELUAR (Logout) dari aplikasi`);
+        }
+        firebase.auth().signOut().then(() => {
+            // KODE BARU: Bersihkan memori user dan memori cabang secara total
+            localStorage.removeItem('baksoUser'); 
+            localStorage.removeItem('cabangAktif');
+            localStorage.removeItem('namaCabangAktif');
+            
+            currentUser = null; 
+            window.location.reload(); 
+        }).catch((error) => {
+            console.error("Logout Error:", error);
+            alert("Gagal keluar dari sistem. Periksa koneksi internet Anda.");
+        });
+    } 
+}
     
     function bukaModalKelolaAkun() { if (currentUser.role !== 'owner') return; toggleSidebar(); document.getElementById('modalKelolaAkun').classList.add('active'); muatDaftarAkun(); }
     function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').classList.remove('active'); }
