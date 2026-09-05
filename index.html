@@ -688,21 +688,10 @@
     <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
         
-        <div id="viewPusatKontrol" style="display: none; padding: 15px;">
-    <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-        <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
-        
-        <!-- BAGIAN 1: KELOLA CABANG -->
+        <!-- BAGIAN 1: BUKA CABANG -->
         <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
-            <h4 style="color: #1e40af; margin-bottom: 6px; font-weight: 700;">🏪 Kelola Cabang Usaha</h4>
-            <p style="font-size: 0.8rem; color: #475569; margin-bottom: 10px;">Daftar cabang aktif. Menghapus cabang akan menutup akses login ke cabang tersebut.</p>
-            
-            <div class="table-wrapper" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; background: #fff; border: 1px solid #d1d5db; border-radius: 6px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-                    <tbody id="tbodyDaftarCabang"></tbody>
-                </table>
-            </div>
-
+            <h4 style="color: #1e40af; margin-bottom: 6px; font-weight: 700;">🏪 Buka Cabang Usaha Baru</h4>
+            <p style="font-size: 0.8rem; color: #475569; margin-bottom: 10px;">Tambah cabang instan. Cabang baru akan langsung aktif dan bisa dipilih saat login.</p>
             <button type="button" onclick="buatCabangBaru()" class="btn" style="background: #2563eb; color: #ffffff; width: auto; padding: 8px 16px; font-size: 0.85rem;">
                 ➕ Buat Cabang Baru
             </button>
@@ -715,7 +704,12 @@
         <div class="table-wrapper" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
             <table>
                 <thead>
-                    <tr><th>Nama</th><th>No. HP</th><th>Role</th><th>Aksi</th></tr>
+                    <tr>
+                        <th>Nama</th>
+                        <th>No. HP</th>
+                        <th>Role</th>
+                        <th>Aksi</th>
+                    </tr>
                 </thead>
                 <tbody id="tbodyDaftarAkun"></tbody>
             </table>
@@ -724,11 +718,21 @@
         <!-- BAGIAN 3: FORM TAMBAH AKUN -->
         <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:15px; border-radius:8px; border:1px solid #fde68a;">
             <h4 style="color: #d97706; margin-bottom: 10px; font-weight: 700;">➕ Tambah Akun Baru</h4>
-            <div class="form-group" style="margin-bottom:8px;"><label>Nama:</label><input type="text" id="inAkunNama" required></div>
-            <div class="form-group" style="margin-bottom:8px;"><label>No. HP:</label><input type="tel" id="inAkunHp" required></div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label>Nama:</label>
+                <input type="text" id="inAkunNama" required>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label>No. HP:</label>
+                <input type="tel" id="inAkunHp" required>
+            </div>
             <div class="grid-mobile" style="display:flex; gap:10px; margin-bottom:8px;">
-                <div class="form-group" style="flex:1;"><label>Password:</label><input type="text" id="inAkunPass" required></div>
-                <div class="form-group" style="flex:1;"><label>Role:</label>
+                <div class="form-group" style="flex:1;">
+                    <label>Password:</label>
+                    <input type="text" id="inAkunPass" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Role:</label>
                     <select id="inAkunRole">
                         <option value="kasir">🧑‍🍳 Kasir</option>
                         <option value="owner">👑 Owner</option>
@@ -739,7 +743,7 @@
             <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
         </form>
     </div>
-</div>
+</div> <!-- Penutup viewPusatKontrol -->
 
         <div id="viewGajiBulanan" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #f43f5e;">
