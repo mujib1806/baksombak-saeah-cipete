@@ -625,19 +625,26 @@
     </div>
 </div>
        
-        <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #8b5cf6;">
-               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-    <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
-    <select id="filterDashboardPeriode" onchange="renderDashboardGrafik()" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
-        <option value="7">7 Hari Terakhir</option>
-        <option value="30">30 Hari Terakhir</option>
-        <option value="bulan_ini">Bulan Ini</option>
-        <option value="bulan_lalu">Bulan Lalu</option>
-        <option value="semua">Semua Waktu</option>
-    </select>
-</div>
-                <div id="viewPusatKontrol" style="display: none; padding: 15px;">
+        <!-- === 1. DASHBOARD ANALISA BISNIS (BERSIH) === -->
+<div id="viewDashboard" style="display:none; margin-bottom: 40px;">
+    <div class="card" style="border-top: 4px solid #8b5cf6;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+            <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
+            <select id="filterDashboardPeriode" onchange="renderDashboardGrafik()" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                <option value="7">7 Hari Terakhir</option>
+                <option value="30">30 Hari Terakhir</option>
+                <option value="bulan_ini">Bulan Ini</option>
+                <option value="bulan_lalu">Bulan Lalu</option>
+                <option value="semua">Semua Waktu</option>
+            </select>
+        </div>
+        <!-- Konten Dashboard Anda yang lain bisa ditaruh di sini -->
+    </div>
+</div> <!-- Penutup viewDashboard -->
+
+
+<!-- === 2. PUSAT KONTROL OWNER (POSISI DI LUAR / SEJAJAR) === -->
+<div id="viewPusatKontrol" style="display: none; padding: 15px;">
     <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
         
@@ -696,7 +703,7 @@
             <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
         </form>
     </div>
-</div>
+</div> <!-- Penutup viewPusatKontrol -->
                 <div class="grid-mobile" style="margin-bottom: 15px;">
                     <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
                         <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
