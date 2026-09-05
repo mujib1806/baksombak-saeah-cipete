@@ -96,8 +96,13 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
         setTimeout(() => { banner.style.display = 'none'; }, 3000);
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        firebase.auth().onAuthStateChanged((user) => {
+   document.addEventListener('DOMContentLoaded', () => {
+    
+    // KODE BARU: Tarik daftar cabang terbaru sebelum login muncul
+    if (db) muatDaftarCabangLogin(); 
+    
+    firebase.auth().onAuthStateChanged((user) => {
+        // ... (kode bawaan Anda biarkan saja)
             if (user) {
                 let savedUser = localStorage.getItem('baksoUser');
                 if (savedUser) { 
@@ -2324,5 +2329,49 @@ async function migrasiSusulan() {
     } catch (error) {
         console.error("Error migrasi:", error);
         alert("Gagal menarik data. Cek console browser.");
+    }
+}
+// Memuat daftar cabang ke halaman login secara otomatis dari Firebase
+function muatDaftarCabangLogin() {
+    if(!db) return;
+    const select = document.getElementById('inLoginCabang');
+    if(!select) return;
+    
+    select.innerHTML = '<option value="" disabled selected>-- Memuat Cabang... --</option>';
+    
+    db.collection('daftarCabang').onSnapshot(snap => {
+        if (snap.empty) {
+            // Jika database cabang masih kosong total, buatkan default Cipete Utara
+            db.collection('daftarCabang').doc('cipete_utara').set({ id: 'cipete_utara', nama: 'Cabang Cipete Utara' });
+            return;
+        }
+        
+        select.innerHTML = '<option value="" disabled selected>-- Pilih Cabang --</option>';
+        snap.forEach(doc => {
+            select.innerHTML += `<option value="${doc.id}">${doc.data().nama}</option>`;
+        });
+    });
+}
+
+// Fungsi untuk Owner membuat cabang baru langsung dari dalam aplikasi
+function buatCabangBaru() {
+    if (currentUser.role !== 'owner') {
+        alert("Hanya Owner yang dapat membuka cabang baru!");
+        return;
+    }
+
+    const namaCabang = prompt("Masukkan nama cabang baru (Contoh: Cabang Kemang, Cabang Ampera):");
+    if(namaCabang && namaCabang.trim()) {
+        // Sistem otomatis membuat ID unik dengan huruf kecil dan spasi diubah jadi garis bawah (underscore)
+        const idCabang = namaCabang.trim().toLowerCase().replace(/[^a-z0-9]/g, '_');
+        
+        if(db) {
+            db.collection('daftarCabang').doc(idCabang).set({
+                id: idCabang,
+                nama: namaCabang.trim()
+            }).then(() => {
+                alert(`✅ Cabang "${namaCabang.trim()}" berhasil ditambahkan! Cabang ini sekarang sudah bisa dipilih di halaman Login.`);
+            });
+        }
     }
 }
