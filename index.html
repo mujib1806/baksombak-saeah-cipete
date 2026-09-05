@@ -63,9 +63,9 @@
         .login-input:focus { border-color: #ea580c; background: #fff; }
         .btn-login { background: linear-gradient(135deg, #ea580c, #c2410c); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 1rem; cursor: pointer;}
         
-        /* HEADER & GLOBAL */
-        #appScreen { display: none; padding: 8px; padding-top: 55px; }
-        @media (min-width: 640px) { #appScreen { padding: 16px; padding-top: 70px; } }
+       /* HEADER & GLOBAL */
+        #appScreen { display: none; padding: 8px; padding-top: 90px; } /* Jarak diperbesar untuk Banner */
+        @media (min-width: 640px) { #appScreen { padding: 16px; padding-top: 105px; } }
         .mobile-header { position: fixed; top: 0; left: 0; right: 0; height: 52px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 1000;}
         .header-left { display: flex; align-items: center; gap: 6px; }
         .header-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
@@ -383,6 +383,19 @@
             </div>
             <span class="status-sync" id="statusSyncText">🟢 ONLINE</span>
         </div>
+    </div>
+    <!-- ==========================================
+         KODE BARU: BANNER CABANG AKTIF & PINTASAN OWNER 
+         ========================================== -->
+    <div id="bannerCabangAktif" style="position: fixed; top: 52px; left: 0; right: 0; background: linear-gradient(90deg, #b45309, #d97706); color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; z-index: 998; box-shadow: 0 2px 5px rgba(0,0,0,0.2); font-size: 0.8rem;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 1.1rem;">🏪</span>
+            <span style="font-weight: 800; letter-spacing: 0.5px;">CABANG AKTIF: <span id="labelCabangBanner" style="text-transform: uppercase; color: #fde68a;">MEMUAT...</span></span>
+        </div>
+        <!-- Dropdown Pintasan Pindah Cabang (Hanya Muncul Untuk Owner) -->
+        <select id="dropdownPindahCabang" onchange="ownerPindahCabang(this.value)" style="display: none; background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; border-radius: 6px; padding: 4px 8px; font-weight: 800; font-size: 0.75rem; outline: none; cursor: pointer; max-width: 140px;">
+            <option value="">🔄 Pindah Cabang...</option>
+        </select>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
