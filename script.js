@@ -2209,3 +2209,27 @@ function bagikanWABerkala() {
     const urlWA = `https://wa.me/?text=${encodeURIComponent(teksWA)}`;
     window.open(urlWA, '_blank');
 }
+async function migrasiDataKeCabang() {
+    if(!confirm("Mulai pindahkan data lama ke folder Cipete Utara? Pastikan internet stabil.")) return;
+    
+    // Daftar semua koleksi lama yang Anda miliki
+    const koleksiLama = ['appData', 'kasMasuk', 'stokHarian', 'pengeluaranHarian', 'aktivitas'];
+    let totalPindah = 0;
+
+    try {
+        for (let namaKoleksi of koleksiLama) {
+            console.log(`Memindahkan data ${namaKoleksi}...`);
+            const snapshot = await db.collection(namaKoleksi).get();
+            
+            snapshot.forEach(doc => {
+                // Menyalin data dari Root ke folder cabang cipete_utara
+                db.collection('cabang').doc('cipete_utara').collection(namaKoleksi).doc(doc.id).set(doc.data());
+                totalPindah++;
+            });
+        }
+        alert(`✅ MANTAP! Sebanyak ${totalPindah} data berhasil dipindahkan ke Cabang Cipete Utara. Silakan refresh aplikasi.`);
+    } catch (error) {
+        console.error("Error saat migrasi:", error);
+        alert("Terjadi kesalahan saat memindahkan data. Cek console browser.");
+    }
+}
