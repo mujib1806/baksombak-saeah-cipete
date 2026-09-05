@@ -671,16 +671,32 @@
         <!-- BAGIAN 3: FORM TAMBAH AKUN -->
         <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:15px; border-radius:8px; border:1px solid #fde68a;">
             <h4 style="color: #d97706; margin-bottom: 10px; font-weight: 700;">➕ Tambah Akun Baru</h4>
-            <div class="form-group" style="margin-bottom:8px;"><label>Nama:</label><input type="text" id="inAkunNama" required></div>
-            <div class="form-group" style="margin-bottom:8px;"><label>No. HP:</label><input type="tel" id="inAkunHp" required></div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label>Nama:</label>
+                <input type="text" id="inAkunNama" required>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label>No. HP:</label>
+                <input type="tel" id="inAkunHp" required>
+            </div>
             <div class="grid-mobile" style="display:flex; gap:10px; margin-bottom:8px;">
-                <div class="form-group" style="flex:1;"><label>Password:</label><input type="text" id="inAkunPass" required></div>
-                <div class="form-group" style="flex:1;"><label>Role:</label><select id="inAkunRole"><option value="kasir">🧑‍🍳 Kasir</option><option value="owner">👑 Owner</option><option value="dapur">🔪 Dapur</option></select></div>
+                <div class="form-group" style="flex:1;">
+                    <label>Password:</label>
+                    <input type="text" id="inAkunPass" required>
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label>Role:</label>
+                    <select id="inAkunRole">
+                        <option value="kasir">🧑‍🍳 Kasir</option>
+                        <option value="owner">👑 Owner</option>
+                        <option value="dapur">🔪 Dapur</option>
+                    </select>
+                </div>
             </div>
             <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
         </form>
-    </div> <!-- Penutup card-bg -->
-</div> <!-- Penutup viewPusatKontrol -->
+    </div>
+</div>
                 <div class="grid-mobile" style="margin-bottom: 15px;">
                     <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
                         <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
@@ -1072,19 +1088,7 @@
     
     <button class="fab-btn" onclick="bukaModalFeedback()" title="Kirim Masukan & Laporan Bug">💬</button>
 </div>
-        <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:10px; border-radius:8px; border:1px solid #fde68a; margin-bottom:10px;">
-            <h4 style="color: #d97706; margin-bottom: 6px; font-size: 0.8rem; font-weight: 700;">➕ Tambah Akun Baru</h4>
-            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.7rem;">Nama:</label><input type="text" id="inAkunNama" required style="padding:4px 8px; font-size:0.8rem;"></div>
-            <div class="form-group" style="margin-bottom:6px;"><label style="font-size:0.7rem;">No. HP:</label><input type="tel" id="inAkunHp" required style="padding:4px 8px; font-size:0.8rem;"></div>
-            <div class="grid-mobile" style="display:flex; gap:6px; margin-bottom:6px;">
-                <div class="form-group" style="flex:1;"><label style="font-size:0.7rem;">Password:</label><input type="text" id="inAkunPass" required style="padding:4px 8px; font-size:0.8rem;"></div>
-                <div class="form-group" style="flex:1;"><label style="font-size:0.7rem;">Role:</label><select id="inAkunRole" style="padding:4px; font-size:0.8rem;"><option value="kasir">🧑‍🍳 Kasir</option><option value="owner">👑 Owner</option><option value="dapur">🔪 Dapur</option></select></div>
-            </div>
-            <button type="submit" class="btn btn-warning" style="margin-top:4px; padding:6px; font-size:0.8rem;">+ Simpan Akun</button>
-        </form>
-
-        <button type="button" class="btn btn-outline" onclick="tutupModalKelolaAkun()" style="width:100%; padding:6px;">Tutup</button>
-    </div>
+        </div>
 </div>
     <div class="modal" id="modalCetakPeriode">
     <div class="modal-content">
