@@ -233,17 +233,22 @@ function bukaLayarAplikasi() {
     const isDapur = currentUser.role === 'dapur';        
     document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
 
-    // ===============================================
+  // ===============================================
     // KODE BARU: LAMPU LALULINTAS & BANNER CABANG
     // ===============================================
     const savedNamaCabang = localStorage.getItem('namaCabangAktif') || 'Cabang Cipete Utara';
+    
+    // Sinkronisasi Banner Oranye
     const bannerLabel = document.getElementById('labelCabangBanner');
     if (bannerLabel) bannerLabel.innerText = savedNamaCabang.replace('Cabang ', '');
 
+    // Sinkronisasi Header Lama (Teks di sebelah Logo) agar tidak bentrok
+    const headerLama = document.getElementById('headerNamaCabang');
+    if (headerLama) headerLama.innerText = savedNamaCabang.replace('Cabang ', '');
+
     const dropdownPindah = document.getElementById('dropdownPindahCabang');
     if (isOwner && dropdownPindah) {
-        dropdownPindah.style.display = 'block'; // Tampilkan saklar hanya untuk Owner
-        // Tarik daftar cabang untuk isi dropdown
+        dropdownPindah.style.display = 'block'; 
         if (db) {
             db.collection('daftarCabang').get().then(snap => {
                 dropdownPindah.innerHTML = '<option value="">🔄 Pindah Cabang...</option>';
@@ -254,7 +259,7 @@ function bukaLayarAplikasi() {
             });
         }
     } else if (dropdownPindah) {
-        dropdownPindah.style.display = 'none'; // Sembunyikan untuk Kasir/Dapur
+        dropdownPindah.style.display = 'none'; 
     }
     // ===============================================
     document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
