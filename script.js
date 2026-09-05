@@ -135,7 +135,7 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     // ==========================================
     function cekDanBuatAkunMaster() { console.log("Sistem akun kini diamankan oleh Firebase Auth."); }
 
-    function prosesLogin(e) { 
+   function prosesLogin(e) { 
     e.preventDefault(); 
     
     // 1. Tangkap elemen cabang
@@ -177,6 +177,9 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
         localStorage.setItem('baksoUser', JSON.stringify(currentUser));
         localStorage.setItem('cabangAktif', cabangPilihan);
         localStorage.setItem('namaCabangAktif', cabangNamaText);
+        
+        // KODE BARU: Memperbarui kurir rute saat itu juga tanpa perlu refresh
+        CABANG_AKTIF = cabangPilihan;
 
         // 4. Ubah teks nama cabang di header aplikasi secara dinamis
         const headerCabang = document.getElementById('headerNamaCabang');
@@ -304,67 +307,80 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
     // FUNGSI FIREBASE REALTIME
     // ==========================================
     function inisiatisasiRealtimeListener() {
-        if (!db) throw new Error("Database Cloud Belum Terhubung!");
+    if (!db) throw new Error("Database Cloud Belum Terhubung!");
 
-        db.collection('statusHarian').onSnapshot(snapshot => { 
-            snapshot.forEach(doc => { dbStatusKunci[doc.id] = doc.data().terkunci; }); 
-            const tgl = document.getElementById('tglOps').value;
-            if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
-            applyLockUI(); 
-        });
-db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => { 
-    if (doc.exists && doc.data().list) { 
-        // Ambil murni apa adanya dari database Firestore
-        masterProduk = doc.data().list; 
-    } else { 
-        // HANYA buat data default JIKA dokumen di database benar-benar kosong melompong (pertama kali instal)
-        masterProduk = [...defaultMasterProduk]; 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
-    } 
-    loadDataTanggalLocal(); 
-    renderTabelMasterProduk(); 
-});
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
+    // KODE BARU: Rute statusHarian sudah dibelokkan ke CABANG_AKTIF
+    db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').onSnapshot(snapshot => { 
+        snapshot.forEach(doc => { dbStatusKunci[doc.id] = doc.data().terkunci; }); 
+        const tgl = document.getElementById('tglOps').value;
+        if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
+        applyLockUI(); 
+    });
 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
-            if (doc.exists && doc.data().list) { vendorCatalog = doc.data().list; } 
-            else { db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); vendorCatalog = defaultVendorCatalog; } 
-            renderFormOrderVendor(); 
-        });
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => { 
+        if (doc.exists && doc.data().list) { 
+            // Ambil murni apa adanya dari database Firestore
+            masterProduk = doc.data().list; 
+        } else { 
+            // HANYA buat data default JIKA dokumen di database benar-benar kosong melompong (pertama kali instal)
+            masterProduk = [...defaultMasterProduk]; 
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
+        } 
+        loadDataTanggalLocal(); 
+        renderTabelMasterProduk(); 
+    });
 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
-            snapshot.forEach(doc => { dbStok[doc.id] = doc.data().items; }); 
-            const tgl = document.getElementById('tglOps').value; 
-            if (!document.activeElement || !document.activeElement.classList.contains('input-stok')) { 
-                if(!dbStok[tgl]) syncStokDenganMaster(tgl);
-                cekDanTarikDataKemarin(tgl);
-                renderTabelMatriks(); 
-                updateKalkulasi(); 
-            } 
-        });
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { 
+        if (doc.exists) daftarKategori = doc.data().list; 
+        else db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({ list: defaultKategori }); 
+    });
 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').onSnapshot(snapshot => { 
-            snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
-            const tgl = document.getElementById('tglOps').value;
-            cekDanTarikDataKemarin(tgl); loadKasMasukUI(); updateKalkulasi(); 
-        });
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
+        if (doc.exists && doc.data().list) { vendorCatalog = doc.data().list; } 
+        else { db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); vendorCatalog = defaultVendorCatalog; } 
+        renderFormOrderVendor(); 
+    });
 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').onSnapshot(snapshot => { dbPengeluaranHarian = []; snapshot.forEach(doc => { dbPengeluaranHarian.push({ id: doc.id, ...doc.data() }); }); renderPengeluaranTables(); updateKalkulasi(); });
-       db.collection('cabang').doc(CABANG_AKTIF).collection('gajiHarian').onSnapshot(snapshot => { 
-    snapshot.forEach(doc => { dbGajiHarian[doc.id] = doc.data(); }); 
-    loadGajiUI(); updateKalkulasi(); 
-    if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan(); 
-});
-db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').onSnapshot(snapshot => { 
-    dbLogKas = []; 
-    snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); 
-    hitungAkumulasiKasTotal(); 
-});
-db.collection('cabang').doc(CABANG_AKTIF).collection('setoranDapur').onSnapshot(snapshot => { 
-    snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
-    loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
-});
-    }
+    db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
+        snapshot.forEach(doc => { dbStok[doc.id] = doc.data().items; }); 
+        const tgl = document.getElementById('tglOps').value; 
+        if (!document.activeElement || !document.activeElement.classList.contains('input-stok')) { 
+            if(!dbStok[tgl]) syncStokDenganMaster(tgl);
+            cekDanTarikDataKemarin(tgl);
+            renderTabelMatriks(); 
+            updateKalkulasi(); 
+        } 
+    });
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').onSnapshot(snapshot => { 
+        snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
+        const tgl = document.getElementById('tglOps').value;
+        cekDanTarikDataKemarin(tgl); loadKasMasukUI(); updateKalkulasi(); 
+    });
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').onSnapshot(snapshot => { 
+        dbPengeluaranHarian = []; 
+        snapshot.forEach(doc => { dbPengeluaranHarian.push({ id: doc.id, ...doc.data() }); }); 
+        renderPengeluaranTables(); updateKalkulasi(); 
+    });
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('gajiHarian').onSnapshot(snapshot => { 
+        snapshot.forEach(doc => { dbGajiHarian[doc.id] = doc.data(); }); 
+        loadGajiUI(); updateKalkulasi(); 
+        if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan(); 
+    });
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').onSnapshot(snapshot => { 
+        dbLogKas = []; 
+        snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); 
+        hitungAkumulasiKasTotal(); 
+    });
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('setoranDapur').onSnapshot(snapshot => { 
+        snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
+        loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
+    });
+}
 
     // ==========================================
     // FUNGSI NAVIGASI
@@ -1200,17 +1216,16 @@ function hapusMutasiKas(docId) {
 }
 
 function prosesTransaksiKas(e) { 
-    e.preventDefault(); 
-    if(!db) return; 
-    
-    db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').add({ 
-        tgl: document.getElementById('tglOps').value, 
-        jenis: document.getElementById('modalJenisKas').value, 
-        tipe: document.getElementById('modalTipeTx').value, 
-        nominal: parseFloat(document.getElementById('modalNominalTx').value)||0, 
-        ket: document.getElementById('modalKetTx').value 
-    }).then(tutupModalKas); 
-}
+        e.preventDefault(); 
+        if(!db) return; 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').add({ 
+            tgl: document.getElementById('tglOps').value, 
+            jenis: document.getElementById('modalJenisKas').value, 
+            tipe: document.getElementById('modalTipeTx').value, 
+            nominal: parseFloat(document.getElementById('modalNominalTx').value)||0, 
+            ket: document.getElementById('modalKetTx').value 
+        }).then(tutupModalKas); 
+    }
     // ==========================================
     // FUNGSI MASTER PRODUK & GUDANG
     // ==========================================
