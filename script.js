@@ -474,12 +474,11 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
         if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
     } else if (jenis === 'laporanBerkala') {
         document.getElementById('viewLaporanBerkala').style.display = 'block';
-    } else if (jenis === 'pusatKontrol') {
-        // KODE BARU: Tampilkan halaman pusat kontrol dan muat daftar akun kasir
+   } else if (jenis === 'pusatKontrol') {
+        // Tampilkan halaman pusat kontrol dan muat daftar akun kasir
         if (viewPusat) viewPusat.style.display = 'block';
         if (typeof muatDaftarAkun === 'function') muatDaftarAkun();
     }
-}
     // ==========================================
     // FUNGSI FORM ORDER VENDOR
     // ==========================================
