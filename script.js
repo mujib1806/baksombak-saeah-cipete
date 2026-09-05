@@ -350,9 +350,20 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
         });
 
         db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').onSnapshot(snapshot => { dbPengeluaranHarian = []; snapshot.forEach(doc => { dbPengeluaranHarian.push({ id: doc.id, ...doc.data() }); }); renderPengeluaranTables(); updateKalkulasi(); });
-        db.collection('gajiHarian').onSnapshot(snapshot => { snapshot.forEach(doc => { dbGajiHarian[doc.id] = doc.data(); }); loadGajiUI(); updateKalkulasi(); if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan(); });
-        db.collection('logKas').onSnapshot(snapshot => { dbLogKas = []; snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); hitungAkumulasiKasTotal(); });
-        db.collection('setoranDapur').onSnapshot(snapshot => { snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); });
+       db.collection('cabang').doc(CABANG_AKTIF).collection('gajiHarian').onSnapshot(snapshot => { 
+    snapshot.forEach(doc => { dbGajiHarian[doc.id] = doc.data(); }); 
+    loadGajiUI(); updateKalkulasi(); 
+    if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan(); 
+});
+db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').onSnapshot(snapshot => { 
+    dbLogKas = []; 
+    snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); 
+    hitungAkumulasiKasTotal(); 
+});
+db.collection('cabang').doc(CABANG_AKTIF).collection('setoranDapur').onSnapshot(snapshot => { 
+    snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
+    loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
+});
     }
 
     // ==========================================
@@ -711,15 +722,15 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
     function toggleLock() { const tgl = document.getElementById('tglOps').value; const currentlyLocked = isDataLocked(tgl); if (currentlyLocked) { if(confirm("Buka gembok data hari ini?")) { setLockStatus(tgl, false); } } else { if(confirm("Kunci data hari ini?")) { setLockStatus(tgl, true); } } }
     
     function setLockStatus(tgl, status) { 
-        if(db) { 
-            db.collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
-                const statusStr = status ? "MENKUNCI (LOCK)" : "MEMBUKA (UNLOCK)";
-                catatAktivitas('Keamanan Data', `${statusStr} data operasional untuk tanggal ${tgl}`);
-            }); 
-        } else { 
-            dbStatusKunci[tgl] = status; applyLockUI(); 
-        } 
-    }
+    if(db) { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
+            const statusStr = status ? "MENKUNCI (LOCK)" : "MEMBUKA (UNLOCK)";
+            catatAktivitas('Keamanan Data', `${statusStr} data operasional untuk tanggal ${tgl}`);
+        }); 
+    } else { 
+        dbStatusKunci[tgl] = status; applyLockUI(); 
+    } 
+}
 
     function applyLockUI() { 
         const tgl = document.getElementById('tglOps').value; const locked = isDataLocked(tgl); const btnToggle = document.getElementById('btnToggleLock'); 
@@ -743,8 +754,23 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
         }
     }
 
-    function simpanAbsensi() { const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; const utama = document.getElementById('inAbsenUtama').value === 'ya'; const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; const nominal = (utama ? 50000 : 0) + (tambahan * 50000); const data = { utama, tambahan, nominal }; if(db) { db.collection('gajiHarian').doc(tgl).set(data).then(() => { showToast('✅ Absensi & Gaji Tersimpan!'); }); } else { dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); } }
+   function simpanAbsensi() { 
+    const tgl = document.getElementById('tglOps').value; 
+    if(isDataLocked(tgl)) return; 
     
+    const utama = document.getElementById('inAbsenUtama').value === 'ya'; 
+    const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; 
+    const nominal = (utama ? 50000 : 0) + (tambahan * 50000); 
+    const data = { utama, tambahan, nominal }; 
+    
+    if(db) { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('gajiHarian').doc(tgl).set(data).then(() => { 
+            showToast('✅ Absensi & Gaji Tersimpan!'); 
+        }); 
+    } else { 
+        dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); 
+    } 
+} 
     function loadGajiUI() { const tgl = document.getElementById('tglOps').value; const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; document.getElementById('inAbsenUtama').value = d.utama ? 'ya' : 'tidak'; document.getElementById('inAbsenTambahan').value = d.tambahan; document.getElementById('txtTotalGajiHarian').innerText = formatRupiah(d.nominal); }
 
     function renderTabelMatriks() {
@@ -908,13 +934,20 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
     }
 
     function simpanSetoranDapurManual() { 
-        const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return; 
-        const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
-        const data = { cash: bersih('inBmCash'), ket: document.getElementById('inBmKetPengeluaran').value, pengeluaran: bersih('inBmPengeluaran') }; 
-        if(db) { db.collection('setoranDapur').doc(tgl).set(data).then(() => { showToast('✅ Data Dapur Tersimpan!'); }); } 
-        else { dbSetoranDapur[tgl] = data; updateKalkulasi(); renderViewSetoranBakso(); } 
-    }
-
+    const tgl = document.getElementById('tglOps').value; 
+    if(isDataLocked(tgl)) return; 
+    
+    const bersih = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+    const data = { cash: bersih('inBmCash'), ket: document.getElementById('inBmKetPengeluaran').value, pengeluaran: bersih('inBmPengeluaran') }; 
+    
+    if(db) { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('setoranDapur').doc(tgl).set(data).then(() => { 
+            showToast('✅ Data Dapur Tersimpan!'); 
+        }); 
+    } else { 
+        dbSetoranDapur[tgl] = data; updateKalkulasi(); renderViewSetoranBakso(); 
+    } 
+}
     // ==========================================
     // FUNGSI BARU: SENSOR PERINGATAN GUDANG & ETALASE
     // ==========================================
@@ -1161,9 +1194,23 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
 }
 
 function hapusMutasiKas(docId) { 
-    if(db && confirm("Hapus transaksi kas ini?")) db.collection('logKas').doc(docId).delete(); 
+    if(db && confirm("Hapus transaksi kas ini?")) {
+        db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').doc(docId).delete(); 
+    }
 }
 
+function prosesTransaksiKas(e) { 
+    e.preventDefault(); 
+    if(!db) return; 
+    
+    db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').add({ 
+        tgl: document.getElementById('tglOps').value, 
+        jenis: document.getElementById('modalJenisKas').value, 
+        tipe: document.getElementById('modalTipeTx').value, 
+        nominal: parseFloat(document.getElementById('modalNominalTx').value)||0, 
+        ket: document.getElementById('modalKetTx').value 
+    }).then(tutupModalKas); 
+}
     // ==========================================
     // FUNGSI MASTER PRODUK & GUDANG
     // ==========================================
@@ -1984,33 +2031,38 @@ function terapkanFilterReseller() {
         }
     }
 
-    function catatAktivitas(aksi, detail) {
-        if(!db) return;
-        const namaUser = currentUser ? currentUser.nama : "Sistem";
-        const waktuWIB = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-        db.collection('logAktivitas').add({ waktu: waktuWIB, user: namaUser, keterangan: `[${aksi}] ${detail}`, timestamp: firebase.firestore.FieldValue.serverTimestamp() }).catch(err => console.error("Gagal mencatat log:", err));
-    }
+   function catatAktivitas(aksi, detail) {
+    if(!db) return;
+    const namaUser = currentUser ? currentUser.nama : "Sistem";
+    const waktuWIB = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    
+    db.collection('cabang').doc(CABANG_AKTIF).collection('logAktivitas').add({ 
+        waktu: waktuWIB, user: namaUser, keterangan: `[${aksi}] ${detail}`, timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+    }).catch(err => console.error("Gagal mencatat log:", err));
+}
 
-    function muatDataRiwayat() {
-        if(!db) return;
-        db.collection('logAktivitas').orderBy('timestamp', 'desc').limit(50).get().then(snapshot => {
-            let html = '';
-            if(snapshot.empty) { html = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Belum ada riwayat aktivitas tercatat.</td></tr>`; } 
-            else {
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    html += `<tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 10px 12px; color: #64748b; background: #ffffff; position: sticky; left: 0; z-index: 5;">${d.waktu || '-'}</td>
-                        <td style="padding: 10px 12px; font-weight: 600; color: #0f172a; background: #ffffff; position: sticky; left: 95px; z-index: 5; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">${d.user || 'Sistem'}</td>
-                        <td style="padding: 10px 12px; color: #334155; white-space: normal; word-break: break-word;">${d.keterangan || '-'}</td>
-                    </tr>`;
-                });
-            }
-            document.getElementById('tabelRiwayatBody').innerHTML = html;
-        }).catch(err => {
-            document.getElementById('tabelRiwayatBody').innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #ef4444;">Gagal memuat data riwayat.</td></tr>`;
-        });
-    }
+function muatDataRiwayat() {
+    if(!db) return;
+    
+    db.collection('cabang').doc(CABANG_AKTIF).collection('logAktivitas').orderBy('timestamp', 'desc').limit(50).get().then(snapshot => {
+        let html = '';
+        if(snapshot.empty) { 
+            html = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Belum ada riwayat aktivitas tercatat.</td></tr>`; 
+        } else {
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                html += `<tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 12px; color: #64748b; background: #ffffff; position: sticky; left: 0; z-index: 5;">${d.waktu || '-'}</td>
+                    <td style="padding: 10px 12px; font-weight: 600; color: #0f172a; background: #ffffff; position: sticky; left: 95px; z-index: 5; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">${d.user || 'Sistem'}</td>
+                    <td style="padding: 10px 12px; color: #334155; white-space: normal; word-break: break-word;">${d.keterangan || '-'}</td>
+                </tr>`;
+            });
+        }
+        document.getElementById('tabelRiwayatBody').innerHTML = html;
+    }).catch(err => {
+        document.getElementById('tabelRiwayatBody').innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #ef4444;">Gagal memuat data riwayat.</td></tr>`;
+    });
+}
     
     function toggleDropdown(idGrup) {
         const el = document.getElementById(idGrup);
