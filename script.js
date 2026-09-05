@@ -308,27 +308,27 @@ const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
             if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
             applyLockUI(); 
         });
-db.collection('appData').doc('masterProduk').onSnapshot(doc => { 
+db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => { 
     if (doc.exists && doc.data().list) { 
         // Ambil murni apa adanya dari database Firestore
         masterProduk = doc.data().list; 
     } else { 
         // HANYA buat data default JIKA dokumen di database benar-benar kosong melompong (pertama kali instal)
         masterProduk = [...defaultMasterProduk]; 
-        db.collection('appData').doc('masterProduk').set({ list: masterProduk }); 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
     } 
     loadDataTanggalLocal(); 
     renderTabelMasterProduk(); 
 });
-        db.collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { if (doc.exists) daftarKategori = doc.data().list; else db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({ list: defaultKategori }); });
 
-        db.collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').onSnapshot(doc => { 
             if (doc.exists && doc.data().list) { vendorCatalog = doc.data().list; } 
-            else { db.collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); vendorCatalog = defaultVendorCatalog; } 
+            else { db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: defaultVendorCatalog }); vendorCatalog = defaultVendorCatalog; } 
             renderFormOrderVendor(); 
         });
 
-        db.collection('stokHarian').onSnapshot(snapshot => { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
             snapshot.forEach(doc => { dbStok[doc.id] = doc.data().items; }); 
             const tgl = document.getElementById('tglOps').value; 
             if (!document.activeElement || !document.activeElement.classList.contains('input-stok')) { 
@@ -339,13 +339,13 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
             } 
         });
 
-        db.collection('kasMasuk').onSnapshot(snapshot => { 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').onSnapshot(snapshot => { 
             snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
             const tgl = document.getElementById('tglOps').value;
             cekDanTarikDataKemarin(tgl); loadKasMasukUI(); updateKalkulasi(); 
         });
 
-        db.collection('pengeluaranHarian').onSnapshot(snapshot => { dbPengeluaranHarian = []; snapshot.forEach(doc => { dbPengeluaranHarian.push({ id: doc.id, ...doc.data() }); }); renderPengeluaranTables(); updateKalkulasi(); });
+        db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').onSnapshot(snapshot => { dbPengeluaranHarian = []; snapshot.forEach(doc => { dbPengeluaranHarian.push({ id: doc.id, ...doc.data() }); }); renderPengeluaranTables(); updateKalkulasi(); });
         db.collection('gajiHarian').onSnapshot(snapshot => { snapshot.forEach(doc => { dbGajiHarian[doc.id] = doc.data(); }); loadGajiUI(); updateKalkulasi(); if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan(); });
         db.collection('logKas').onSnapshot(snapshot => { dbLogKas = []; snapshot.forEach(doc => { dbLogKas.push({ id: doc.id, ...doc.data() }); }); hitungAkumulasiKasTotal(); });
         db.collection('setoranDapur').onSnapshot(snapshot => { snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); });
@@ -471,7 +471,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
 
         clearTimeout(vendorSaveTimeout);
         vendorSaveTimeout = setTimeout(() => {
-            if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }).then(() => showToast('✅ Perubahan Order Tersimpan!'));
+            if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }).then(() => showToast('✅ Perubahan Order Tersimpan!'));
         }, 1000);
     }
 
@@ -496,7 +496,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         };
         vendorCatalog.push(newItem);
         if(db) {
-            db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }).then(() => { tutupModalTambahVendor(); showToast('✅ Produk Baru Ditambahkan!'); });
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }).then(() => { tutupModalTambahVendor(); showToast('✅ Produk Baru Ditambahkan!'); });
         } else {
             tutupModalTambahVendor(); renderFormOrderVendor();
         }
@@ -505,7 +505,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
     function hapusItemVendor(index) {
         if(confirm(`Hapus ${vendorCatalog[index].nama} dari daftar pemesanan vendor?`)) {
             vendorCatalog.splice(index, 1);
-            if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog });
+            if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog });
             renderFormOrderVendor();
         }
     }
@@ -551,7 +551,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
             element.style.display = 'none'; 
             const namaFile = `PO_Vendor_${tglFile}.pdf`;
             const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
-            const resetForm = () => { vendorCatalog.forEach(item => item.qty = ""); if(db) db.collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }); renderFormOrderVendor(); };
+            const resetForm = () => { vendorCatalog.forEach(item => item.qty = ""); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }); renderFormOrderVendor(); };
 
             if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
                 navigator.share({ files: [filePdf], title: 'Purchase Order (PO)', text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
@@ -599,7 +599,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         if (isKemarinLocked && dbKasMasuk[tglKemarin]) {
             let kasHariIni = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 };
             let pettyKemarin = dbKasMasuk[tglKemarin].modalBesok || 0;
-            if (kasHariIni.petty !== pettyKemarin) { kasHariIni.petty = pettyKemarin; dbKasMasuk[tgl] = kasHariIni; if (db) { db.collection('kasMasuk').doc(tgl).set(kasHariIni); } needsUpdateUI = true; }
+            if (kasHariIni.petty !== pettyKemarin) { kasHariIni.petty = pettyKemarin; dbKasMasuk[tgl] = kasHariIni; if (db) { db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').doc(tgl).set(kasHariIni); } needsUpdateUI = true; }
         }
         if (needsUpdateUI && document.activeElement && document.activeElement.tagName !== 'INPUT') { renderTabelMatriks(); loadKasMasukUI(); updateKalkulasi(); }
     }
@@ -637,7 +637,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,""));
         let profitSiapBagi = Math.max(0, profitAngka);
 
-        db.collection('stokHarian').doc(tgl).set({ 
+        db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({ 
             items: dbStok[tgl],
             profitBersih: profitSiapBagi,
             danaDarurat: profitSiapBagi * 0.20,
@@ -668,7 +668,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
                     masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
                     
                     // Simpan senyap di latar belakang ke database Firebase
-                    if(db) db.collection('appData').doc('masterProduk').set({ list: masterProduk });
+                    if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
                 }
             }
             dbStok[tgl][idx].tambah = valBaru;
@@ -858,7 +858,7 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         const nominal = parseFloat(document.getElementById('nominalKeluarHarian').value.replace(/\./g, '')) || 0; 
 
         if(db) { 
-            db.collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { 
+            db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').add({ tgl, ket, nominal }).then(() => { 
                 catatAktivitas('Pengeluaran Harian', `Menambah pengeluaran "${ket}" sebesar Rp ${nominal.toLocaleString('id-ID')} untuk tanggal ${tgl}`);
                 showToast('🛒 Pengeluaran Ditambah!'); 
             }); 
@@ -876,14 +876,14 @@ db.collection('appData').doc('masterProduk').onSnapshot(doc => {
         let ketItem = "Pengeluaran";
         let nominalItem = 0;
         if (db && docId !== 'null') {
-            db.collection('pengeluaranHarian').doc(docId).get().then(doc => {
+            db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').doc(docId).get().then(doc => {
                 if(doc.exists) {
                     ketItem = doc.data().ket;
                     nominalItem = doc.data().nominal;
                     catatAktivitas('Hapus Pengeluaran', `Menghapus pengeluaran "${ketItem}" sebesar Rp ${nominalItem.toLocaleString('id-ID')}`);
                 }
             });
-            db.collection('pengeluaranHarian').doc(docId).delete();
+            db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').doc(docId).delete();
         } else { 
             const itemDihapus = dbPengeluaranHarian[idxLokal];
             catatAktivitas('Hapus Pengeluaran', `Menghapus pengeluaran "${itemDihapus?.ket || 'Lokal'}"`);
@@ -1181,7 +1181,7 @@ function hapusMutasiKas(docId) {
     
     function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk').classList.remove('active'); }
     
-    function tambahKategoriBaruPrompt() { const k=prompt("Nama Kategori Baru:"); if(k&&k.trim()){ daftarKategori.push(k.trim()); if(db)db.collection('appData').doc('daftarKategori').set({list:daftarKategori}); bukaModalKelolaProduk(); } }
+    function tambahKategoriBaruPrompt() { const k=prompt("Nama Kategori Baru:"); if(k&&k.trim()){ daftarKategori.push(k.trim()); if(db)db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({list:daftarKategori}); bukaModalKelolaProduk(); } }
     
     function hitungMarginForm() { document.getElementById('inputMarginProduk').value=Math.max(0,(parseFloat(document.getElementById('inputJualProduk').value)||0)-(parseFloat(document.getElementById('inputModalProduk').value)||0)); }
     
@@ -1275,12 +1275,12 @@ function hapusMutasiKas(docId) {
             const namaProd = masterProduk[i]?.nama || 'Produk';
             masterProduk.splice(i, 1); 
             catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
-            if(db) db.collection('appData').doc('masterProduk').set({ list: masterProduk }); 
+            if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
             renderTabelMasterProduk(); 
         } 
     }
     
-    function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
+    function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
 
    function bukaModalKas(jenis, tipe) { 
     document.getElementById('modalJenisKas').value = jenis; 
@@ -1963,7 +1963,7 @@ function terapkanFilterReseller() {
     // FUNGSI CSV (IMPORT/EXPORT)
     // ==========================================
     function downloadTemplatePagi() { const tgl = document.getElementById('tglOps').value; let csv = 'Kategori;Nama Produk;Stok Awal;Tambah;Kurang;Stok Sisa\n'; (dbStok[tgl] || masterProduk).forEach(p => { csv += `${p.kategori};${p.nama};${p.awal || 0};${p.tambah || 0};${p.kurang || 0};${p.sisa || ""}\n`; }); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = `Stok_Harian_${tgl}.csv`; link.click(); }
-    function importStokPagi(event) { if(isDataLocked(document.getElementById('tglOps').value)) { alert("Data terkunci! Silakan buka gembok terlebih dahulu."); return; } const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const tgl = document.getElementById('tglOps').value; if (!dbStok[tgl]) syncStokDenganMaster(tgl); e.target.result.split('\n').forEach((line, index) => { if (index === 0 || !line.trim()) return; const cols = line.split(';'); if (cols.length >= 3) { const idx = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === cols[1].trim().toLowerCase()); if (idx !== -1) { dbStok[tgl][idx].awal = cols[2].trim(); if (cols[3]) dbStok[tgl][idx].tambah = cols[3].trim(); if (cols[4]) dbStok[tgl][idx].kurang = cols[4].trim(); if (cols[5]) dbStok[tgl][idx].sisa = cols[5].trim(); } } }); if(db) db.collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import OK'); }); else { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import Lokal OK'); } }; reader.readAsText(file); }
+    function importStokPagi(event) { if(isDataLocked(document.getElementById('tglOps').value)) { alert("Data terkunci! Silakan buka gembok terlebih dahulu."); return; } const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { const tgl = document.getElementById('tglOps').value; if (!dbStok[tgl]) syncStokDenganMaster(tgl); e.target.result.split('\n').forEach((line, index) => { if (index === 0 || !line.trim()) return; const cols = line.split(';'); if (cols.length >= 3) { const idx = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === cols[1].trim().toLowerCase()); if (idx !== -1) { dbStok[tgl][idx].awal = cols[2].trim(); if (cols[3]) dbStok[tgl][idx].tambah = cols[3].trim(); if (cols[4]) dbStok[tgl][idx].kurang = cols[4].trim(); if (cols[5]) dbStok[tgl][idx].sisa = cols[5].trim(); } } }); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({ items: dbStok[tgl] }).then(() => { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import OK'); }); else { renderTabelMatriks(); updateKalkulasi(); alert('✅ Import Lokal OK'); } }; reader.readAsText(file); }
 
     // ==========================================
     // FUNGSI BAGIKAN APLIKASI
