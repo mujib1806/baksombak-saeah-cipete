@@ -268,65 +268,72 @@ function prosesLogout() {
 
 function bukaModalKelolaAkun() { if (currentUser.role !== 'owner') return; toggleSidebar(); document.getElementById('modalKelolaAkun').classList.add('active'); muatDaftarAkun(); }
 function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').classList.remove('active'); }
-
-function muatDaftarAkun() { 
-    if(!db) return; 
-    db.collection('users').get().then(snap => { 
-        listAkunKasir = []; 
-        const tbody = document.getElementById('tbodyDaftarAkun'); 
-        if(!tbody) return;
-        tbody.innerHTML = ''; 
-        snap.forEach(doc => { 
-            const data = doc.data(); 
-            listAkunKasir.push(data); 
-            const roleBadge = data.role === 'owner' ? '<span style="color:#d97706;font-weight:bold;">👑 Owner</span>' : (data.role === 'dapur' ? '<span style="color:#ef4444;font-weight:bold;">🔪 Dapur</span>' : '🧑‍🍳 Kasir'); 
-            const aksiBtn = data.hp === currentUser.hp ? '<i>(Anda)</i>' : `<button onclick="hapusAkunUser('${data.hp}')" class="btn btn-danger" style="padding:4px; font-size:0.6rem; margin:0; width:auto;">Hapus</button>`; 
-            tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; 
-        }); 
-    }); 
-}
-
-function simpanAkunBaru(e) { 
-    e.preventDefault(); 
-    const nama = document.getElementById('inAkunNama').value.trim(); 
-    const hp = document.getElementById('inAkunHp').value.trim(); 
-    const password = document.getElementById('inAkunPass').value.trim(); 
-    const role = document.getElementById('inAkunRole').value; 
-
-    if(!db || !aplikasiPendaftaran) {
-        alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
-        return; 
-    }
-
-    if(!hp || !password) {
-        alert("Nomor HP dan Password wajib diisi!");
+// 1. Fungsi untuk memuat dan menampilkan tabel daftar akun
+function muatDaftarAkun() {
+    const tbody = document.getElementById('tbodyDaftarAkun');
+    if (!tbody) return;
+    
+    // Ambil data akun dari localStorage (sesuaikan nama key jika berbeda)
+    const daftarAkun = JSON.parse(localStorage.getItem('daftarAkun_usaha')) || [];
+    
+    tbody.innerHTML = '';
+    if (daftarAkun.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b; padding:10px;">Belum ada akun terdaftar</td></tr>`;
         return;
     }
 
-    const emailPalsu = hp + "@bakso.com";
-
-    aplikasiPendaftaran.auth().createUserWithEmailAndPassword(emailPalsu, password)
-    .then((userCredential) => {
-        return db.collection('users').doc(hp).set({ nama: nama, hp: hp, role: role, email: emailPalsu });
-    })
-    .then(() => { 
-        alert(`Akun berhasil dibuat!\nHP: ${hp}\nPassword: ${password}`); 
-        document.getElementById('inAkunNama').value = ''; 
-        document.getElementById('inAkunHp').value = ''; 
-        document.getElementById('inAkunPass').value = ''; 
-        if(typeof muatDaftarAkun === 'function') muatDaftarAkun(); 
-        aplikasiPendaftaran.auth().signOut();
-    })
-    .catch(err => {
-        if (err.code === 'auth/email-already-in-use') {
-            alert("Gagal! Nomor HP ini sudah pernah didaftarkan.");
-        } else {
-            alert("Gagal menambahkan akun: " + err.message);
-        }
-    }); 
+    daftarAkun.forEach((akun, index) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${akun.nama}</td>
+                <td>${akun.hp}</td>
+                <td><span style="padding:2px 6px; background:#e0f2fe; color:#0369a1; border-radius:4px; font-size:0.75rem;">${akun.role}</span></td>
+                <td><button type="button" onclick="hapusAkun(${index})" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">Hapus</button></td>
+            </tr>
+        `;
+    });
 }
 
-function hapusAkunUser(hp) { if(confirm(`PERINGATAN: Hapus akses untuk pengguna dengan No HP ${hp}?`)) { db.collection('users').doc(hp).delete().then(() => { muatDaftarAkun(); }); } }
+// 2. Fungsi untuk menyimpan akun baru dari form
+function simpanAkunBaru(event) {
+    event.preventDefault();
+    const nama = document.getElementById('inAkunNama').value;
+    const hp = document.getElementById('inAkunHp').value;
+    const pass = document.getElementById('inAkunPass').value;
+    const role = document.getElementById('inAkunRole').value;
+
+    let daftarAkun = JSON.parse(localStorage.getItem('daftarAkun_usaha')) || [];
+    daftarAkun.push({ nama, hp, pass, role });
+    localStorage.setItem('daftarAkun_usaha', JSON.stringify(daftarAkun));
+
+    alert('Akun baru berhasil disimpan!');
+    event.target.reset(); // Mengosongkan form kembali
+    muatDaftarAkun();    // Memperbarui tabel secara otomatis
+}
+
+// 3. Fungsi untuk membuat cabang baru
+function buatCabangBaru() {
+    const namaCabang = prompt('Masukkan nama/lokasi cabang usaha baru:');
+    if (!namaCabang) return;
+    
+    let daftarCabang = JSON.parse(localStorage.getItem('daftarCabang_usaha')) || [];
+    daftarCabang.push(namaCabang);
+    localStorage.setItem('daftarCabang_usaha', JSON.stringify(daftarCabang));
+    
+    alert(`Cabang "${namaCabang}" berhasil dibuat!`);
+    location.reload();
+}
+
+// 4. Fungsi untuk menghapus akun (opsional jika dibutuhkan)
+function hapusAkun(index) {
+    if (!confirm('Yakin ingin menghapus akun ini?')) return;
+    
+    let daftarAkun = JSON.parse(localStorage.getItem('daftarAkun_usaha')) || [];
+    daftarAkun.splice(index, 1);
+    localStorage.setItem('daftarAkun_usaha', JSON.stringify(daftarAkun));
+    
+    muatDaftarAkun();
+}
 
 // ==========================================
 // FUNGSI FIREBASE REALTIME
