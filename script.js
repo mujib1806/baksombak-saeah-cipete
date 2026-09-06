@@ -2605,12 +2605,14 @@ function ownerPindahCabang(idCabangBaru) {
     }
 }
 // Tambahkan variabel global ini di area atas script.js jika belum ada
-let chartGlobalInstance = null; 
+let chartGlobalInstance = null;
 let chartTop10GlobalInstance = null;
+
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
-    const kataPengecualian = document.getElementById('filterGlobalKecualikan') ? document.getElementById('filterGlobalKecualikan').value.toLowerCase() : "";
+    const inputKecualikan = document.getElementById('filterGlobalKecualikan');
+    const kataPengecualian = inputKecualikan ? inputKecualikan.value.toLowerCase() : "";
 
     let tglAkhir = new Date(); 
     let tglAwal = new Date();
@@ -2642,10 +2644,9 @@ async function renderDashboardGlobal() {
     let totalOmsetReseller = 0;
     let profitCipete = 0;
     let profitBlokM = 0;
+    
     let omsetBaksoPerCabang = {};
     let omsetResellerPerCabang = {};
-    
-    // Variabel Baru: Perekam jumlah terjual per produk
     let rekapProdukGlobal = {};
 
     const daftarCabang = ['cipete_utara', 'blok_m']; 
@@ -2695,11 +2696,9 @@ async function renderDashboardGlobal() {
                                 omsetResellerPerCabang[idCabang] += subtotal;
                             }
 
-                            // Rekap Produk untuk Top 10
+                            // Perekaman untuk Top 10
                             const namaProduk = item.nama;
-                            if (!rekapProdukGlobal[namaProduk]) {
-                                rekapProdukGlobal[namaProduk] = 0;
-                            }
+                            if (!rekapProdukGlobal[namaProduk]) rekapProdukGlobal[namaProduk] = 0;
                             rekapProdukGlobal[namaProduk] += stokTerjual;
                         }
                     });
@@ -2710,21 +2709,20 @@ async function renderDashboardGlobal() {
         }
     }
 
-    // Olah Data Top 10 & Filter Pengecualian
+    // Filter Pengecualian Top 10
     const listKecuali = kataPengecualian.split(',').map(s => s.trim()).filter(s => s);
     let arrayProduk = Object.keys(rekapProdukGlobal).map(nama => {
         return { nama: nama, terjual: rekapProdukGlobal[nama] };
     });
 
-    // Singkirkan produk yang diketik di kolom filter
     if (listKecuali.length > 0) {
         arrayProduk = arrayProduk.filter(p => !listKecuali.some(kecuali => p.nama.toLowerCase().includes(kecuali)));
     }
 
-    // Urutkan dari terbanyak dan ambil 10 teratas
     arrayProduk.sort((a, b) => b.terjual - a.terjual);
     let top10Produk = arrayProduk.slice(0, 10);
 
+    // Tampilkan Angka
     document.getElementById('globalTotalOmset').innerText = 'Rp ' + totalOmsetGlobal.toLocaleString('id-ID');
     document.getElementById('globalTotalProfit').innerText = 'Rp ' + totalProfitGlobal.toLocaleString('id-ID');
     if (document.getElementById('globalOmsetBakso')) document.getElementById('globalOmsetBakso').innerText = 'Rp ' + totalOmsetBakso.toLocaleString('id-ID');
@@ -2732,47 +2730,100 @@ async function renderDashboardGlobal() {
     if (document.getElementById('globalProfitCipete')) document.getElementById('globalProfitCipete').innerText = 'Rp ' + profitCipete.toLocaleString('id-ID');
     if (document.getElementById('globalProfitBlokM')) document.getElementById('globalProfitBlokM').innerText = 'Rp ' + profitBlokM.toLocaleString('id-ID');
 
-    if (typeof gambarGrafikGlobal === 'function') gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
-    
-    // Panggil Grafik Top 10
-    if (typeof gambarGrafikTop10Global === 'function') gambarGrafikTop10Global(top10Produk);
+    // Eksekusi Pembuatan Grafik
+    gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
+    gambarGrafikTop10Global(top10Produk);
 }
 
-// Fungsi Baru untuk Merender Grafik Top 10
+function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
+    const ctx = document.getElementById('chartGlobalCabang');
+    if (!ctx) return;
+
+    if (chartGlobalInstance) chartGlobalInstance.destroy();
+
+    const labels = labelsCabang.map(id => id.split('_').map(kata => kata.charAt(0).toUpperCase() + kata.slice(1)).join(' '));
+    const angkaBakso = Object.values(dataBakso);
+    const angkaReseller = Object.values(dataReseller);
+
+    chartGlobalInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Bakso (Rp)',
+                    data: angkaBakso,
+                    backgroundColor: '#f97316',
+                    maxBarThickness: 80,
+                },
+                {
+                    label: 'Reseller (Rp)',
+                    data: angkaReseller,
+                    backgroundColor: '#3b82f6',
+                    maxBarThickness: 80,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return value.toLocaleString('id-ID'); } }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) label += context.parsed.y.toLocaleString('id-ID');
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); },
+                    color: '#ffffff',
+                    font: { size: 10, weight: 'bold' }
+                }
+            }
+        }
+    });
+}
+
 function gambarGrafikTop10Global(dataTop10) {
     const ctx = document.getElementById('chartTop10Global');
     if (!ctx) return;
 
-    if (chartTop10GlobalInstance) {
-        chartTop10GlobalInstance.destroy();
-    }
+    if (chartTop10GlobalInstance) chartTop10GlobalInstance.destroy();
 
     const labels = dataTop10.map(d => d.nama);
     const dataAngka = dataTop10.map(d => d.terjual);
 
     chartTop10GlobalInstance = new Chart(ctx, {
-        type: 'bar', // Horizontal bar 
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Terjual (Porsi)',
                 data: dataAngka,
-                backgroundColor: '#f97316', 
+                backgroundColor: '#10b981', // Warna Hijau agar kontras
                 borderRadius: 4
             }]
         },
         options: {
-            indexAxis: 'y', // Memutar grafik menjadi menyamping
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                x: { beginAtZero: true }
-            },
+            scales: { x: { beginAtZero: true } },
             plugins: {
                 datalabels: {
-                    formatter: function(value) {
-                        return value === 0 ? '' : value.toLocaleString('id-ID'); 
-                    },
+                    formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); },
                     color: '#fff',
                     font: { size: 10, weight: 'bold' }
                 }
