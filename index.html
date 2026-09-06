@@ -640,20 +640,29 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
             <h2 style="color: #0f172a; margin: 0;">🌐 Dashboard Global</h2>
             
-            <!-- Panel Filter Dinamis -->
-            <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+           <!-- Panel Filter Dinamis -->
+            <div style="display:flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <select id="filterGlobalKategori" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #cbd5e1; background:#fff; color:#334155; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
                     <option value="semua">Semua Kategori</option>
                     <option value="Bakso Malang">Khusus Bakso Malang</option>
                     <option value="Reseller">Khusus Reseller</option>
                 </select>
                 
-                <select id="filterGlobalPeriode" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #fbbf24; background:#fffbeb; color:#d97706; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                <select id="filterGlobalPeriode" onchange="cekFilterKustomGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #fbbf24; background:#fffbeb; color:#d97706; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
                     <option value="7">7 Hari Terakhir</option>
                     <option value="30">30 Hari Terakhir</option>
                     <option value="bulan_ini">Bulan Ini</option>
                     <option value="bulan_lalu">Bulan Lalu</option>
+                    <option value="kustom">Pilih Tanggal...</option>
                 </select>
+
+                <!-- KODE BARU: Input Kalender Manual (Disembunyikan secara default) -->
+                <div id="areaFilterKustomGlobal" style="display:none; gap:5px; align-items:center;">
+                    <input type="date" id="tglMulaiGlobal" style="padding:5px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.75rem; outline:none;">
+                    <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
+                    <input type="date" id="tglAkhirGlobal" style="padding:5px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.75rem; outline:none;">
+                    <button onclick="renderDashboardGlobal()" style="background:#10b981; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:bold; font-size:0.75rem; cursor:pointer;">Cari</button>
+                </div>
             </div>
         </div>
 
