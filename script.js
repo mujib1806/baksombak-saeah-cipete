@@ -278,7 +278,7 @@ function bukaLayarAplikasi() {
     document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
     document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
     document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
-
+    document.getElementById('menuOrderVendor').style.display = isDapur ? 'none' : 'block';
     document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
     document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
     document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
