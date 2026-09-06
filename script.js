@@ -3056,10 +3056,11 @@ function muatTabelModalMutasi() {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
-// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore
+// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore (Struktur Koleksi 'cabang')
 async function prosesSimpanMutasiStok() {
     let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
-    let cabangMitra = document.getElementById('mutasiCabangTarget').value;
+    let selectTarget = document.getElementById('mutasiCabangTarget');
+    let cabangMitra = selectTarget.value; // Contoh: 'blok_m' atau 'cipete_utara'
     
     if (!cabangMitra) {
         alert('Pilih cabang tujuan/asal terlebih dahulu!');
@@ -3074,10 +3075,8 @@ async function prosesSimpanMutasiStok() {
         let val = parseInt(input.value) || 0;
         if (val > 0) {
             adaMutasi = true;
-            // Ambil nomor indeks baris produk yang persis sama dengan tabel harian
-            let indexBaris = input.getAttribute('data-index');
             detailMutasiList.push({
-                indexProd: indexBaris,
+                indexProd: input.getAttribute('data-index'),
                 namaProduk: input.getAttribute('data-nama'),
                 jumlah: val
             });
@@ -3094,11 +3093,13 @@ async function prosesSimpanMutasiStok() {
     }
     
     try {
+        // Ambil nama cabang aktif dari banner, sesuaikan formatnya dengan id dokumen Firestore (ubah spasi/dash jadi underscore)
         let labelBanner = document.getElementById('labelCabangBanner');
-        let cabangAktifSkrg = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
+        let cabangAktifSkrg = labelBanner ? labelBanner.innerText.trim().toLowerCase().replace(/[\s-]/g, '_') : '';
         
+        // Pastikan nama cabang sesuai (misal: 'cipete_utara' atau 'blok_m')
         if (!cabangAktifSkrg || cabangAktifSkrg === 'memuat...') {
-            throw new Error('Nama cabang aktif tidak terdeteksi dari banner layar.');
+            throw new Error('Nama cabang aktif tidak terdeteksi dari banner.');
         }
         
         let tglOpsInput = document.getElementById('tglOps');
@@ -3106,10 +3107,11 @@ async function prosesSimpanMutasiStok() {
         
         let db = firebase.firestore();
         
-        let docRefSendiri = db.collection(cabangAktifSkrg).doc(tanggalHariIni);
+        // Jalur Firestore yang benar: koleksi 'cabang' -> dokumen nama cabang -> sub-koleksi/dokumen harian
+        let docRefSendiri = db.collection('cabang').doc(cabangAktifSkrg).collection('appData').doc(tanggalHariIni);
         let docSnapSendiri = await docRefSendiri.get();
         
-        let docRefMitra = db.collection(cabangMitra).doc(tanggalHariIni);
+        let docRefMitra = db.collection('cabang').doc(cabangMitra).collection('appData').doc(tanggalHariIni);
         let docSnapMitra = await docRefMitra.get();
         
         let dataSendiri = docSnapSendiri.exists ? docSnapSendiri.data() : {};
@@ -3125,7 +3127,6 @@ async function prosesSimpanMutasiStok() {
             if (!dataMitra.stokHarian[idx]) dataMitra.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
             
             if (jenisMutasi === 'keluar') {
-                // Akumulasi (ditambahkan ke angka yang sudah ada sebelumnya)
                 dataSendiri.stokHarian[idx].kurang = (parseInt(dataSendiri.stokHarian[idx].kurang) || 0) + item.jumlah;
                 dataMitra.stokHarian[idx].tambah = (parseInt(dataMitra.stokHarian[idx].tambah) || 0) + item.jumlah;
             } else {
@@ -3139,13 +3140,7 @@ async function prosesSimpanMutasiStok() {
             docRefMitra.set(dataMitra, { merge: true })
         ]);
         
-        if (typeof catatRiwayatAktivitas === 'function') {
-            let rincianTxt = detailMutasiList.map(i => `${i.jumlah} pcs ${i.namaProduk}`).join(', ');
-            let teksAktivitas = `Melakukan Mutasi Stok (${jenisMutasi === 'keluar' ? 'Kirim ke' : 'Terima dari'} ${cabangMitra.toUpperCase()}): ${rincianTxt}`;
-            catatRiwayatAktivitas(teksAktivitas);
-        }
-        
-        alert('✅ Mutasi stok berhasil disinkronkan antar cabang secara real-time!');
+        alert('✅ Mutasi stok berhasil disinkronkan ke database cabang!');
         tutupModalMutasiStok();
         
         if (typeof loadDataTanggalLocal === 'function') {
@@ -3156,6 +3151,6 @@ async function prosesSimpanMutasiStok() {
         
     } catch (error) {
         console.error("Gagal melakukan mutasi stok:", error);
-        alert('❌ Terjadi kesalahan saat sinkronisasi ke server: ' + error.message);
+        alert('❌ Terjadi kesalahan saat sinkronisasi: ' + error.message);
     }
 }
