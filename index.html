@@ -633,6 +633,50 @@
         </div>
     </div>
 </div>
+    <!-- === 0. DASHBOARD GLOBAL (KONSOLIDASI OWNER) === -->
+<div id="viewDashboardGlobal" style="display:none; margin-bottom: 40px;">
+    <div class="card" style="border-top: 4px solid #1e293b; background: #f8fafc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+            <h2 style="color: #0f172a; margin: 0;">🌐 Dashboard Global</h2>
+            
+            <!-- Panel Filter Dinamis -->
+            <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+                <select id="filterGlobalKategori" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #cbd5e1; background:#fff; color:#334155; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                    <option value="semua">Semua Kategori</option>
+                    <option value="Bakso Malang">Khusus Bakso Malang</option>
+                    <option value="Reseller">Khusus Reseller</option>
+                </select>
+                
+                <select id="filterGlobalPeriode" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #fbbf24; background:#fffbeb; color:#d97706; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                    <option value="7">7 Hari Terakhir</option>
+                    <option value="30">30 Hari Terakhir</option>
+                    <option value="bulan_ini">Bulan Ini</option>
+                    <option value="bulan_lalu">Bulan Lalu</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- KOTAK RINGKASAN GLOBAL -->
+        <div class="grid-mobile" style="margin-bottom: 15px;">
+            <div class="summary-box" style="background:#1e293b; border-color:#0f172a; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">TOTAL OMSET GABUNGAN</span>
+                <div id="globalTotalOmset" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin:4px 0;">Rp 0</div>
+            </div>
+            <div class="summary-box" style="background:#064e3b; border-color:#022c22; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#6ee7b7; text-transform:uppercase;">TOTAL PROFIT GABUNGAN</span>
+                <div id="globalTotalProfit" style="font-size:1.5rem; font-weight:900; color:#34d399; margin:4px 0;">Rp 0</div>
+            </div>
+        </div>
+
+        <!-- AREA GRAFIK KONSOLIDASI (PERBANDINGAN CABANG) -->
+        <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
+            <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">PERBANDINGAN OMSET ANTAR CABANG</h4>
+            <div class="chart-container" style="position: relative; height: 250px;">
+                <canvas id="chartGlobalCabang"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- === 1. DASHBOARD ANALISA BISNIS === -->
 <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
     <div class="card" style="border-top: 4px solid #8b5cf6;">
