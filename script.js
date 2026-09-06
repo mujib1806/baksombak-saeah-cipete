@@ -3056,7 +3056,7 @@ function muatTabelModalMutasi() {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
-// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firebase
+// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore
 async function prosesSimpanMutasiStok() {
     let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
     let cabangMitra = document.getElementById('mutasiCabangTarget').value;
@@ -3074,8 +3074,10 @@ async function prosesSimpanMutasiStok() {
         let val = parseInt(input.value) || 0;
         if (val > 0) {
             adaMutasi = true;
+            // Ambil nomor indeks baris produk yang persis sama dengan tabel harian
+            let indexBaris = input.getAttribute('data-index');
             detailMutasiList.push({
-                indexProd: parseInt(input.getAttribute('data-index')),
+                indexProd: indexBaris,
                 namaProduk: input.getAttribute('data-nama'),
                 jumlah: val
             });
@@ -3092,7 +3094,6 @@ async function prosesSimpanMutasiStok() {
     }
     
     try {
-        // Ambil nama cabang aktif secara aman dari banner layar HTML
         let labelBanner = document.getElementById('labelCabangBanner');
         let cabangAktifSkrg = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
         
@@ -3100,11 +3101,9 @@ async function prosesSimpanMutasiStok() {
             throw new Error('Nama cabang aktif tidak terdeteksi dari banner layar.');
         }
         
-        // Ambil tanggal operasional saat ini
         let tglOpsInput = document.getElementById('tglOps');
         let tanggalHariIni = tglOpsInput ? tglOpsInput.value : new Date().toISOString().split('T')[0];
         
-        // Referensi Database Cabang Sendiri & Cabang Mitra di Firestore
         let db = firebase.firestore();
         
         let docRefSendiri = db.collection(cabangAktifSkrg).doc(tanggalHariIni);
@@ -3121,31 +3120,25 @@ async function prosesSimpanMutasiStok() {
         
         detailMutasiList.forEach(item => {
             let idx = item.indexProd;
-            let qty = item.jumlah;
             
             if (!dataSendiri.stokHarian[idx]) dataSendiri.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
             if (!dataMitra.stokHarian[idx]) dataMitra.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
             
             if (jenisMutasi === 'keluar') {
-                // Cabang sendiri mengirim -> Kolom "kurang" bertambah
-                dataSendiri.stokHarian[idx].kurang = (parseInt(dataSendiri.stokHarian[idx].kurang) || 0) + qty;
-                // Cabang mitra menerima -> Kolom "tambah" bertambah
-                dataMitra.stokHarian[idx].tambah = (parseInt(dataMitra.stokHarian[idx].tambah) || 0) + qty;
+                // Akumulasi (ditambahkan ke angka yang sudah ada sebelumnya)
+                dataSendiri.stokHarian[idx].kurang = (parseInt(dataSendiri.stokHarian[idx].kurang) || 0) + item.jumlah;
+                dataMitra.stokHarian[idx].tambah = (parseInt(dataMitra.stokHarian[idx].tambah) || 0) + item.jumlah;
             } else {
-                // Cabang sendiri menerima -> Kolom "tambah" bertambah
-                dataSendiri.stokHarian[idx].tambah = (parseInt(dataSendiri.stokHarian[idx].tambah) || 0) + qty;
-                // Cabang mitra mengirim -> Kolom "kurang" bertambah
-                dataMitra.stokHarian[idx].kurang = (parseInt(dataMitra.stokHarian[idx].kurang) || 0) + qty;
+                dataSendiri.stokHarian[idx].tambah = (parseInt(dataSendiri.stokHarian[idx].tambah) || 0) + item.jumlah;
+                dataMitra.stokHarian[idx].kurang = (parseInt(dataMitra.stokHarian[idx].kurang) || 0) + item.jumlah;
             }
         });
         
-        // Simpan paralel ke Firestore
         await Promise.all([
             docRefSendiri.set(dataSendiri, { merge: true }),
             docRefMitra.set(dataMitra, { merge: true })
         ]);
         
-        // Catat ke Riwayat Aktivitas Otomatis
         if (typeof catatRiwayatAktivitas === 'function') {
             let rincianTxt = detailMutasiList.map(i => `${i.jumlah} pcs ${i.namaProduk}`).join(', ');
             let teksAktivitas = `Melakukan Mutasi Stok (${jenisMutasi === 'keluar' ? 'Kirim ke' : 'Terima dari'} ${cabangMitra.toUpperCase()}): ${rincianTxt}`;
