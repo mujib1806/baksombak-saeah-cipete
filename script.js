@@ -524,6 +524,10 @@ function pilihMenuNav(jenis) {
     const viewPusat = document.getElementById('viewPusatKontrol');
     if (viewPusat) viewPusat.style.display = 'none';
 
+    // KODE BARU: Sembunyikan Dashboard Global secara default
+    const viewGlobal = document.getElementById('viewDashboardGlobal');
+    if (viewGlobal) viewGlobal.style.display = 'none';
+
     if (document.getElementById('cardSetoranDapur')) {
         document.getElementById('cardSetoranDapur').style.display = 'none';
     }
@@ -551,6 +555,15 @@ function pilihMenuNav(jenis) {
     } else if (jenis === 'dashboard') {
         document.getElementById('viewDashboard').style.display = 'block';
         renderDashboardGrafik();
+        
+    // ==========================================
+    // KODE BARU: Munculkan Layar Dashboard Global
+    // ==========================================
+    } else if (jenis === 'dashboardGlobal') {
+        if (viewGlobal) viewGlobal.style.display = 'block';
+        if (typeof renderDashboardGlobal === 'function') renderDashboardGlobal();
+    // ==========================================
+
     } else if (jenis === 'orderVendor') {
         document.getElementById('viewOrderVendor').style.display = 'block';
         renderFormOrderVendor();
