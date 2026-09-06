@@ -633,7 +633,8 @@
         </div>
     </div>
 </div>
-    <!-- === 0. DASHBOARD GLOBAL (KONSOLIDASI OWNER) === -->
+
+<!-- === 0. DASHBOARD GLOBAL (KONSOLIDASI OWNER) === -->
 <div id="viewDashboardGlobal" style="display:none; margin-bottom: 40px;">
     <div class="card" style="border-top: 4px solid #1e293b; background: #f8fafc;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
@@ -656,40 +657,38 @@
             </div>
         </div>
 
-       <!-- KOTAK RINGKASAN GLOBAL -->
-<div class="grid-mobile" style="margin-bottom: 15px;">
-    <div class="summary-box" style="background:#1e293b; border-color:#0f172a; text-align:center;">
-        <span style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">TOTAL OMSET GABUNGAN</span>
-        <div id="globalTotalOmset" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin:4px 0;">Rp 0</div>
-        
-        <!-- KODE BARU: Rincian Bakso vs Reseller -->
-        <div style="font-size:0.75rem; color:#cbd5e1;">
-            🍲 Bakso: <strong id="globalOmsetBakso" style="color:#f87171;">Rp 0</strong> | 
-            🥤 Reseller: <strong id="globalOmsetReseller" style="color:#60a5fa;">Rp 0</strong>
-        </div>
-    </div>
+        <!-- KOTAK RINGKASAN GLOBAL -->
+        <div class="grid-mobile" style="margin-bottom: 15px;">
+            <div class="summary-box" style="background:#1e293b; border-color:#0f172a; text-align:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">TOTAL OMSET GABUNGAN</span>
+                <div id="globalTotalOmset" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.75rem; color:#cbd5e1;">
+                    🍲 Bakso: <strong id="globalOmsetBakso" style="color:#f87171;">Rp 0</strong> | 
+                    🥤 Reseller: <strong id="globalOmsetReseller" style="color:#60a5fa;">Rp 0</strong>
+                </div>
+            </div>
 
-    <div class="summary-box" style="background:#064e3b; border-color:#022c22; text-align:center;">
+            <div class="summary-box" style="background:#064e3b; border-color:#022c22; text-align:center;">
                 <span style="font-size:0.75rem; font-weight:800; color:#6ee7b7; text-transform:uppercase;">TOTAL PROFIT GABUNGAN</span>
                 <div id="globalTotalProfit" style="font-size:1.5rem; font-weight:900; color:#34d399; margin:4px 0;">Rp 0</div>
-                
-                <!-- KODE BARU: Rincian Profit Per Cabang -->
                 <div style="font-size:0.75rem; color:#a7f3d0;">
                     Cipete: <strong id="globalProfitCipete" style="color:#fff;">Rp 0</strong> | 
                     Blok M: <strong id="globalProfitBlokM" style="color:#fff;">Rp 0</strong>
                 </div>
             </div>
-
-<!-- AREA GRAFIK KONSOLIDASI (PERBANDINGAN CABANG) -->
-<div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
-    <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">PERBANDINGAN OMSET ANTAR CABANG</h4>
-    <div class="chart-container" style="position: relative; height: 250px;">
-        <canvas id="chartGlobalCabang"></canvas>
-    </div>
-</div>
         </div>
-</div>
-    <!-- === 1. DASHBOARD ANALISA BISNIS === -->
+
+        <!-- AREA GRAFIK KONSOLIDASI (PERBANDINGAN CABANG) -->
+        <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
+            <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">PERBANDINGAN OMSET ANTAR CABANG</h4>
+            <div class="chart-container" style="position: relative; height: 250px;">
+                <canvas id="chartGlobalCabang"></canvas>
+            </div>
+        </div>
+    </div> <!-- Penutup .card -->
+</div> <!-- PENUTUP DARI viewDashboardGlobal -->
+
+<!-- === 1. DASHBOARD ANALISA BISNIS (CABANG) === -->
 <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
     <div class="card" style="border-top: 4px solid #8b5cf6;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
@@ -754,7 +753,6 @@
         
     </div> <!-- Penutup .card -->
 </div> <!-- PENUTUP DARI viewDashboard -->
-
 
 <!-- === 2. PUSAT KONTROL OWNER (BERDIRI SENDIRI) === -->
 <div id="viewPusatKontrol" style="display: none; padding: 15px;">
