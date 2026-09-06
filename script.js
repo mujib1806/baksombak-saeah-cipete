@@ -2607,6 +2607,8 @@ function ownerPindahCabang(idCabangBaru) {
 // Tambahkan variabel global ini di area atas script.js jika belum ada
 let chartGlobalInstance = null;
 let chartTop10GlobalInstance = null;
+let chartTrenGlobalInstance = null; // Variabel baru untuk grafik tren
+
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
@@ -2640,15 +2642,13 @@ async function renderDashboardGlobal() {
     let totalOmsetGlobal = 0, totalProfitGlobal = 0;
     let totalOmsetBakso = 0, totalOmsetReseller = 0;
     let profitCipete = 0, profitBlokM = 0;
-    
-    // Variabel Baru: Pengeluaran
     let totalPengeluaranGlobal = 0;
-    let pengeluaranCipete = 0;
-    let pengeluaranBlokM = 0;
+    let pengeluaranCipete = 0, pengeluaranBlokM = 0;
 
     let omsetBaksoPerCabang = {};
     let omsetResellerPerCabang = {};
     let rekapProdukGlobal = {};
+    let rekapTrenHarian = {}; // Perekam data tren per hari
 
     const daftarCabang = ['cipete_utara', 'blok_m']; 
 
@@ -2657,12 +2657,14 @@ async function renderDashboardGlobal() {
         omsetResellerPerCabang[idCabang] = 0;
 
         try {
-            // 1. Hitung Omset & Profit dari stokHarian
             const stokRef = db.collection('cabang').doc(idCabang).collection('stokHarian');
             const snapStok = await stokRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
                                           .where(firebase.firestore.FieldPath.documentId(), '<=', strAkhir).get();
 
             snapStok.forEach(doc => {
+                const tglDoc = doc.id;
+                if (!rekapTrenHarian[tglDoc]) rekapTrenHarian[tglDoc] = 0;
+
                 const data = doc.data();
                 if (data.items && Array.isArray(data.items)) {
                     data.items.forEach(item => {
@@ -2701,15 +2703,16 @@ async function renderDashboardGlobal() {
                             const namaProduk = item.nama;
                             if (!rekapProdukGlobal[namaProduk]) rekapProdukGlobal[namaProduk] = 0;
                             rekapProdukGlobal[namaProduk] += stokTerjual;
+                            
+                            // Masukkan ke rekap harian
+                            rekapTrenHarian[tglDoc] += subtotal;
                         }
                     });
                 }
             });
 
-            // 2. Hitung Biaya Laci dari pengeluaranHarian (Pakai filter field 'tgl')
             const pengeluaranRef = db.collection('cabang').doc(idCabang).collection('pengeluaranHarian');
             const snapPengeluaran = await pengeluaranRef.where('tgl', '>=', strAwal).where('tgl', '<=', strAkhir).get();
-            
             snapPengeluaran.forEach(doc => {
                 const nom = parseInt(doc.data().nominal) || 0;
                 totalPengeluaranGlobal += nom;
@@ -2717,11 +2720,9 @@ async function renderDashboardGlobal() {
                 if (idCabang === 'blok_m') pengeluaranBlokM += nom;
             });
 
-            // 3. Hitung Belanja Dapur dari setoranDapur (Pakai filter documentId tanggal)
             const setoranRef = db.collection('cabang').doc(idCabang).collection('setoranDapur');
             const snapSetoran = await setoranRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
                                                 .where(firebase.firestore.FieldPath.documentId(), '<=', strAkhir).get();
-            
             snapSetoran.forEach(doc => {
                 const pengDapur = parseInt(doc.data().pengeluaran) || 0;
                 totalPengeluaranGlobal += pengDapur;
@@ -2734,19 +2735,20 @@ async function renderDashboardGlobal() {
         }
     }
 
-    // Filter Pengecualian Top 10
     const listKecuali = kataPengecualian.split(',').map(s => s.trim()).filter(s => s);
     let arrayProduk = Object.keys(rekapProdukGlobal).map(nama => {
         return { nama: nama, terjual: rekapProdukGlobal[nama] };
     });
-
     if (listKecuali.length > 0) {
         arrayProduk = arrayProduk.filter(p => !listKecuali.some(kecuali => p.nama.toLowerCase().includes(kecuali)));
     }
     arrayProduk.sort((a, b) => b.terjual - a.terjual);
     let top10Produk = arrayProduk.slice(0, 10);
 
-    // Hitung Laba Bersih
+    // Siapkan Data Tren
+    const labelsTren = Object.keys(rekapTrenHarian).sort();
+    const dataTren = labelsTren.map(tgl => rekapTrenHarian[tgl]);
+
     let labaBersihGlobal = totalProfitGlobal - totalPengeluaranGlobal;
 
     // Tampilkan Angka
@@ -2757,22 +2759,22 @@ async function renderDashboardGlobal() {
     if (document.getElementById('globalProfitCipete')) document.getElementById('globalProfitCipete').innerText = 'Rp ' + profitCipete.toLocaleString('id-ID');
     if (document.getElementById('globalProfitBlokM')) document.getElementById('globalProfitBlokM').innerText = 'Rp ' + profitBlokM.toLocaleString('id-ID');
     
-    // Tampilkan Angka Pengeluaran & Laba Bersih Baru
     if (document.getElementById('globalTotalPengeluaran')) document.getElementById('globalTotalPengeluaran').innerText = 'Rp ' + totalPengeluaranGlobal.toLocaleString('id-ID');
     if (document.getElementById('globalPengeluaranCipete')) document.getElementById('globalPengeluaranCipete').innerText = 'Rp ' + pengeluaranCipete.toLocaleString('id-ID');
     if (document.getElementById('globalPengeluaranBlokM')) document.getElementById('globalPengeluaranBlokM').innerText = 'Rp ' + pengeluaranBlokM.toLocaleString('id-ID');
     if (document.getElementById('globalLabaBersih')) document.getElementById('globalLabaBersih').innerText = 'Rp ' + labaBersihGlobal.toLocaleString('id-ID');
 
-    // Eksekusi Pembuatan Grafik
+    // Render Grafik
     if (typeof gambarGrafikGlobal === 'function') gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
     if (typeof gambarGrafikTop10Global === 'function') gambarGrafikTop10Global(top10Produk);
+    if (typeof gambarGrafikTrenGlobal === 'function') gambarGrafikTrenGlobal(labelsTren, dataTren);
 }
 
+// ================= FUNGSI GRAFIK ================= 
 
 function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
     const ctx = document.getElementById('chartGlobalCabang');
     if (!ctx) return;
-
     if (chartGlobalInstance) chartGlobalInstance.destroy();
 
     const labels = labelsCabang.map(id => id.split('_').map(kata => kata.charAt(0).toUpperCase() + kata.slice(1)).join(' '));
@@ -2784,47 +2786,18 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
         data: {
             labels: labels,
             datasets: [
-                {
-                    label: 'Bakso (Rp)',
-                    data: angkaBakso,
-                    backgroundColor: '#f97316',
-                    maxBarThickness: 80,
-                },
-                {
-                    label: 'Reseller (Rp)',
-                    data: angkaReseller,
-                    backgroundColor: '#3b82f6',
-                    maxBarThickness: 80,
-                }
+                { label: 'Bakso (Rp)', data: angkaBakso, backgroundColor: '#f97316', maxBarThickness: 80 },
+                { label: 'Reseller (Rp)', data: angkaReseller, backgroundColor: '#3b82f6', maxBarThickness: 80 }
             ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             scales: {
                 x: { stacked: true },
-                y: {
-                    stacked: true,
-                    beginAtZero: true,
-                    ticks: { callback: function(value) { return value.toLocaleString('id-ID'); } }
-                }
+                y: { stacked: true, beginAtZero: true, ticks: { callback: function(value) { return value.toLocaleString('id-ID'); } } }
             },
             plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) label += context.parsed.y.toLocaleString('id-ID');
-                            return label;
-                        }
-                    }
-                },
-                datalabels: {
-                    formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); },
-                    color: '#ffffff',
-                    font: { size: 10, weight: 'bold' }
-                }
+                datalabels: { formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); }, color: '#ffffff', font: { size: 10, weight: 'bold' } }
             }
         }
     });
@@ -2833,7 +2806,6 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
 function gambarGrafikTop10Global(dataTop10) {
     const ctx = document.getElementById('chartTop10Global');
     if (!ctx) return;
-
     if (chartTop10GlobalInstance) chartTop10GlobalInstance.destroy();
 
     const labels = dataTop10.map(d => d.nama);
@@ -2843,24 +2815,56 @@ function gambarGrafikTop10Global(dataTop10) {
         type: 'bar',
         data: {
             labels: labels,
+            datasets: [{ label: 'Terjual (Porsi)', data: dataAngka, backgroundColor: '#10b981', borderRadius: 4 }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            scales: { x: { beginAtZero: true } },
+            plugins: {
+                datalabels: { formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); }, color: '#fff', font: { size: 10, weight: 'bold' } }
+            }
+        }
+    });
+}
+
+function gambarGrafikTrenGlobal(labelsTren, dataTren) {
+    const ctx = document.getElementById('chartTrenGlobal');
+    if (!ctx) return;
+    if (chartTrenGlobalInstance) chartTrenGlobalInstance.destroy();
+
+    // Ubah format tanggal YYYY-MM-DD jadi lebih ringkas (DD/MM)
+    const labelRingkas = labelsTren.map(tgl => {
+        const parts = tgl.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}` : tgl;
+    });
+
+    chartTrenGlobalInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelRingkas,
             datasets: [{
-                label: 'Terjual (Porsi)',
-                data: dataAngka,
-                backgroundColor: '#10b981', // Warna Hijau agar kontras
-                borderRadius: 4
+                label: 'Omset Global (Rp)',
+                data: dataTren,
+                borderColor: '#6366f1', // Indigo
+                backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                borderWidth: 3,
+                pointBackgroundColor: '#4f46e5',
+                pointRadius: 4,
+                fill: true,
+                tension: 0.3 // Garis sedikit melengkung halus
             }]
         },
         options: {
-            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            scales: { x: { beginAtZero: true } },
-            plugins: {
-                datalabels: {
-                    formatter: function(value) { return value === 0 ? '' : value.toLocaleString('id-ID'); },
-                    color: '#fff',
-                    font: { size: 10, weight: 'bold' }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: function(value) { return value.toLocaleString('id-ID'); } }
                 }
+            },
+            plugins: {
+                datalabels: { display: false } // Matikan angka di dalam chart agar garis tidak tertutup teks
             }
         }
     });
