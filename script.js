@@ -2938,60 +2938,65 @@ function gantiPilihanMutasi() {
     }
 }
 
-// Mengisi dropdown cabang lain secara aman langsung membaca banner layar
+// Mengisi dropdown cabang mitra secara akurat (Menyaring agar cabang sendiri tidak ikut muncul)
 async function muatDropdownCabangMitra() {
     const selectTarget = document.getElementById('mutasiCabangTarget');
     if (!selectTarget) return;
     
     selectTarget.innerHTML = '<option value="">Memuat cabang...</option>';
     
-    // Ambil nama cabang yang sedang aktif dari teks banner HTML secara otomatis
+    // Ambil nama cabang yang sedang aktif dari banner layar
     let labelBanner = document.getElementById('labelCabangBanner');
-    let namaCabangAktif = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
+    let teksBannerAktif = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
     
     try {
         let db = firebase.firestore();
-        let snapshot = await db.collection('pengaturanCabang').get();
+        let snapshot = await db.collection('cabang').get();
         
         selectTarget.innerHTML = '';
         let adaCabang = false;
         
         snapshot.forEach(doc => {
-            let namaCabang = doc.id;
-            // Masukkan ke dropdown HANYA JIKA bukan cabang yang sedang aktif di banner
-            if (namaCabang && namaCabang.toLowerCase() !== namaCabangAktif) {
+            let namaDokumen = doc.id; // Contoh: 'blok_m', 'cipete_utara', dll.
+            let namaBersih = namaDokumen.replace(/[_]/g, ' ').toLowerCase();
+            let aktifBersih = teksBannerAktif.replace(/[_]/g, ' ').toLowerCase();
+            
+            // Masukkan ke dropdown HANYA JIKA BUKAN cabang yang sedang aktif login
+            if (namaDokumen && !namaBersih.includes(aktifBersih) && !aktifBersih.includes(namaBersih)) {
                 adaCabang = true;
                 let opt = document.createElement('option');
-                opt.value = namaCabang;
-                opt.innerText = namaCabang.toUpperCase();
+                opt.value = namaDokumen; // Nilai value persis id dokumen Firestore (cth: 'blok_m')
+                opt.innerText = namaDokumen.replace(/_/g, ' ').toUpperCase(); // Tampilan rapi (cth: 'BLOK M')
                 selectTarget.appendChild(opt);
             }
         });
         
         if (!adaCabang) {
-            isiDropdownCabangCadangan(selectTarget, namaCabangAktif);
+            isiDropdownCabangCadangan(selectTarget, teksBannerAktif);
         }
     } catch (e) {
-        console.log("Menggunakan daftar cabang cadangan:", e);
-        isiDropdownCabangCadangan(selectTarget, namaCabangAktif);
+        console.log("Menggunakan dropdown cadangan:", e);
+        isiDropdownCabangCadangan(selectTarget, teksBannerAktif);
     }
 }
 
-function isiDropdownCabangCadangan(selectTarget, cabangAktifSkrg) {
+function isiDropdownCabangCadangan(selectTarget, aktifSkrg) {
     selectTarget.innerHTML = '';
-    // DAFTAR CABANG CADANGAN (Sesuaikan dengan nama cabang Anda)
-    let daftarCabangDefault = ['cipete', 'blokm']; 
+    // Daftar cadangan ID dokumen Firestore Anda
+    let daftarCabangDefault = ['blok_m', 'cipete_utara']; 
     
-    daftarCabangDefault.forEach(cabang => {
-        if (cabang.toLowerCase() !== cabangAktifSkrg) {
+    daftarCabangDefault.forEach(namaDokumen => {
+        let namaBersih = namaDokumen.replace(/[_]/g, ' ').toLowerCase();
+        let aktifBersih = aktifSkrg.replace(/[_]/g, ' ').toLowerCase();
+        
+        if (!namaBersih.includes(aktifBersih) && !aktifBersih.includes(namaBersih)) {
             let opt = document.createElement('option');
-            opt.value = cabang;
-            opt.innerText = cabang.toUpperCase();
+            opt.value = namaDokumen;
+            opt.innerText = namaDokumen.replace(/_/g, ' ').toUpperCase();
             selectTarget.appendChild(opt);
         }
     });
 }
-
 // Menampilkan produk khusus kategori "Bakso Malang"
 function muatTabelModalMutasi() {
     const tbody = document.getElementById('tbodyTabelMutasiStok');
