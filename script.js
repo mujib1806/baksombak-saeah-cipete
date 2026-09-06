@@ -173,7 +173,7 @@ function prosesLogin(e) {
             const cabangTugasKaryawan = dataAkun.cabang_tugas || 'cipete_utara'; // Default ke cipete jika akun lama belum punya cabang_tugas
             
             // Jika bukan owner, dan cabang pilihannya TIDAK SAMA dengan cabang tugasnya
-            if (dataAkun.role !== 'owner' && cabangTugasKaryawan !== cabangPilihan) {
+           if (dataAkun.role !== 'owner' && dataAkun.role !== 'dapur' && cabangTugasKaryawan !== cabangPilihan) {
                 alert(`❌ AKSES DITOLAK!\n\n${dataAkun.nama}, Anda tidak diizinkan masuk ke ${cabangNamaText}.\nAnda hanya ditugaskan di cabang lainnya.`);
                 firebase.auth().signOut(); // Paksa logout
                 btn.innerText = "MASUK"; 
@@ -252,7 +252,7 @@ function bukaLayarAplikasi() {
     });
 
     const dropdownPindah = document.getElementById('dropdownPindahCabang');
-    if (isOwner && dropdownPindah) {
+  if ((isOwner || isDapur) && dropdownPindah) {
         dropdownPindah.style.display = 'block'; 
         if (db) {
             db.collection('daftarCabang').get().then(snap => {
@@ -351,7 +351,7 @@ function cekRoleAkunBaru() {
     const bungkusCabang = document.getElementById('bungkusCabangTugas');
     const selectCabang = document.getElementById('inAkunCabangTugas');
     
-    if (role === 'owner') {
+    if (role === 'owner' || role === 'dapur') {
         bungkusCabang.style.display = 'none';
         selectCabang.removeAttribute('required');
     } else {
@@ -369,7 +369,7 @@ function simpanAkunBaru(e) {
     const role = document.getElementById('inAkunRole').value; 
     
     // KODE BARU: Ambil cabang penugasan (Jika owner, otomatis ber-value 'semua')
-    const cabangTugas = (role === 'owner') ? 'semua' : document.getElementById('inAkunCabangTugas').value;
+   const cabangTugas = (role === 'owner' || role === 'dapur') ? 'semua' : document.getElementById('inAkunCabangTugas').value;
 
     if(!db || !aplikasiPendaftaran) {
         alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
