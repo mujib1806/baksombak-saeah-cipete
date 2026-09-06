@@ -2609,25 +2609,26 @@ let chartGlobalInstance = null;
 let chartTop10GlobalInstance = null;
 let chartTrenGlobalInstance = null; // Variabel baru untuk grafik tren
 
+// Fungsi baru untuk menampilkan/menyembunyikan kalender manual
+function cekFilterKustomGlobal() {
+    const ddl = document.getElementById('filterGlobalPeriode').value;
+    const areaKustom = document.getElementById('areaFilterKustomGlobal');
+    if (ddl === 'kustom') {
+        areaKustom.style.display = 'flex'; // Munculkan input tanggal
+    } else {
+        areaKustom.style.display = 'none'; // Sembunyikan
+        renderDashboardGlobal(); // Langsung proses datanya
+    }
+}
+
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
     const inputKecualikan = document.getElementById('filterGlobalKecualikan');
     const kataPengecualian = inputKecualikan ? inputKecualikan.value.toLowerCase() : "";
 
-    let tglAkhir = new Date(); 
-    let tglAwal = new Date();
-    
-    if (filterPeriode === '7') {
-        tglAwal.setDate(tglAkhir.getDate() - 6);
-    } else if (filterPeriode === '30') {
-        tglAwal.setDate(tglAkhir.getDate() - 29);
-    } else if (filterPeriode === 'bulan_ini') {
-        tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 1);
-    } else if (filterPeriode === 'bulan_lalu') {
-        tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth() - 1, 1);
-        tglAkhir = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 0); 
-    }
+    let strAwal = "";
+    let strAkhir = "";
 
     const formatTgl = (d) => {
         let bln = '' + (d.getMonth() + 1), hr = '' + d.getDate(), thn = d.getFullYear();
@@ -2635,9 +2636,39 @@ async function renderDashboardGlobal() {
         if (hr.length < 2) hr = '0' + hr;
         return [thn, bln, hr].join('-');
     };
-    
-    const strAwal = formatTgl(tglAwal);
-    const strAkhir = formatTgl(tglAkhir);
+
+    if (filterPeriode === 'kustom') {
+        const inputMulai = document.getElementById('tglMulaiGlobal').value;
+        const inputSelesai = document.getElementById('tglAkhirGlobal').value;
+        
+        if (!inputMulai || !inputSelesai) {
+            alert("Silakan isi Tanggal Mulai dan Tanggal Akhir terlebih dahulu!");
+            return; 
+        }
+        if (inputMulai > inputSelesai) {
+            alert("Tanggal Mulai tidak boleh melewati Tanggal Akhir!");
+            return;
+        }
+        strAwal = inputMulai;
+        strAkhir = inputSelesai;
+    } else {
+        let tglAkhir = new Date(); 
+        let tglAwal = new Date();
+        
+        if (filterPeriode === '7') {
+            tglAwal.setDate(tglAkhir.getDate() - 6);
+        } else if (filterPeriode === '30') {
+            tglAwal.setDate(tglAkhir.getDate() - 29);
+        } else if (filterPeriode === 'bulan_ini') {
+            tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 1);
+        } else if (filterPeriode === 'bulan_lalu') {
+            tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth() - 1, 1);
+            tglAkhir = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 0); 
+        }
+        
+        strAwal = formatTgl(tglAwal);
+        strAkhir = formatTgl(tglAkhir);
+    }
 
     let totalOmsetGlobal = 0, totalProfitGlobal = 0;
     let totalOmsetBakso = 0, totalOmsetReseller = 0;
