@@ -2939,34 +2939,52 @@ function gantiPilihanMutasi() {
 }
 
 // Mengisi dropdown cabang lain (selain cabang yang sedang aktif login)
-function muatDropdownCabangMitra() {
+async function muatDropdownCabangMitra() {
     const selectTarget = document.getElementById('mutasiCabangTarget');
     if (!selectTarget) return;
     
-    selectTarget.innerHTML = '';
+    selectTarget.innerHTML = '<option value="">Memuat cabang...</option>';
     
-    // Mengambil daftar cabang dari variabel global aplikasi Anda (misal: daftarCabangAktif atau localStorage)
-    // Pastikan menyesuaikan dengan nama variabel penampung cabang di script.js Anda
-    if (typeof daftarCabangGlobal !== 'undefined' && Array.isArray(daftarCabangGlobal)) {
-        daftarCabangGlobal.forEach(cabang => {
-            if (cabang !== cabangAktif) { // Jangan tampilkan cabang sendiri
+    try {
+        let db = firebase.firestore();
+        let snapshot = await db.collection('pengaturanCabang').get();
+        
+        selectTarget.innerHTML = '';
+        let adaCabang = false;
+        
+        snapshot.forEach(doc => {
+            let namaCabang = doc.id;
+            if (namaCabang && namaCabang !== cabangAktif) {
+                adaCabang = true;
                 let opt = document.createElement('option');
-                opt.value = cabang;
-                opt.innerText = cabang.toUpperCase();
+                opt.value = namaCabang;
+                opt.innerText = namaCabang.toUpperCase();
                 selectTarget.appendChild(opt);
             }
         });
-    } else {
-        // Fallback cadangan jika variabel global bernama lain
-        ['cipete', 'blokm'].forEach(cabang => {
-            if (cabang !== cabangAktif) {
-                let opt = document.createElement('option');
-                opt.value = cabang;
-                opt.innerText = cabang.toUpperCase();
-                selectTarget.appendChild(opt);
-            }
-        });
+        
+        if (!adaCabang) {
+            isiDropdownCabangCadangan(selectTarget);
+        }
+    } catch (e) {
+        console.log("Menggunakan daftar cabang cadangan:", e);
+        isiDropdownCabangCadangan(selectTarget);
     }
+}
+
+function isiDropdownCabangCadangan(selectTarget) {
+    selectTarget.innerHTML = '';
+    // SILAHKAN SESUAIKAN NAMA CABANG INI JIKA ADA CABANG LAIN
+    let daftarCabangDefault = ['cipete', 'blokm']; 
+    
+    daftarCabangDefault.forEach(cabang => {
+        if (cabang !== cabangAktif) {
+            let opt = document.createElement('option');
+            opt.value = cabang;
+            opt.innerText = cabang.toUpperCase();
+            selectTarget.appendChild(opt);
+        }
+    });
 }
 
 // Menampilkan produk yang hanya masuk kategori "Bakso Malang"
