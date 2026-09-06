@@ -2606,13 +2606,12 @@ function ownerPindahCabang(idCabangBaru) {
 }
 // Variabel global agar grafik tidak menumpuk saat difilter ulang
 let chartGlobalInstance = null; 
-
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
 
     // 1. TENTUKAN RENTANG TANGGAL (Format YYYY-MM-DD sesuai zona waktu lokal)
-    const tglAkhir = new Date();
+    let tglAkhir = new Date(); // Diubah menjadi let agar bisa disesuaikan untuk 'Bulan Lalu'
     let tglAwal = new Date();
     
     if (filterPeriode === '7') {
@@ -2623,10 +2622,9 @@ async function renderDashboardGlobal() {
         tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 1);
     } else if (filterPeriode === 'bulan_lalu') {
         tglAwal = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth() - 1, 1);
-        tglAkhir = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 0); // Hari terakhir bulan lalu
+        tglAkhir = new Date(tglAkhir.getFullYear(), tglAkhir.getMonth(), 0); 
     }
 
-    // Fungsi bantuan agar format tanggal pasti YYYY-MM-DD (WIB) bukan UTC
     const formatTgl = (d) => {
         let bln = '' + (d.getMonth() + 1), hr = '' + d.getDate(), thn = d.getFullYear();
         if (bln.length < 2) bln = '0' + bln;
@@ -2637,12 +2635,13 @@ async function renderDashboardGlobal() {
     const strAwal = formatTgl(tglAwal);
     const strAkhir = formatTgl(tglAkhir);
 
-    // 2. PERSIAPAN VARIABEL HITUNG
+    // 2. PERSIAPAN VARIABEL HITUNG (Ditambah Bakso & Reseller)
     let totalOmsetGlobal = 0;
     let totalProfitGlobal = 0;
+    let totalOmsetBakso = 0;
+    let totalOmsetReseller = 0;
     let omsetPerCabang = {};
 
-    // DAFTAR CABANG (Tambahkan nama laci cabang baru di sini jika buka cabang ke-3)
     const daftarCabang = ['cipete_utara', 'blok_m']; 
 
     // 3. SEDOT DATA DARI FIREBASE
@@ -2651,7 +2650,6 @@ async function renderDashboardGlobal() {
         omsetPerCabang[idCabang] = 0;
 
         try {
-            // Ambil koleksi stokHarian cabang tersebut berdasarkan rentang tanggal
             const stokRef = db.collection('cabang').doc(idCabang).collection('stokHarian');
             const snapshot = await stokRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
                                           .where(firebase.firestore.FieldPath.documentId(), '<=', strAkhir).get();
@@ -2660,10 +2658,8 @@ async function renderDashboardGlobal() {
                 const data = doc.data();
                 if (data.items && Array.isArray(data.items)) {
                     data.items.forEach(item => {
-                        // Filter Kategori (Lompat ke produk berikutnya jika tidak sesuai filter)
                         if (filterKategori !== 'semua' && item.kategori !== filterKategori) return;
 
-                        // Konversi string ke angka
                         const awal = parseInt(item.awal) || 0;
                         const tambah = parseInt(item.tambah) || 0;
                         const kurang = parseInt(item.kurang) || 0;
@@ -2671,17 +2667,22 @@ async function renderDashboardGlobal() {
                         const hargaJual = parseInt(item.jual) || 0;
                         const margin = parseInt(item.margin) || 0;
 
-                        // PENCEGAHAN BUG OMSET PALSU: 
-                        // Hanya hitung jika kolom 'sisa' sudah diisi (shift sudah ditutup).
-                        // Jika sisa masih kosong (""), omset hari ini belum masuk hitungan final.
                         let stokTerjual = 0;
                         if (item.sisa !== "" && item.sisa !== undefined) {
                             stokTerjual = (awal + tambah) - (sisa + kurang);
                         }
 
                         if (stokTerjual > 0) {
-                            omsetCabangIni += (stokTerjual * hargaJual);
+                            const subtotal = stokTerjual * hargaJual;
+                            omsetCabangIni += subtotal;
                             totalProfitGlobal += (stokTerjual * margin);
+
+                            // PISAHKAN HITUNGAN BAKSO DAN RESELLER
+                            if (item.kategori === 'Bakso Malang') {
+                                totalOmsetBakso += subtotal;
+                            } else if (item.kategori === 'Reseller') {
+                                totalOmsetReseller += subtotal;
+                            }
                         }
                     });
                 }
@@ -2698,10 +2699,19 @@ async function renderDashboardGlobal() {
     // 4. TAMPILKAN ANGKA KE HTML
     document.getElementById('globalTotalOmset').innerText = 'Rp ' + totalOmsetGlobal.toLocaleString('id-ID');
     document.getElementById('globalTotalProfit').innerText = 'Rp ' + totalProfitGlobal.toLocaleString('id-ID');
+    
+    // Tampilkan rincian Bakso dan Reseller
+    const elBakso = document.getElementById('globalOmsetBakso');
+    const elReseller = document.getElementById('globalOmsetReseller');
+    if (elBakso) elBakso.innerText = 'Rp ' + totalOmsetBakso.toLocaleString('id-ID');
+    if (elReseller) elReseller.innerText = 'Rp ' + totalOmsetReseller.toLocaleString('id-ID');
 
     // 5. RENDER GRAFIK
-    gambarGrafikGlobal(omsetPerCabang);
+    if (typeof gambarGrafikGlobal === 'function') {
+        gambarGrafikGlobal(omsetPerCabang);
+    }
 }
+
 
 function gambarGrafikGlobal(dataOmsetMap) {
     const ctx = document.getElementById('chartGlobalCabang');
