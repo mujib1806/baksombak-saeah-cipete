@@ -1644,6 +1644,58 @@
         <button onclick="terapkanFilterReseller()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">✅ Terapkan Filter</button>
     </div>
 </div>
+    <!-- ==========================================
+     MODAL MUTASI STOK BAKSO MALANG
+========================================== -->
+<div class="modal" id="modalMutasiStok">
+    <div class="modal-content" style="max-width: 550px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0284c7; margin: 0;">🚚 Mutasi Stok Bakso Malang</h3>
+            <button onclick="tutupModalMutasiStok()" style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">✖</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="margin: 0;">
+                <label>Jenis Mutasi:</label>
+                <select id="mutasiJenis" onchange="gantiPilihanMutasi()" style="font-weight: bold; color: #0f172a;">
+                    <option value="keluar">📤 Kirim ke Cabang Lain</option>
+                    <option value="masuk">📥 Terima dari Cabang Lain</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label id="labelCabangMitra">Cabang Tujuan:</label>
+                <select id="mutasiCabangTarget" style="font-weight: bold; color: #b45309; background: #fffbeb;">
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </select>
+            </div>
+        </div>
+
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 8px;">
+            *Masukkan jumlah <strong>Pcs</strong> untuk produk Bakso Malang yang dimutasikan:
+        </div>
+
+        <!-- Tabel Khusus Kategori Bakso Malang -->
+        <div class="table-wrapper" style="max-height: 250px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 5;">
+                    <tr>
+                        <th style="padding: 8px; text-align: left;">Nama Produk</th>
+                        <th style="padding: 8px; text-align: center; width: 80px;">Stok Saat Ini</th>
+                        <th style="padding: 8px; text-align: center; width: 90px; color: #0284c7;">Jumlah (Pcs)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyTabelMutasiStok">
+                    <!-- Baris produk diisi otomatis lewat JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-outline" onclick="tutupModalMutasiStok()" style="margin: 0;">Batal</button>
+            <button type="button" class="btn btn-success" onclick="prosesSimpanMutasiStok()" style="margin: 0; background: linear-gradient(135deg, #0284c7, #0369a1);">Proses & Simpan Sinkron</button>
+        </div>
+    </div>
+</div>
 <script src="script.js"></script>
 </body>
 </html>
