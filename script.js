@@ -3027,12 +3027,17 @@ function muatTabelModalMutasi() {
             adaBakso = true;
             let namaProd = prod.nama || prod.name || prod.namaProduk || 'Produk';
             
-            // Ambil stok saat ini
+            // AMBIL STOK DARI STOK AWAL (PAGI)
             let stokSkrg = 0;
             if (typeof stokHariIni !== 'undefined' && stokHariIni[index]) {
-                stokSkrg = stokHariIni[index].total || stokHariIni[index].pagi || 0;
-            } else if (prod.stokGudang !== undefined) {
-                stokSkrg = prod.stokGudang;
+                // Diambil dari properti stok awal/pagi hari
+                stokSkrg = stokHariIni[index].pagi || stokHariIni[index].awal || 0;
+            } else {
+                // Cadangan membaca langsung dari input kolom pagi di tabel harian yang sedang aktif di layar
+                let inputPagi = document.getElementById(`pagi_${index}`);
+                if (inputPagi) {
+                    stokSkrg = parseInt(inputPagi.value) || 0;
+                }
             }
             
             let tr = document.createElement('tr');
@@ -3051,7 +3056,6 @@ function muatTabelModalMutasi() {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
-
 // 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firebase
 async function prosesSimpanMutasiStok() {
     let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
