@@ -2605,8 +2605,8 @@ function ownerPindahCabang(idCabangBaru) {
     }
 }
 // Tambahkan variabel global ini di area atas script.js jika belum ada
+let chartGlobalInstance = null; 
 let chartTop10GlobalInstance = null;
-
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
