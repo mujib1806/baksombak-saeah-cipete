@@ -2992,28 +2992,47 @@ function isiDropdownCabangCadangan(selectTarget, cabangAktifSkrg) {
     });
 }
 
-// Menampilkan produk yang hanya masuk kategori "Bakso Malang"
+// Menampilkan produk khusus kategori "Bakso Malang"
 function muatTabelModalMutasi() {
     const tbody = document.getElementById('tbodyTabelMutasiStok');
     if (!tbody) return;
     
     tbody.innerHTML = '';
     
-    // Mengambil data produk master (biasanya tersimpan di array 'daftarProduk' atau 'produkStore')
-    let listProduk = typeof daftarProduk !== 'undefined' ? daftarProduk : [];
+    // Kita buat pencarian data produk yang lebih fleksibel menyesuaikan berbagai kemungkinan nama variabel di script.js Anda
+    let listProduk = [];
+    if (typeof produkStore !== 'undefined' && Array.isArray(produkStore)) {
+        listProduk = produkStore;
+    } else if (typeof daftarProduk !== 'undefined' && Array.isArray(daftarProduk)) {
+        listProduk = daftarProduk;
+    } else if (typeof masterProduk !== 'undefined' && Array.isArray(masterProduk)) {
+        listProduk = masterProduk;
+    } else if (typeof dataProduk !== 'undefined' && Array.isArray(dataProduk)) {
+        listProduk = dataProduk;
+    } else {
+        // Jika disimpan di localStorage atau variabel global lain
+        try {
+            listProduk = JSON.parse(localStorage.getItem('daftarProduk')) || [];
+        } catch(e) { listProduk = []; }
+    }
     
     let adaBakso = false;
     
     listProduk.forEach((prod, index) => {
-        // Filter ketat hanya kategori Bakso Malang
-        let kategori = prod.kategori || prod.category || '';
+        // Cek kategori secara fleksibel (bisa berupa properti kategori, kateg, atau category)
+        let kategori = prod.kategori || prod.kateg || prod.category || '';
+        
+        // Memeriksa apakah mengandung kata "bakso malang" (tidak case-sensitive)
         if (kategori.toLowerCase().includes('bakso malang')) {
             adaBakso = true;
-            let namaProd = prod.nama || prod.name || 'Produk';
-            // Ambil stok saat ini (misal dari data harian yang sedang aktif)
+            let namaProd = prod.nama || prod.name || prod.namaProduk || 'Produk';
+            
+            // Ambil stok saat ini
             let stokSkrg = 0;
             if (typeof stokHariIni !== 'undefined' && stokHariIni[index]) {
-                stokSkrg = stokHariIni[index].total || 0;
+                stokSkrg = stokHariIni[index].total || stokHariIni[index].pagi || 0;
+            } else if (prod.stokGudang !== undefined) {
+                stokSkrg = prod.stokGudang;
             }
             
             let tr = document.createElement('tr');
@@ -3029,7 +3048,7 @@ function muatTabelModalMutasi() {
     });
     
     if (!adaBakso) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Tidak ada produk dengan kategori "Bakso Malang" di Master Produk.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
 
