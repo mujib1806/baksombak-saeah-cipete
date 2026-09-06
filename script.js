@@ -2607,7 +2607,6 @@ function ownerPindahCabang(idCabangBaru) {
 // Tambahkan variabel global ini di area atas script.js jika belum ada
 let chartGlobalInstance = null;
 let chartTop10GlobalInstance = null;
-
 async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
@@ -2638,13 +2637,15 @@ async function renderDashboardGlobal() {
     const strAwal = formatTgl(tglAwal);
     const strAkhir = formatTgl(tglAkhir);
 
-    let totalOmsetGlobal = 0;
-    let totalProfitGlobal = 0;
-    let totalOmsetBakso = 0;
-    let totalOmsetReseller = 0;
-    let profitCipete = 0;
-    let profitBlokM = 0;
+    let totalOmsetGlobal = 0, totalProfitGlobal = 0;
+    let totalOmsetBakso = 0, totalOmsetReseller = 0;
+    let profitCipete = 0, profitBlokM = 0;
     
+    // Variabel Baru: Pengeluaran
+    let totalPengeluaranGlobal = 0;
+    let pengeluaranCipete = 0;
+    let pengeluaranBlokM = 0;
+
     let omsetBaksoPerCabang = {};
     let omsetResellerPerCabang = {};
     let rekapProdukGlobal = {};
@@ -2656,11 +2657,12 @@ async function renderDashboardGlobal() {
         omsetResellerPerCabang[idCabang] = 0;
 
         try {
+            // 1. Hitung Omset & Profit dari stokHarian
             const stokRef = db.collection('cabang').doc(idCabang).collection('stokHarian');
-            const snapshot = await stokRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
+            const snapStok = await stokRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
                                           .where(firebase.firestore.FieldPath.documentId(), '<=', strAkhir).get();
 
-            snapshot.forEach(doc => {
+            snapStok.forEach(doc => {
                 const data = doc.data();
                 if (data.items && Array.isArray(data.items)) {
                     data.items.forEach(item => {
@@ -2696,7 +2698,6 @@ async function renderDashboardGlobal() {
                                 omsetResellerPerCabang[idCabang] += subtotal;
                             }
 
-                            // Perekaman untuk Top 10
                             const namaProduk = item.nama;
                             if (!rekapProdukGlobal[namaProduk]) rekapProdukGlobal[namaProduk] = 0;
                             rekapProdukGlobal[namaProduk] += stokTerjual;
@@ -2704,6 +2705,30 @@ async function renderDashboardGlobal() {
                     });
                 }
             });
+
+            // 2. Hitung Biaya Laci dari pengeluaranHarian (Pakai filter field 'tgl')
+            const pengeluaranRef = db.collection('cabang').doc(idCabang).collection('pengeluaranHarian');
+            const snapPengeluaran = await pengeluaranRef.where('tgl', '>=', strAwal).where('tgl', '<=', strAkhir).get();
+            
+            snapPengeluaran.forEach(doc => {
+                const nom = parseInt(doc.data().nominal) || 0;
+                totalPengeluaranGlobal += nom;
+                if (idCabang === 'cipete_utara') pengeluaranCipete += nom;
+                if (idCabang === 'blok_m') pengeluaranBlokM += nom;
+            });
+
+            // 3. Hitung Belanja Dapur dari setoranDapur (Pakai filter documentId tanggal)
+            const setoranRef = db.collection('cabang').doc(idCabang).collection('setoranDapur');
+            const snapSetoran = await setoranRef.where(firebase.firestore.FieldPath.documentId(), '>=', strAwal)
+                                                .where(firebase.firestore.FieldPath.documentId(), '<=', strAkhir).get();
+            
+            snapSetoran.forEach(doc => {
+                const pengDapur = parseInt(doc.data().pengeluaran) || 0;
+                totalPengeluaranGlobal += pengDapur;
+                if (idCabang === 'cipete_utara') pengeluaranCipete += pengDapur;
+                if (idCabang === 'blok_m') pengeluaranBlokM += pengDapur;
+            });
+
         } catch (error) {
             console.error("Gagal menarik data: " + idCabang, error);
         }
@@ -2718,9 +2743,11 @@ async function renderDashboardGlobal() {
     if (listKecuali.length > 0) {
         arrayProduk = arrayProduk.filter(p => !listKecuali.some(kecuali => p.nama.toLowerCase().includes(kecuali)));
     }
-
     arrayProduk.sort((a, b) => b.terjual - a.terjual);
     let top10Produk = arrayProduk.slice(0, 10);
+
+    // Hitung Laba Bersih
+    let labaBersihGlobal = totalProfitGlobal - totalPengeluaranGlobal;
 
     // Tampilkan Angka
     document.getElementById('globalTotalOmset').innerText = 'Rp ' + totalOmsetGlobal.toLocaleString('id-ID');
@@ -2729,11 +2756,18 @@ async function renderDashboardGlobal() {
     if (document.getElementById('globalOmsetReseller')) document.getElementById('globalOmsetReseller').innerText = 'Rp ' + totalOmsetReseller.toLocaleString('id-ID');
     if (document.getElementById('globalProfitCipete')) document.getElementById('globalProfitCipete').innerText = 'Rp ' + profitCipete.toLocaleString('id-ID');
     if (document.getElementById('globalProfitBlokM')) document.getElementById('globalProfitBlokM').innerText = 'Rp ' + profitBlokM.toLocaleString('id-ID');
+    
+    // Tampilkan Angka Pengeluaran & Laba Bersih Baru
+    if (document.getElementById('globalTotalPengeluaran')) document.getElementById('globalTotalPengeluaran').innerText = 'Rp ' + totalPengeluaranGlobal.toLocaleString('id-ID');
+    if (document.getElementById('globalPengeluaranCipete')) document.getElementById('globalPengeluaranCipete').innerText = 'Rp ' + pengeluaranCipete.toLocaleString('id-ID');
+    if (document.getElementById('globalPengeluaranBlokM')) document.getElementById('globalPengeluaranBlokM').innerText = 'Rp ' + pengeluaranBlokM.toLocaleString('id-ID');
+    if (document.getElementById('globalLabaBersih')) document.getElementById('globalLabaBersih').innerText = 'Rp ' + labaBersihGlobal.toLocaleString('id-ID');
 
     // Eksekusi Pembuatan Grafik
-    gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
-    gambarGrafikTop10Global(top10Produk);
+    if (typeof gambarGrafikGlobal === 'function') gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
+    if (typeof gambarGrafikTop10Global === 'function') gambarGrafikTop10Global(top10Produk);
 }
+
 
 function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
     const ctx = document.getElementById('chartGlobalCabang');
