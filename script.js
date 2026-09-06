@@ -3061,11 +3061,11 @@ function muatTabelModalMutasi() {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
-// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore (Multi-Format Nama Dokumen)
+// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore (Jalur Stok Harian yang Benar)
 async function prosesSimpanMutasiStok() {
     let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
     let selectTarget = document.getElementById('mutasiCabangTarget');
-    let cabangMitra = selectTarget.value; // Contoh: 'blokm' atau 'blok_m'
+    let cabangMitra = selectTarget.value; // Contoh: 'blok_m' atau 'cipete_utara'
     
     if (!cabangMitra) {
         alert('Pilih cabang tujuan/asal terlebih dahulu!');
@@ -3081,8 +3081,8 @@ async function prosesSimpanMutasiStok() {
         if (val > 0) {
             adaMutasi = true;
             detailMutasiList.push({
-                indexProd: input.getAttribute('data-index'),
-                namaProduk: input.getAttribute('data-nama'),
+                indexProd: parseInt(input.getAttribute('data-index')),
+                namaProduk: input.getAttribute('data-nama').trim().toLowerCase(),
                 jumlah: val
             });
         }
@@ -3110,63 +3110,64 @@ async function prosesSimpanMutasiStok() {
         
         let db = firebase.firestore();
         
-        // Fungsi helper untuk mencari dokumen cabang dengan berbagai variasi nama (pakai underscore atau polos)
-        async function getCabangDocRef(namaCabangInput) {
-            let variasiNama = [
-                namaCabangInput,
-                namaCabangInput.replace(/[\s-]/g, '_'),
-                namaCabangInput.replace(/_/g, ''),
-                namaCabangInput.replace(/\s+/g, '')
-            ];
-            
-            for (let nama of variasiNama) {
-                let ref = db.collection('cabang').doc(nama).collection('appData').doc(tanggalHariIni);
-                let snap = await ref.get();
-                if (snap.exists) {
-                    return ref; // Ketemu dokumen yang aktif berisi data
-                }
-            }
-            
-            // Jika belum ada dokumen tanggal hari itu, gunakan variasi pertama yang paling bersih untuk dibuat baru
-            let namaClean = namaCabangInput.replace(/[\s-]/g, '_');
-            return db.collection('cabang').doc(namaClean).collection('appData').doc(tanggalHariIni);
+        // Helper untuk membersihkan format nama cabang agar sesuai dengan dokumen Firestore
+        function formatIdCabang(nama) {
+            return nama.replace(/[\s-]/g, '_').toLowerCase();
         }
         
-        let docRefSendiri = await getCabangDocRef(teksBanner);
-        let docRefMitra = await getCabangDocRef(cabangMitra);
+        let idCabangSendiri = formatIdCabang(teksBanner);
+        let idCabangMitra = formatIdCabang(cabangMitra);
+        
+        // Jalur Firestore yang benar sesuai struktur aplikasi utama Anda:
+        let docRefSendiri = db.collection('cabang').doc(idCabangSendiri).collection('stokHarian').doc(tanggalHariIni);
+        let docRefMitra = db.collection('cabang').doc(idCabangMitra).collection('stokHarian').doc(tanggalHariIni);
         
         let [docSnapSendiri, docSnapMitra] = await Promise.all([
             docRefSendiri.get(),
             docRefMitra.get()
         ]);
         
-        let dataSendiri = docSnapSendiri.exists ? docSnapSendiri.data() : {};
-        let dataMitra = docSnapMitra.exists ? docSnapMitra.data() : {};
-        
-        if (!dataSendiri.stokHarian) dataSendiri.stokHarian = {};
-        if (!dataMitra.stokHarian) dataMitra.stokHarian = {};
+        // Ambil data items atau buat baru dari master produk jika belum ada
+        let dataSendiriItems = docSnapSendiri.exists && docSnapSendiri.data().items ? docSnapSendiri.data().items : JSON.parse(JSON.stringify(masterProduk));
+        let dataMitraItems = docSnapMitra.exists && docSnapMitra.data().items ? docSnapMitra.data().items : JSON.parse(JSON.stringify(masterProduk));
         
         detailMutasiList.forEach(item => {
             let idx = item.indexProd;
+            let qty = item.jumlah;
             
-            if (!dataSendiri.stokHarian[idx]) dataSendiri.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
-            if (!dataMitra.stokHarian[idx]) dataMitra.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
+            // Pastikan indeks produk ada di dalam array items masing-masing cabang
+            if (dataSendiriItems[idx]) {
+                let currKurang = parseFloat(dataSendiriItems[idx].kurang) || 0;
+                let currTambah = parseFloat(dataSendiriItems[idx].tambah) || 0;
+                
+                if (jenisMutasi === 'keluar') {
+                    dataSendiriItems[idx].kurang = currKurang + qty;
+                } else {
+                    dataSendiriItems[idx].tambah = currTambah + qty;
+                }
+            }
             
-            if (jenisMutasi === 'keluar') {
-                dataSendiri.stokHarian[idx].kurang = (parseInt(dataSendiri.stokHarian[idx].kurang) || 0) + item.jumlah;
-                dataMitra.stokHarian[idx].tambah = (parseInt(dataMitra.stokHarian[idx].tambah) || 0) + item.jumlah;
-            } else {
-                dataSendiri.stokHarian[idx].tambah = (parseInt(dataSendiri.stokHarian[idx].tambah) || 0) + item.jumlah;
-                dataMitra.stokHarian[idx].kurang = (parseInt(dataMitra.stokHarian[idx].kurang) || 0) + item.jumlah;
+            if (dataMitraItems[idx]) {
+                let currKurangMitra = parseFloat(dataMitraItems[idx].kurang) || 0;
+                let currTambahMitra = parseFloat(dataMitraItems[idx].tambah) || 0;
+                
+                if (jenisMutasi === 'keluar') {
+                    // Cabang mitra menerima -> kolom tambah bertambah
+                    dataMitraItems[idx].tambah = currTambahMitra + qty;
+                } else {
+                    // Cabang mitra mengirim -> kolom kurang bertambah
+                    dataMitraItems[idx].kurang = currKurangMitra + qty;
+                }
             }
         });
         
+        // Simpan kembali dengan struktur { items: [...] } ke jalur stokHarian
         await Promise.all([
-            docRefSendiri.set(dataSendiri, { merge: true }),
-            docRefMitra.set(dataMitra, { merge: true })
+            docRefSendiri.set({ items: dataSendiriItems }, { merge: true }),
+            docRefMitra.set({ items: dataMitraItems }, { merge: true })
         ]);
         
-        alert('✅ Mutasi stok berhasil disinkronkan ke database cabang!');
+        alert('✅ Mutasi stok berhasil disinkronkan ke tabel harian antar cabang!');
         tutupModalMutasiStok();
         
         if (typeof loadDataTanggalLocal === 'function') {
