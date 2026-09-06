@@ -929,10 +929,13 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                     <h2 style="margin:0; font-size: 1.1rem;">📋 Entry Stok Harian</h2>
                     <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-                        <button onclick="document.getElementById('fileImportPagi').click()" class="btn btn-warning" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: #fbbf24; color:#78350f;">📥 Import CSV</button>
-                        <button onclick="downloadTemplatePagi()" class="btn btn-outline" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; border-color:#cbd5e1; color:#475569;">📤 Export</button>
-                       <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">
-                       
+                    <button onclick="document.getElementById('fileImportPagi').click()" class="btn btn-warning" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: #fbbf24; color:#78350f;">📥 Import CSV</button>
+                    <button onclick="downloadTemplatePagi()" class="btn btn-outline" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; border-color:#cbd5e1; color:#475569;">📤 Export</button>
+    
+    <!-- TOMBOL MUTASI STOK BARU -->
+                   <button onclick="bukaModalMutasiStok()" class="btn" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: linear-gradient(135deg, #06b6d4, #0284c7); color:white; font-weight:bold;">🚚 Mutasi Stok</button>
+                   <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">   
+                        
                         <div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px;">
                             <span style="font-size: 0.7rem; font-weight: bold; color: #475569;">Kasir:</span>
                             <input type="text" id="inputNamaKasirHarian" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 60px; font-size: 0.7rem;" placeholder="Nama...">
