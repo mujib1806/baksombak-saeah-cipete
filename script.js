@@ -2610,8 +2610,7 @@ async function renderDashboardGlobal() {
     const filterPeriode = document.getElementById('filterGlobalPeriode').value;
     const filterKategori = document.getElementById('filterGlobalKategori').value;
 
-    // 1. TENTUKAN RENTANG TANGGAL (Format YYYY-MM-DD sesuai zona waktu lokal)
-    let tglAkhir = new Date(); // Diubah menjadi let agar bisa disesuaikan untuk 'Bulan Lalu'
+    let tglAkhir = new Date(); 
     let tglAwal = new Date();
     
     if (filterPeriode === '7') {
@@ -2635,19 +2634,23 @@ async function renderDashboardGlobal() {
     const strAwal = formatTgl(tglAwal);
     const strAkhir = formatTgl(tglAkhir);
 
-    // 2. PERSIAPAN VARIABEL HITUNG (Ditambah Bakso & Reseller)
+    // Variabel Hitung Baru
     let totalOmsetGlobal = 0;
     let totalProfitGlobal = 0;
     let totalOmsetBakso = 0;
     let totalOmsetReseller = 0;
-    let omsetPerCabang = {};
+    
+    let profitCipete = 0;
+    let profitBlokM = 0;
+
+    let omsetBaksoPerCabang = {};
+    let omsetResellerPerCabang = {};
 
     const daftarCabang = ['cipete_utara', 'blok_m']; 
 
-    // 3. SEDOT DATA DARI FIREBASE
     for (const idCabang of daftarCabang) {
-        let omsetCabangIni = 0;
-        omsetPerCabang[idCabang] = 0;
+        omsetBaksoPerCabang[idCabang] = 0;
+        omsetResellerPerCabang[idCabang] = 0;
 
         try {
             const stokRef = db.collection('cabang').doc(idCabang).collection('stokHarian');
@@ -2674,79 +2677,112 @@ async function renderDashboardGlobal() {
 
                         if (stokTerjual > 0) {
                             const subtotal = stokTerjual * hargaJual;
-                            omsetCabangIni += subtotal;
-                            totalProfitGlobal += (stokTerjual * margin);
+                            const profitTotal = stokTerjual * margin;
+                            
+                            totalOmsetGlobal += subtotal;
+                            totalProfitGlobal += profitTotal;
 
-                            // PISAHKAN HITUNGAN BAKSO DAN RESELLER
+                            // Distribusi Profit Cabang
+                            if (idCabang === 'cipete_utara') profitCipete += profitTotal;
+                            if (idCabang === 'blok_m') profitBlokM += profitTotal;
+
+                            // Distribusi Omset untuk Grafik
                             if (item.kategori === 'Bakso Malang') {
                                 totalOmsetBakso += subtotal;
+                                omsetBaksoPerCabang[idCabang] += subtotal;
                             } else if (item.kategori === 'Reseller') {
                                 totalOmsetReseller += subtotal;
+                                omsetResellerPerCabang[idCabang] += subtotal;
                             }
                         }
                     });
                 }
             });
-            
-            omsetPerCabang[idCabang] = omsetCabangIni;
-            totalOmsetGlobal += omsetCabangIni;
-
         } catch (error) {
-            console.error("Gagal menarik data dari cabang: " + idCabang, error);
+            console.error("Gagal menarik data: " + idCabang, error);
         }
     }
 
-    // 4. TAMPILKAN ANGKA KE HTML
+    // Update Angka ke HTML
     document.getElementById('globalTotalOmset').innerText = 'Rp ' + totalOmsetGlobal.toLocaleString('id-ID');
     document.getElementById('globalTotalProfit').innerText = 'Rp ' + totalProfitGlobal.toLocaleString('id-ID');
     
-    // Tampilkan rincian Bakso dan Reseller
-    const elBakso = document.getElementById('globalOmsetBakso');
-    const elReseller = document.getElementById('globalOmsetReseller');
-    if (elBakso) elBakso.innerText = 'Rp ' + totalOmsetBakso.toLocaleString('id-ID');
-    if (elReseller) elReseller.innerText = 'Rp ' + totalOmsetReseller.toLocaleString('id-ID');
+    if (document.getElementById('globalOmsetBakso')) document.getElementById('globalOmsetBakso').innerText = 'Rp ' + totalOmsetBakso.toLocaleString('id-ID');
+    if (document.getElementById('globalOmsetReseller')) document.getElementById('globalOmsetReseller').innerText = 'Rp ' + totalOmsetReseller.toLocaleString('id-ID');
+    
+    if (document.getElementById('globalProfitCipete')) document.getElementById('globalProfitCipete').innerText = 'Rp ' + profitCipete.toLocaleString('id-ID');
+    if (document.getElementById('globalProfitBlokM')) document.getElementById('globalProfitBlokM').innerText = 'Rp ' + profitBlokM.toLocaleString('id-ID');
 
-    // 5. RENDER GRAFIK
     if (typeof gambarGrafikGlobal === 'function') {
-        gambarGrafikGlobal(omsetPerCabang);
+        gambarGrafikGlobal(daftarCabang, omsetBaksoPerCabang, omsetResellerPerCabang);
     }
 }
 
-
-function gambarGrafikGlobal(dataOmsetMap) {
+function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
     const ctx = document.getElementById('chartGlobalCabang');
     if (!ctx) return;
 
-    // Bersihkan grafik lama jika ada (mencegah bug kursor kedap-kedip)
     if (chartGlobalInstance) {
         chartGlobalInstance.destroy();
     }
 
-    // Ubah format ID Cabang (cipete_utara -> Cipete Utara)
-    const labels = Object.keys(dataOmsetMap).map(id => 
-        id.split('_').map(kata => kata.charAt(0).toUpperCase() + kata.slice(1)).join(' ')
-    );
-    const dataAngka = Object.values(dataOmsetMap);
+    const labels = labelsCabang.map(id => id.split('_').map(kata => kata.charAt(0).toUpperCase() + kata.slice(1)).join(' '));
+    const angkaBakso = Object.values(dataBakso);
+    const angkaReseller = Object.values(dataReseller);
 
     chartGlobalInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Total Omset (Rp)',
-                data: dataAngka,
-                backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444'], // Warna batang variatif
-                borderRadius: 4
-            }]
+            datasets: [
+                {
+                    label: 'Bakso (Rp)',
+                    data: angkaBakso,
+                    backgroundColor: '#fbbf24', // Warna Kuning Emas
+                    borderRadius: 4
+                },
+                {
+                    label: 'Reseller (Rp)',
+                    data: angkaReseller,
+                    backgroundColor: '#3b82f6', // Warna Biru
+                    borderRadius: 4
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('id-ID'); // Titik pada sumbu Y
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toLocaleString('id-ID'); // Titik pada hover
+                            }
+                            return label;
+                        }
+                    }
+                },
+                datalabels: {
+                    formatter: function(value, context) {
+                        return value === 0 ? '' : value.toLocaleString('id-ID'); // Titik di dalam batang (jika pakai plugin)
+                    },
+                    color: '#fff',
+                    font: { weight: 'bold' }
+                }
             }
         }
     });
 }
-
-
