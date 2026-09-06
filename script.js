@@ -1713,20 +1713,21 @@ function renderDashboardGrafik() {
         });
     }
 
-    const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
+   const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
     const topBakso = sortSliceTop5(produkBakso); 
 
     window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
     let resellerDifilter = Object.keys(produkReseller)
         .filter(nama => !(window.produkResellerDisembunyikan || []).includes(nama))
         .map(nama => ({nama: nama, qty: produkReseller[nama]}))
-        .sort((a,b) => b.qty - a.qty);
+        .sort((a,b) => b.qty - a.qty)
+        .slice(0, 10); // KODE BARU: Membatasi maksimal TOP 10 Reseller
 
     const optHorizontalBar = { 
         indexAxis: 'y', 
         responsive: true, 
         maintainAspectRatio: false, 
-        layout: { padding: { right: 30 } }, 
+        layout: { padding: { right: 45 } }, // KODE BARU: Jarak kanan dilebarkan agar teks tidak terpotong
         plugins: { 
             legend: { display: false }, 
             datalabels: { 
@@ -1738,13 +1739,14 @@ function renderDashboardGrafik() {
             } 
         }, 
         scales: { 
-            x: { beginAtZero: true, display: false }, 
+            x: { 
+                beginAtZero: true, 
+                display: false,
+                grace: '15%' // KODE BARU: Memberi ruang napas di ujung grafik
+            }, 
             y: { 
                 grid: { display: false }, 
-                ticks: { 
-                    autoSkip: false, 
-                    font: { size: 9 } 
-                } 
+                ticks: { autoSkip: false, font: { size: 9 } } 
             } 
         } 
     };
