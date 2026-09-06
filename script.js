@@ -3083,7 +3083,7 @@ async function prosesSimpanMutasiStok() {
     });
     
     if (!adaMutasi) {
-        alert('Minimal masukkan jumlah (Pcs) greater than 0 untuk salah satu produk!');
+        alert('Minimal masukkan jumlah (Pcs) lebih dari 0 untuk salah satu produk!');
         return;
     }
     
@@ -3092,29 +3092,30 @@ async function prosesSimpanMutasiStok() {
     }
     
     try {
+        // Ambil nama cabang aktif secara aman dari banner layar HTML
+        let labelBanner = document.getElementById('labelCabangBanner');
+        let cabangAktifSkrg = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
+        
+        if (!cabangAktifSkrg || cabangAktifSkrg === 'memuat...') {
+            throw new Error('Nama cabang aktif tidak terdeteksi dari banner layar.');
+        }
+        
         // Ambil tanggal operasional saat ini
         let tglOpsInput = document.getElementById('tglOps');
         let tanggalHariIni = tglOpsInput ? tglOpsInput.value : new Date().toISOString().split('T')[0];
         
-        // Referensi Database Cabang Aktif & Cabang Mitra di Firestore
+        // Referensi Database Cabang Sendiri & Cabang Mitra di Firestore
         let db = firebase.firestore();
         
-        // 1. Update Cabang Sendiri (Tempat Login)
-        let docRefSendiri = db.collection(cabangAktif).doc(tanggalHariIni);
+        let docRefSendiri = db.collection(cabangAktifSkrg).doc(tanggalHariIni);
         let docSnapSendiri = await docRefSendiri.get();
         
-        // 2. Update Cabang Mitra (Tujuan/Asal)
         let docRefMitra = db.collection(cabangMitra).doc(tanggalHariIni);
         let docSnapMitra = await docRefMitra.get();
-        
-        // Lakukan penyesuaian data stok harian
-        // Jika KIRIM (keluar): Cabang sendiri nambah kolom "Kurang", Cabang mitra nambah kolom "Tambah"
-        // Jika TERIMA (masuk): Cabang sendiri nambah kolom "Tambah", Cabang mitra nambah kolom "Kurang"
         
         let dataSendiri = docSnapSendiri.exists ? docSnapSendiri.data() : {};
         let dataMitra = docSnapMitra.exists ? docSnapMitra.data() : {};
         
-        // Pastikan struktur array matriks/stok ada
         if (!dataSendiri.stokHarian) dataSendiri.stokHarian = {};
         if (!dataMitra.stokHarian) dataMitra.stokHarian = {};
         
@@ -3122,9 +3123,7 @@ async function prosesSimpanMutasiStok() {
             let idx = item.indexProd;
             let qty = item.jumlah;
             
-            // Inisialisasi objek produk di cabang sendiri jika belum ada
             if (!dataSendiri.stokHarian[idx]) dataSendiri.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
-            // Inisialisasi objek produk di cabang mitra jika belum ada
             if (!dataMitra.stokHarian[idx]) dataMitra.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
             
             if (jenisMutasi === 'keluar') {
@@ -3140,7 +3139,7 @@ async function prosesSimpanMutasiStok() {
             }
         });
         
-        // Simpan kembali secara batch / paralel ke Firebase Firestore
+        // Simpan paralel ke Firestore
         await Promise.all([
             docRefSendiri.set(dataSendiri, { merge: true }),
             docRefMitra.set(dataMitra, { merge: true })
@@ -3156,7 +3155,6 @@ async function prosesSimpanMutasiStok() {
         alert('✅ Mutasi stok berhasil disinkronkan antar cabang secara real-time!');
         tutupModalMutasiStok();
         
-        // Refresh tabel harian di layar
         if (typeof loadDataTanggalLocal === 'function') {
             loadDataTanggalLocal();
         } else {
