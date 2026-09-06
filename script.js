@@ -2738,14 +2738,14 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
                 {
                     label: 'Bakso (Rp)',
                     data: angkaBakso,
-                    backgroundColor: '#fbbf24', // Warna Kuning Emas
-                    borderRadius: 4
+                    backgroundColor: '#f97316', // Oranye Terang
+                    maxBarThickness: 80, // Membatasi lebar batang agar tidak gemuk
                 },
                 {
                     label: 'Reseller (Rp)',
                     data: angkaReseller,
-                    backgroundColor: '#3b82f6', // Warna Biru
-                    borderRadius: 4
+                    backgroundColor: '#3b82f6', // Biru Terang
+                    maxBarThickness: 80,
                 }
             ]
         },
@@ -2753,11 +2753,15 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
+                x: {
+                    stacked: true // Menggabungkan batang di sumbu X
+                },
                 y: {
+                    stacked: true, // Menggabungkan batang di sumbu Y
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return value.toLocaleString('id-ID'); // Titik pada sumbu Y
+                            return value.toLocaleString('id-ID'); 
                         }
                     }
                 }
@@ -2769,7 +2773,7 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
                             let label = context.dataset.label || '';
                             if (label) label += ': ';
                             if (context.parsed.y !== null) {
-                                label += context.parsed.y.toLocaleString('id-ID'); // Titik pada hover
+                                label += context.parsed.y.toLocaleString('id-ID'); 
                             }
                             return label;
                         }
@@ -2777,10 +2781,13 @@ function gambarGrafikGlobal(labelsCabang, dataBakso, dataReseller) {
                 },
                 datalabels: {
                     formatter: function(value, context) {
-                        return value === 0 ? '' : value.toLocaleString('id-ID'); // Titik di dalam batang (jika pakai plugin)
+                        return value === 0 ? '' : value.toLocaleString('id-ID'); 
                     },
-                    color: '#fff',
-                    font: { weight: 'bold' }
+                    color: '#ffffff', // Warna font putih menyala
+                    font: { 
+                        size: 10, // Ukuran font diperkecil
+                        weight: 'bold' 
+                    }
                 }
             }
         }
