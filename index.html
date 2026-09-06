@@ -406,19 +406,34 @@
             <button onclick="toggleSidebar()" style="background: rgba(255,255,255,0.08); border: none; color: white; font-size: 0.9rem; cursor: pointer; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center;">✕</button>
         </div>
         
-        <div class="sidebar-profile">
+        <<div class="sidebar-profile">
             <img src="AGAK HIDUP.png" alt="Logo Besar" style="width: 65px; height: 65px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid #ea580c; margin-bottom: 8px; object-fit: cover;">
             <div style="font-size: 0.7rem; color: #94a3b8;">Selamat datang,</div>
             <div id="namaUserAktif" style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; margin-top: 2px;">-</div>
             <div id="roleUserAktif" style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; border: 1px solid rgba(56, 189, 248, 0.2);">-</div>
+            
+            <button onclick="pilihMenuNav('dashboardGlobal')" style="
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                width: 100%; 
+                padding: 10px; 
+                margin-top: 15px;
+                background: linear-gradient(135deg, #facc15, #f97316); 
+                color: #0f172a; 
+                border: none; 
+                border-radius: 10px; 
+                font-size: 0.9rem; 
+                font-weight: 900; 
+                cursor: pointer;
+                box-shadow: 0 4px 10px rgba(249, 115, 22, 0.4);
+                transition: transform 0.2s;
+            ">
+                <span style="margin-right: 6px; font-size: 1rem; color: #0f172a;">🌐</span> 
+                Dashboard Global
+            </button>
         </div>
-        
      <ul class="sidebar-menu">
-          <!-- KODE BARU: DASHBOARD GLOBAL (Hanya untuk Owner) -->
-            <li id="menuDashboardGlobal" style="margin-bottom: 8px; display: none;">
-                <button onclick="pilihMenuNav('dashboardGlobal')" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fbbf24; border: 1px solid #fbbf24; font-size: 0.85rem; justify-content: center; font-weight: 700; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);">🌐 Dashboard Global</button>
-            </li>
-
             <!-- MENU UTAMA (BERANDA) - Warna Ungu -->
             <li id="menuDashboard" style="margin-bottom: 12px;">
                 <button onclick="pilihMenuNav('dashboard')" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; font-size: 0.85rem; justify-content: center; font-weight: 700; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);">📈 Dashboard Cabang</button>
