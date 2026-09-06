@@ -3056,11 +3056,11 @@ function muatTabelModalMutasi() {
         tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Produk Kategori "Bakso Malang" belum terdeteksi. Pastikan penulisan kategori di Master Produk persis "Bakso Malang".</td></tr>`;
     }
 }
-// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore (Struktur Koleksi 'cabang')
+// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firestore (Multi-Format Nama Dokumen)
 async function prosesSimpanMutasiStok() {
     let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
     let selectTarget = document.getElementById('mutasiCabangTarget');
-    let cabangMitra = selectTarget.value; // Contoh: 'blok_m' atau 'cipete_utara'
+    let cabangMitra = selectTarget.value; // Contoh: 'blokm' atau 'blok_m'
     
     if (!cabangMitra) {
         alert('Pilih cabang tujuan/asal terlebih dahulu!');
@@ -3093,12 +3093,10 @@ async function prosesSimpanMutasiStok() {
     }
     
     try {
-        // Ambil nama cabang aktif dari banner, sesuaikan formatnya dengan id dokumen Firestore (ubah spasi/dash jadi underscore)
         let labelBanner = document.getElementById('labelCabangBanner');
-        let cabangAktifSkrg = labelBanner ? labelBanner.innerText.trim().toLowerCase().replace(/[\s-]/g, '_') : '';
+        let teksBanner = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
         
-        // Pastikan nama cabang sesuai (misal: 'cipete_utara' atau 'blok_m')
-        if (!cabangAktifSkrg || cabangAktifSkrg === 'memuat...') {
+        if (!teksBanner || teksBanner === 'memuat...') {
             throw new Error('Nama cabang aktif tidak terdeteksi dari banner.');
         }
         
@@ -3107,12 +3105,35 @@ async function prosesSimpanMutasiStok() {
         
         let db = firebase.firestore();
         
-        // Jalur Firestore yang benar: koleksi 'cabang' -> dokumen nama cabang -> sub-koleksi/dokumen harian
-        let docRefSendiri = db.collection('cabang').doc(cabangAktifSkrg).collection('appData').doc(tanggalHariIni);
-        let docSnapSendiri = await docRefSendiri.get();
+        // Fungsi helper untuk mencari dokumen cabang dengan berbagai variasi nama (pakai underscore atau polos)
+        async function getCabangDocRef(namaCabangInput) {
+            let variasiNama = [
+                namaCabangInput,
+                namaCabangInput.replace(/[\s-]/g, '_'),
+                namaCabangInput.replace(/_/g, ''),
+                namaCabangInput.replace(/\s+/g, '')
+            ];
+            
+            for (let nama of variasiNama) {
+                let ref = db.collection('cabang').doc(nama).collection('appData').doc(tanggalHariIni);
+                let snap = await ref.get();
+                if (snap.exists) {
+                    return ref; // Ketemu dokumen yang aktif berisi data
+                }
+            }
+            
+            // Jika belum ada dokumen tanggal hari itu, gunakan variasi pertama yang paling bersih untuk dibuat baru
+            let namaClean = namaCabangInput.replace(/[\s-]/g, '_');
+            return db.collection('cabang').doc(namaClean).collection('appData').doc(tanggalHariIni);
+        }
         
-        let docRefMitra = db.collection('cabang').doc(cabangMitra).collection('appData').doc(tanggalHariIni);
-        let docSnapMitra = await docRefMitra.get();
+        let docRefSendiri = await getCabangDocRef(teksBanner);
+        let docRefMitra = await getCabangDocRef(cabangMitra);
+        
+        let [docSnapSendiri, docSnapMitra] = await Promise.all([
+            docRefSendiri.get(),
+            docRefMitra.get()
+        ]);
         
         let dataSendiri = docSnapSendiri.exists ? docSnapSendiri.data() : {};
         let dataMitra = docSnapMitra.exists ? docSnapMitra.data() : {};
