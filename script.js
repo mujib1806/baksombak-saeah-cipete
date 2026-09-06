@@ -2938,12 +2938,16 @@ function gantiPilihanMutasi() {
     }
 }
 
-// Mengisi dropdown cabang lain (selain cabang yang sedang aktif login)
+// Mengisi dropdown cabang lain secara aman langsung membaca banner layar
 async function muatDropdownCabangMitra() {
     const selectTarget = document.getElementById('mutasiCabangTarget');
     if (!selectTarget) return;
     
     selectTarget.innerHTML = '<option value="">Memuat cabang...</option>';
+    
+    // Ambil nama cabang yang sedang aktif dari teks banner HTML secara otomatis
+    let labelBanner = document.getElementById('labelCabangBanner');
+    let namaCabangAktif = labelBanner ? labelBanner.innerText.trim().toLowerCase() : '';
     
     try {
         let db = firebase.firestore();
@@ -2954,7 +2958,8 @@ async function muatDropdownCabangMitra() {
         
         snapshot.forEach(doc => {
             let namaCabang = doc.id;
-            if (namaCabang && namaCabang !== cabangAktif) {
+            // Masukkan ke dropdown HANYA JIKA bukan cabang yang sedang aktif di banner
+            if (namaCabang && namaCabang.toLowerCase() !== namaCabangAktif) {
                 adaCabang = true;
                 let opt = document.createElement('option');
                 opt.value = namaCabang;
@@ -2964,21 +2969,21 @@ async function muatDropdownCabangMitra() {
         });
         
         if (!adaCabang) {
-            isiDropdownCabangCadangan(selectTarget);
+            isiDropdownCabangCadangan(selectTarget, namaCabangAktif);
         }
     } catch (e) {
         console.log("Menggunakan daftar cabang cadangan:", e);
-        isiDropdownCabangCadangan(selectTarget);
+        isiDropdownCabangCadangan(selectTarget, namaCabangAktif);
     }
 }
 
-function isiDropdownCabangCadangan(selectTarget) {
+function isiDropdownCabangCadangan(selectTarget, cabangAktifSkrg) {
     selectTarget.innerHTML = '';
-    // SILAHKAN SESUAIKAN NAMA CABANG INI JIKA ADA CABANG LAIN
+    // DAFTAR CABANG CADANGAN (Sesuaikan dengan nama cabang Anda)
     let daftarCabangDefault = ['cipete', 'blokm']; 
     
     daftarCabangDefault.forEach(cabang => {
-        if (cabang !== cabangAktif) {
+        if (cabang.toLowerCase() !== cabangAktifSkrg) {
             let opt = document.createElement('option');
             opt.value = cabang;
             opt.innerText = cabang.toUpperCase();
