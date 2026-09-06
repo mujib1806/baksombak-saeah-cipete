@@ -2586,3 +2586,4 @@ function ownerPindahCabang(idCabangBaru) {
         dropdown.value = CABANG_AKTIF;
     }
 }
+
