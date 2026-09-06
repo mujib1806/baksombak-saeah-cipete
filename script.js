@@ -2900,3 +2900,225 @@ function gambarGrafikTrenGlobal(labelsTren, dataTren) {
         }
     });
 }
+// ==========================================
+// FITUR MUTASI STOK BAKSO MALANG LINTAS CABANG
+// ==========================================
+
+// 1. Membuka Modal Mutasi dan Meload Produk Khusus Kategori "Bakso Malang"
+function bukaModalMutasiStok() {
+    const modal = document.getElementById('modalMutasiStok');
+    if (!modal) return;
+    
+    modal.classList.add('active');
+    
+    // Set default pilihan ke "Kirim"
+    document.getElementById('mutasiJenis').value = 'keluar';
+    gantiPilihanMutasi();
+    
+    // Muat daftar cabang mitra ke dropdown target
+    muatDropdownCabangMitra();
+    
+    // Muat produk khusus kategori Bakso Malang ke dalam tabel modal
+    muatTabelModalMutasi();
+}
+
+function tutupModalMutasiStok() {
+    const modal = document.getElementById('modalMutasiStok');
+    if (modal) modal.classList.remove('active');
+}
+
+// Mengubah teks label target tergantung jenis mutasi (Kirim / Terima)
+function gantiPilihanMutasi() {
+    const jenis = document.getElementById('mutasiJenis').value;
+    const label = document.getElementById('labelCabangMitra');
+    if (jenis === 'keluar') {
+        label.innerText = 'Cabang Tujuan:';
+    } else {
+        label.innerText = 'Cabang Asal (Pengirim):';
+    }
+}
+
+// Mengisi dropdown cabang lain (selain cabang yang sedang aktif login)
+function muatDropdownCabangMitra() {
+    const selectTarget = document.getElementById('mutasiCabangTarget');
+    if (!selectTarget) return;
+    
+    selectTarget.innerHTML = '';
+    
+    // Mengambil daftar cabang dari variabel global aplikasi Anda (misal: daftarCabangAktif atau localStorage)
+    // Pastikan menyesuaikan dengan nama variabel penampung cabang di script.js Anda
+    if (typeof daftarCabangGlobal !== 'undefined' && Array.isArray(daftarCabangGlobal)) {
+        daftarCabangGlobal.forEach(cabang => {
+            if (cabang !== cabangAktif) { // Jangan tampilkan cabang sendiri
+                let opt = document.createElement('option');
+                opt.value = cabang;
+                opt.innerText = cabang.toUpperCase();
+                selectTarget.appendChild(opt);
+            }
+        });
+    } else {
+        // Fallback cadangan jika variabel global bernama lain
+        ['cipete', 'blokm'].forEach(cabang => {
+            if (cabang !== cabangAktif) {
+                let opt = document.createElement('option');
+                opt.value = cabang;
+                opt.innerText = cabang.toUpperCase();
+                selectTarget.appendChild(opt);
+            }
+        });
+    }
+}
+
+// Menampilkan produk yang hanya masuk kategori "Bakso Malang"
+function muatTabelModalMutasi() {
+    const tbody = document.getElementById('tbodyTabelMutasiStok');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    // Mengambil data produk master (biasanya tersimpan di array 'daftarProduk' atau 'produkStore')
+    let listProduk = typeof daftarProduk !== 'undefined' ? daftarProduk : [];
+    
+    let adaBakso = false;
+    
+    listProduk.forEach((prod, index) => {
+        // Filter ketat hanya kategori Bakso Malang
+        let kategori = prod.kategori || prod.category || '';
+        if (kategori.toLowerCase().includes('bakso malang')) {
+            adaBakso = true;
+            let namaProd = prod.nama || prod.name || 'Produk';
+            // Ambil stok saat ini (misal dari data harian yang sedang aktif)
+            let stokSkrg = 0;
+            if (typeof stokHariIni !== 'undefined' && stokHariIni[index]) {
+                stokSkrg = stokHariIni[index].total || 0;
+            }
+            
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 8px; font-weight: bold; color: #1e293b;">${namaProd}</td>
+                <td style="padding: 8px; text-align: center; font-weight: bold; color: #475569;">${stokSkrg} Pcs</td>
+                <td style="padding: 6px; text-align: center;">
+                    <input type="number" class="input-pcs-mutasi" data-index="${index}" data-nama="${namaProd}" value="0" min="0" style="width: 70px; padding: 4px; text-align: center; font-weight: bold; border: 1px solid #0284c7; border-radius: 4px;">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+    
+    if (!adaBakso) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 20px; color: #94a3b8;">Tidak ada produk dengan kategori "Bakso Malang" di Master Produk.</td></tr>`;
+    }
+}
+
+// 2. Proses Simpan & Sinkronisasi Lintas Cabang ke Firebase
+async function prosesSimpanMutasiStok() {
+    let jenisMutasi = document.getElementById('mutasiJenis').value; // 'keluar' atau 'masuk'
+    let cabangMitra = document.getElementById('mutasiCabangTarget').value;
+    
+    if (!cabangMitra) {
+        alert('Pilih cabang tujuan/asal terlebih dahulu!');
+        return;
+    }
+    
+    let inputPcsElements = document.querySelectorAll('.input-pcs-mutasi');
+    let adaMutasi = false;
+    let detailMutasiList = [];
+    
+    inputPcsElements.forEach(input => {
+        let val = parseInt(input.value) || 0;
+        if (val > 0) {
+            adaMutasi = true;
+            detailMutasiList.push({
+                indexProd: parseInt(input.getAttribute('data-index')),
+                namaProduk: input.getAttribute('data-nama'),
+                jumlah: val
+            });
+        }
+    });
+    
+    if (!adaMutasi) {
+        alert('Minimal masukkan jumlah (Pcs) greater than 0 untuk salah satu produk!');
+        return;
+    }
+    
+    if (!confirm(`Konfirmasi: Anda akan ${jenisMutasi === 'keluar' ? 'mengirim' : 'menerima'} mutasi Bakso Malang ${jenisMutasi === 'keluar' ? 'ke' : 'dari'} cabang ${cabangMitra.toUpperCase()}. Lanjutkan?`)) {
+        return;
+    }
+    
+    try {
+        // Ambil tanggal operasional saat ini
+        let tglOpsInput = document.getElementById('tglOps');
+        let tanggalHariIni = tglOpsInput ? tglOpsInput.value : new Date().toISOString().split('T')[0];
+        
+        // Referensi Database Cabang Aktif & Cabang Mitra di Firestore
+        let db = firebase.firestore();
+        
+        // 1. Update Cabang Sendiri (Tempat Login)
+        let docRefSendiri = db.collection(cabangAktif).doc(tanggalHariIni);
+        let docSnapSendiri = await docRefSendiri.get();
+        
+        // 2. Update Cabang Mitra (Tujuan/Asal)
+        let docRefMitra = db.collection(cabangMitra).doc(tanggalHariIni);
+        let docSnapMitra = await docRefMitra.get();
+        
+        // Lakukan penyesuaian data stok harian
+        // Jika KIRIM (keluar): Cabang sendiri nambah kolom "Kurang", Cabang mitra nambah kolom "Tambah"
+        // Jika TERIMA (masuk): Cabang sendiri nambah kolom "Tambah", Cabang mitra nambah kolom "Kurang"
+        
+        let dataSendiri = docSnapSendiri.exists ? docSnapSendiri.data() : {};
+        let dataMitra = docSnapMitra.exists ? docSnapMitra.data() : {};
+        
+        // Pastikan struktur array matriks/stok ada
+        if (!dataSendiri.stokHarian) dataSendiri.stokHarian = {};
+        if (!dataMitra.stokHarian) dataMitra.stokHarian = {};
+        
+        detailMutasiList.forEach(item => {
+            let idx = item.indexProd;
+            let qty = item.jumlah;
+            
+            // Inisialisasi objek produk di cabang sendiri jika belum ada
+            if (!dataSendiri.stokHarian[idx]) dataSendiri.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
+            // Inisialisasi objek produk di cabang mitra jika belum ada
+            if (!dataMitra.stokHarian[idx]) dataMitra.stokHarian[idx] = { pagi: 0, tambah: 0, kurang: 0, malam: 0 };
+            
+            if (jenisMutasi === 'keluar') {
+                // Cabang sendiri mengirim -> Kolom "kurang" bertambah
+                dataSendiri.stokHarian[idx].kurang = (parseInt(dataSendiri.stokHarian[idx].kurang) || 0) + qty;
+                // Cabang mitra menerima -> Kolom "tambah" bertambah
+                dataMitra.stokHarian[idx].tambah = (parseInt(dataMitra.stokHarian[idx].tambah) || 0) + qty;
+            } else {
+                // Cabang sendiri menerima -> Kolom "tambah" bertambah
+                dataSendiri.stokHarian[idx].tambah = (parseInt(dataSendiri.stokHarian[idx].tambah) || 0) + qty;
+                // Cabang mitra mengirim -> Kolom "kurang" bertambah
+                dataMitra.stokHarian[idx].kurang = (parseInt(dataMitra.stokHarian[idx].kurang) || 0) + qty;
+            }
+        });
+        
+        // Simpan kembali secara batch / paralel ke Firebase Firestore
+        await Promise.all([
+            docRefSendiri.set(dataSendiri, { merge: true }),
+            docRefMitra.set(dataMitra, { merge: true })
+        ]);
+        
+        // Catat ke Riwayat Aktivitas Otomatis
+        if (typeof catatRiwayatAktivitas === 'function') {
+            let rincianTxt = detailMutasiList.map(i => `${i.jumlah} pcs ${i.namaProduk}`).join(', ');
+            let teksAktivitas = `Melakukan Mutasi Stok (${jenisMutasi === 'keluar' ? 'Kirim ke' : 'Terima dari'} ${cabangMitra.toUpperCase()}): ${rincianTxt}`;
+            catatRiwayatAktivitas(teksAktivitas);
+        }
+        
+        alert('✅ Mutasi stok berhasil disinkronkan antar cabang secara real-time!');
+        tutupModalMutasiStok();
+        
+        // Refresh tabel harian di layar
+        if (typeof loadDataTanggalLocal === 'function') {
+            loadDataTanggalLocal();
+        } else {
+            window.location.reload();
+        }
+        
+    } catch (error) {
+        console.error("Gagal melakukan mutasi stok:", error);
+        alert('❌ Terjadi kesalahan saat sinkronisasi ke server: ' + error.message);
+    }
+}
