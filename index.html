@@ -859,57 +859,87 @@
         <!-- ... (isi form tambah akun yang lama) ... -->
         <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
     </form>
-
-    <!-- 👇 TEMPATKAN KODE BARU DI SINI (MASIH DI DALAM VIEW PUSAT KONTROL) -->
-    <div style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 20px;">
-        <h4 style="color: #0f172a; margin-bottom: 10px; font-weight: 800;">⚙️ Pengaturan Finansial & Gaji Cabang Aktif</h4>
-        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 15px;">Atur nominal insentif harian, toleransi libur, gaji bulanan, serta nama pos dan persentase profit khusus untuk cabang yang sedang aktif ini.</p>
-        
-        <form onsubmit="simpanPengaturanFinansialCabang(event)">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                <div class="form-group" style="margin: 0;">
-                    <label>Gaji/Insentif Pokok Harian (Rp)</label>
-                    <input type="number" id="cfgGajiHarian" value="50000" required>
-                </div>
-                <div class="form-group" style="margin: 0;">
-                    <label>Batas Toleransi Libur/Bulan</label>
-                    <input type="number" id="cfgToleransiLibur" value="2" required>
-                </div>
+<!-- ==========================================
+             KODE BARU: PENGATURAN FINANSIAL & GAJI (VERSI ELEGAN)
+             ========================================== -->
+        <div style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-top: 25px; border: 1px solid #e2e8f0; border-top: 5px solid #2563eb; position: relative;">
+            
+            <!-- Header Section -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="background: #eff6ff; padding: 8px; border-radius: 8px; color: #2563eb; font-size: 1.2rem;">⚙️</div>
+                <h4 style="color: #0f172a; margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px;">Pengaturan Finansial Cabang</h4>
             </div>
-
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Gaji Bulanan Tetap (Untuk Slip Gaji)</label>
-                <input type="number" id="cfgGajiBulanan" value="1500000" required>
-            </div>
-
-            <hr style="border: 0; border-top: 1px dashed #e2e8f0; margin: 15px 0;">
-
-            <label style="font-size: 0.8rem; color: #0f172a; font-weight: 800; display: block; margin-bottom: 8px;">📊 Pos & Alokasi Persentase Pembagian Profit Bersih</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
-                <div style="background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                    <label style="font-size: 0.65rem; color: #64748b; font-weight: bold;">Nama Pos 1</label>
-                    <input type="text" id="cfgLabelPos1" value="Dana Darurat" style="padding: 5px; margin-bottom: 4px; font-weight: bold; font-size: 0.8rem;">
-                    <label style="font-size: 0.65rem; color: #64748b;">Persen (%)</label>
-                    <input type="number" id="cfgPersenPos1" value="20" style="padding: 5px; font-size: 0.8rem;">
+            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 20px; line-height: 1.5; border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px;">
+                Kelola struktur gaji, batas toleransi libur, dan kustomisasi pembagian profit khusus untuk cabang yang sedang aktif ini secara independen.
+            </p>
+            
+            <form onsubmit="simpanPengaturanFinansialCabang(event)">
+                
+                <!-- Blok 1: Parameter Gaji -->
+                <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                    <h5 style="color: #334155; font-size: 0.85rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <span>💵</span> Parameter Gaji & Insentif
+                    </h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Gaji Harian (Rp)</label>
+                            <input type="number" id="cfgGajiHarian" value="50000" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Toleransi Libur/Bulan</label>
+                            <input type="number" id="cfgToleransiLibur" value="2" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Gaji Bulanan Tetap (Untuk Slip Gaji)</label>
+                        <input type="number" id="cfgGajiBulanan" value="1500000" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">
+                    </div>
                 </div>
-                <div style="background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                    <label style="font-size: 0.65rem; color: #64748b; font-weight: bold;">Nama Pos 2</label>
-                    <input type="text" id="cfgLabelPos2" value="Tabungan Anak" style="padding: 5px; margin-bottom: 4px; font-weight: bold; font-size: 0.8rem;">
-                    <label style="font-size: 0.65rem; color: #64748b;">Persen (%)</label>
-                    <input type="number" id="cfgPersenPos2" value="40" style="padding: 5px; font-size: 0.8rem;">
-                </div>
-                <div style="background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                    <label style="font-size: 0.65rem; color: #64748b; font-weight: bold;">Nama Pos 3</label>
-                    <input type="text" id="cfgLabelPos3" value="Laba Bersih" style="padding: 5px; margin-bottom: 4px; font-weight: bold; font-size: 0.8rem;">
-                    <label style="font-size: 0.65rem; color: #64748b;">Persen (%)</label>
-                    <input type="number" id="cfgPersenPos3" value="40" style="padding: 5px; font-size: 0.8rem;">
-                </div>
-            </div>
 
-            <button type="submit" class="btn" style="background: #2563eb; color: #fff; width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer;">💾 Simpan Pengaturan Cabang Ini</button>
-        </form>
-    </div>
-    <!-- 👆 BATAS AKHIR KODE BARU -->
+                <!-- Blok 2: Kustomisasi Profit -->
+                <div style="background: #fffbeb; padding: 15px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                    <h5 style="color: #b45309; font-size: 0.85rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <span>📊</span> Kustomisasi Pos Profit Bersih
+                    </h5>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        
+                        <!-- Pos 1 -->
+                        <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 1</label>
+                            <input type="text" id="cfgLabelPos1" value="Dana Darurat" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                            <input type="number" id="cfgPersenPos1" value="20" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                        </div>
+
+                        <!-- Pos 2 -->
+                        <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 2</label>
+                            <input type="text" id="cfgLabelPos2" value="Tabungan Anak" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                            <input type="number" id="cfgPersenPos2" value="40" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                        </div>
+
+                        <!-- Pos 3 -->
+                        <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 3</label>
+                            <input type="text" id="cfgLabelPos3" value="Laba Bersih" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                            <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                            <input type="number" id="cfgPersenPos3" value="40" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tombol Simpan -->
+                <button type="submit" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; width: 100%; padding: 14px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                    💾 Simpan Pengaturan Cabang
+                </button>
+            </form>
+        </div>
+        <!-- ==========================================
+             KODE BARU SELESAI
+             ========================================== -->
+  
 
     </div> 
 </div> <!-- Penutup viewPusatKontrol -->
