@@ -123,6 +123,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+let pengaturanCabangAktif = {
+    gajiHarian: 50000,
+    toleransiLibur: 2,
+    gajiBulanan: 1500000,
+    pos1: { nama: "Dana Darurat", persen: 20 },
+    pos2: { nama: "Tabungan Anak", persen: 40 },
+    pos3: { nama: "Laba Bersih", persen: 40 }
+};
+
+// Fungsi menyimpan pengaturan dari Form HTML
+function simpanPengaturanFinansialCabang(e) {
+    e.preventDefault();
+    if (!db) return;
+
+    // Menghilangkan titik ribuan sebelum disimpan
+    const bersihkanAngka = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
+
+    const dataBaru = {
+        gajiHarian: bersihkanAngka('cfgGajiHarian') || 50000,
+        toleransiLibur: bersihkanAngka('cfgToleransiLibur') || 2,
+        gajiBulanan: bersihkanAngka('cfgGajiBulanan') || 1500000,
+        pos1: {
+            nama: document.getElementById('cfgLabelPos1').value.trim() || "Dana Darurat",
+            persen: parseFloat(document.getElementById('cfgPersenPos1').value) || 20
+        },
+        pos2: {
+            nama: document.getElementById('cfgLabelPos2').value.trim() || "Tabungan Anak",
+            persen: parseFloat(document.getElementById('cfgPersenPos2').value) || 40
+        },
+        pos3: {
+            nama: document.getElementById('cfgLabelPos3').value.trim() || "Laba Bersih",
+            persen: parseFloat(document.getElementById('cfgPersenPos3').value) || 40
+        }
+    };
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').set(dataBaru)
+    .then(() => {
+        pengaturanCabangAktif = dataBaru;
+        showToast('✅ Pengaturan Finansial Disimpan!');
+        updateKalkulasi();
+        if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan();
+    });
+}
 
 function showToast(message) {
     const toast = document.getElementById('toastNotif');
@@ -170,21 +213,19 @@ function prosesLogin(e) {
             // ===============================================
             // KODE BARU: PENGECEKAN CABANG TUGAS (Tembok Pengaman)
             // ===============================================
-            const cabangTugasKaryawan = dataAkun.cabang_tugas || 'cipete_utara'; // Default ke cipete jika akun lama belum punya cabang_tugas
+            const cabangTugasKaryawan = dataAkun.cabang_tugas || 'cipete_utara'; 
             
-            // Jika bukan owner, dan cabang pilihannya TIDAK SAMA dengan cabang tugasnya
-           if (dataAkun.role !== 'owner' && dataAkun.role !== 'dapur' && cabangTugasKaryawan !== cabangPilihan) {
+            if (dataAkun.role !== 'owner' && dataAkun.role !== 'dapur' && cabangTugasKaryawan !== cabangPilihan) {
                 alert(`❌ AKSES DITOLAK!\n\n${dataAkun.nama}, Anda tidak diizinkan masuk ke ${cabangNamaText}.\nAnda hanya ditugaskan di cabang lainnya.`);
-                firebase.auth().signOut(); // Paksa logout
+                firebase.auth().signOut(); 
                 btn.innerText = "MASUK"; 
                 btn.disabled = false;
-                return; // Hentikan proses login
+                return; 
             }
             
             currentUser = dataAkun;
             currentUser.email = emailPalsu; 
         } else {
-            // Fallback darurat jika data hilang
             currentUser = { nama: "Pengguna " + noHp, role: 'kasir', hp: noHp, email: emailPalsu, cabang_tugas: 'cipete_utara' };
         }
         
@@ -194,6 +235,9 @@ function prosesLogin(e) {
         localStorage.setItem('namaCabangAktif', cabangNamaText);
         
         CABANG_AKTIF = cabangPilihan;
+
+        // 👉 KODE BARU DITAMBAHKAN DI SINI:
+        tarikPengaturanCabangOtomatis();
 
         const headerCabang = document.getElementById('headerNamaCabang');
         if (headerCabang) {
@@ -504,7 +548,28 @@ function inisiatisasiRealtimeListener() {
         snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
         loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
     });
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').onSnapshot(doc => {
+        if (doc.exists) {
+            pengaturanCabangAktif = doc.data();
+            
+            // Perbarui form di layar jika ada
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            if(document.getElementById('cfgGajiHarian')) {
+                setVal('cfgGajiHarian', formatRibuanInput({ value: pengaturanCabangAktif.gajiHarian.toString() }, true));
+                setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur);
+                setVal('cfgGajiBulanan', formatRibuanInput({ value: pengaturanCabangAktif.gajiBulanan.toString() }, true));
+                
+                if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
+                if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
+                if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
+            }
+            
+            updateKalkulasi();
+            if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan();
+        }
+    });
 }
+
 
 // ==========================================
 // FUNGSI NAVIGASI
@@ -1216,7 +1281,7 @@ function updateKalkulasi() {
         Object.keys(katData).forEach(kat => { if (currentUser && currentUser.role === 'dapur' && kat !== 'Bakso Malang') return; const d = katData[kat]; let boxStyle = kat.toLowerCase().includes('bakso') ? "background: #fff7ed; border: 1px solid #fdba74;" : "background: #f0f9ff; border: 1px solid #7dd3fc;"; let titleColor = kat.toLowerCase().includes('bakso') ? "#ea580c" : "#0284c7"; const div = document.createElement('div'); div.style.cssText = `${boxStyle} padding: 12px; border-radius: 12px;`; div.innerHTML = `<h4 style="color: ${titleColor}; margin-bottom: 8px; font-size: 0.85rem; font-weight:800; text-transform:uppercase;">📌 Akumulasi ${kat}</h4><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Omset:</span><strong style="color:var(--text-main);">${formatRupiah(d.omset)}</strong></div><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Modal:</span><strong style="color: #d97706;">${formatRupiah(d.modal)}</strong></div><div style="font-size: 0.8rem; display: flex; justify-content: space-between; border-top: 1px dashed ${titleColor}; padding-top: 6px; margin-top:6px;"><span style="font-weight:700;">Profit:</span><strong style="color: #16a34a;">${formatRupiah(d.profit)}</strong></div>`; containerAkumulasi.appendChild(div); });
     }
 
-    const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 };
+    const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: pengaturanCabangAktif.gajiHarian || 50000 };
     const totalUangSeharusnya = omsetPenjualan + (kas.petty || 0); const gajiHarianNominal = dataGaji.nominal; const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const pengeluaranDapur = dataSetoran.pengeluaran || 0; const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur; const totalUangFisikDigital = (kas.cash || 0) + (kas.qris || 0) + (kas.gojek || 0) + (kas.grab || 0) + (kas.shopee || 0); const totalAktualUang = totalUangFisikDigital + totalStrukPengeluaran; const selisih = totalAktualUang - totalUangSeharusnya;
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
@@ -1250,9 +1315,12 @@ function updateKalkulasi() {
     let profitAlokasiBasis = Math.max(0, totalProfitBersih);
     
     setTxt('totalProfitBersih', formatRupiah(totalProfitBersih)); 
-    setTxt('allocDarurat', formatRupiah(profitAlokasiBasis * 0.20)); 
-    setTxt('allocAnak', formatRupiah(profitAlokasiBasis * 0.40)); 
-    setTxt('allocLabaBersih', formatRupiah(profitAlokasiBasis * 0.40));
+    let p1 = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
+    let p2 = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
+    let p3 = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
+    setTxt('allocDarurat', formatRupiah(profitAlokasiBasis * p1)); 
+    setTxt('allocAnak', formatRupiah(profitAlokasiBasis * p2)); 
+    setTxt('allocLabaBersih', formatRupiah(profitAlokasiBasis * p3));
 
     hitungAkumulasiKasTotal(); renderViewRekapTransfer(); 
     cekPeringatanStok();
@@ -1302,13 +1370,48 @@ function renderViewRekapTransfer() {
 }
 
 function renderRekapGajiBulanan() {
-    const bln = document.getElementById('filterBulanGaji').value; if(!bln) return;
-    let totalHadirUtama = 0; let totalLiburUtama = 0; let totalGajiUtamaDiambil = 0; let totalGajiTambahanDiambil = 0; const validDates = Object.keys(dbStok).filter(tgl => tgl.startsWith(bln)).sort();
-    validDates.forEach(tgl => { const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; if (dataGaji.utama === true) { totalHadirUtama++; totalGajiUtamaDiambil += 50000; } else { totalLiburUtama++; } totalGajiTambahanDiambil += (dataGaji.tambahan * 50000); });
-    let potongan = 0; if (totalLiburUtama > 2) { potongan = (totalLiburUtama - 2) * 50000; } const gajiPokok = 1500000; const gajiBersihTF = gajiPokok - potongan;
+    const bln = document.getElementById('filterBulanGaji').value; 
+    if(!bln) return;
+
+    let totalHadirUtama = 0; 
+    let totalLiburUtama = 0; 
+    let totalGajiUtamaDiambil = 0; 
+    let totalGajiTambahanDiambil = 0; 
+    const validDates = Object.keys(dbStok).filter(tgl => tgl.startsWith(bln)).sort();
+
+    // 1. Tarik variabel pengaturan cabang dari database
+    const nominalHarian = pengaturanCabangAktif.gajiHarian || 50000;
+    const toleransi = pengaturanCabangAktif.toleransiLibur || 2;
+    const gajiPokok = pengaturanCabangAktif.gajiBulanan || 1500000;
+
+    validDates.forEach(tgl => { 
+        const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: nominalHarian }; 
+        const uangHarian = dataGaji.nominal || nominalHarian; 
+
+        if (dataGaji.utama === true) { 
+            totalHadirUtama++; 
+            totalGajiUtamaDiambil += uangHarian; 
+        } else { 
+            totalLiburUtama++; 
+        } 
+        totalGajiTambahanDiambil += (dataGaji.tambahan * uangHarian); 
+    });
+
+    let potongan = 0; 
+    // 2. Hitung potongan jika libur melebihi batas toleransi yang diset Owner
+    if (totalLiburUtama > toleransi) { 
+        potongan = (totalLiburUtama - toleransi) * nominalHarian; 
+    } 
+    const gajiBersihTF = gajiPokok - potongan;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-    setTxt('gbHariKerja', `${totalHadirUtama} Hari Masuk`); setTxt('gbHariLibur', `${totalLiburUtama} Hari`); setTxt('gbPotonganLibur', formatRupiah(potongan)); setTxt('gbGajiUtamaTF', formatRupiah(gajiBersihTF)); setTxt('gbUangHarianUtama', formatRupiah(totalGajiUtamaDiambil)); setTxt('gbUangHarianTambahan', formatRupiah(totalGajiTambahanDiambil)); setTxt('gbTotalHarianLaci', formatRupiah(totalGajiUtamaDiambil + totalGajiTambahanDiambil));
+    setTxt('gbHariKerja', `${totalHadirUtama} Hari Masuk`); 
+    setTxt('gbHariLibur', `${totalLiburUtama} Hari`); 
+    setTxt('gbPotonganLibur', formatRupiah(potongan)); 
+    setTxt('gbGajiUtamaTF', formatRupiah(gajiBersihTF)); 
+    setTxt('gbUangHarianUtama', formatRupiah(totalGajiUtamaDiambil)); 
+    setTxt('gbUangHarianTambahan', formatRupiah(totalGajiTambahanDiambil)); 
+    setTxt('gbTotalHarianLaci', formatRupiah(totalGajiUtamaDiambil + totalGajiTambahanDiambil));
 }
 
 function hitungAkumulasiKasTotal() { 
@@ -2622,6 +2725,9 @@ function ownerPindahCabang(idCabangBaru) {
         localStorage.setItem('cabangAktif', idCabangBaru);
         localStorage.setItem('namaCabangAktif', namaCabangBaru);
         
+        // 👉 KODE BARU DITAMBAHKAN DI SINI:
+        tarikPengaturanCabangOtomatis();
+        
         // Catat di log aktivitas
         if(typeof catatAktivitas === 'function'){
             catatAktivitas('Pindah Cabang', `${currentUser.nama} pindah pantauan ke ${namaCabangBaru}`);
@@ -3218,3 +3324,94 @@ async function prosesSimpanMutasiStok() {
         alert('❌ Terjadi kesalahan saat sinkronisasi: ' + error.message);
     }
 }
+// ========================================================
+// KODE BARU: PENGATURAN FINANSIAL CABANG
+// ========================================================
+
+// 1. Variabel Global Pengaturan (Nilai Default)
+let pengaturanCabangAktif = {
+    gajiHarian: 50000,
+    toleransiLibur: 2,
+    gajiBulanan: 1500000,
+    pos1: { nama: "Dana Darurat", persen: 20 },
+    pos2: { nama: "Tabungan Anak", persen: 40 },
+    pos3: { nama: "Laba Bersih", persen: 40 }
+};
+
+// 2. Fungsi Menyimpan Pengaturan dari Form HTML ke Database
+function simpanPengaturanFinansialCabang(e) {
+    e.preventDefault();
+    if (!db || !CABANG_AKTIF) return;
+
+    // Bersihkan titik ribuan sebelum masuk ke database
+    const bersihkanAngka = (id) => {
+        let el = document.getElementById(id);
+        if (!el) return 0;
+        return parseFloat(el.value.replace(/\./g, '')) || 0;
+    };
+
+    const dataBaru = {
+        gajiHarian: bersihkanAngka('cfgGajiHarian') || 50000,
+        toleransiLibur: bersihkanAngka('cfgToleransiLibur') || 2,
+        gajiBulanan: bersihkanAngka('cfgGajiBulanan') || 1500000,
+        pos1: {
+            nama: document.getElementById('cfgLabelPos1').value.trim() || "Dana Darurat",
+            persen: parseFloat(document.getElementById('cfgPersenPos1').value) || 20
+        },
+        pos2: {
+            nama: document.getElementById('cfgLabelPos2').value.trim() || "Tabungan Anak",
+            persen: parseFloat(document.getElementById('cfgPersenPos2').value) || 40
+        },
+        pos3: {
+            nama: document.getElementById('cfgLabelPos3').value.trim() || "Laba Bersih",
+            persen: parseFloat(document.getElementById('cfgPersenPos3').value) || 40
+        }
+    };
+
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').set(dataBaru)
+    .then(() => {
+        pengaturanCabangAktif = dataBaru;
+        if(typeof showToast === 'function') showToast('✅ Pengaturan Finansial Disimpan!');
+        else alert('✅ Pengaturan Finansial Cabang Disimpan!');
+        
+        // Langsung perbarui hitungan di layar
+        updateKalkulasi();
+        if(document.getElementById('viewGajiBulanan') && document.getElementById('viewGajiBulanan').style.display === 'block') {
+            renderRekapGajiBulanan();
+        }
+    })
+    .catch(err => {
+        alert("Gagal menyimpan pengaturan: " + err.message);
+    });
+}
+
+// 3. Fungsi Menarik Data Otomatis (Real-time Listener)
+let listenerPengaturan = null;
+function tarikPengaturanCabangOtomatis() {
+    if (!db || !CABANG_AKTIF) return;
+    
+    // Matikan listener cabang sebelumnya (jika owner pindah cabang)
+    if (listenerPengaturan) listenerPengaturan();
+
+    listenerPengaturan = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').onSnapshot(doc => {
+        if (doc.exists) {
+            pengaturanCabangAktif = doc.data();
+            
+            // Isi form di Pusat Kontrol dengan data terbaru dari database
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            if(document.getElementById('cfgGajiHarian')) {
+                // Tambahkan titik ribuan secara otomatis untuk tampilan
+                setVal('cfgGajiHarian', pengaturanCabangAktif.gajiHarian.toLocaleString('id-ID'));
+                setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur);
+                setVal('cfgGajiBulanan', pengaturanCabangAktif.gajiBulanan.toLocaleString('id-ID'));
+                
+                if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
+                if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
+                if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
+            }
+            
+            updateKalkulasi();
+        }
+    });
+}
+tarikPengaturanCabangOtomatis();
