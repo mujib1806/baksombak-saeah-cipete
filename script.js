@@ -2818,13 +2818,11 @@ function buatCabangBaru() {
 function muatDaftarCabangKontrol() {
     if(!db) return;
     const tbody = document.getElementById('tbodyDaftarCabang');
-    const selectCabangTugas = document.getElementById('inAkunCabangTugas'); // KODE BARU
-    
-    if(!tbody) return;
+    const selectCabangTugas = document.getElementById('inAkunCabangTugas'); 
     
     db.collection('daftarCabang').onSnapshot(snap => {
-        tbody.innerHTML = '';
-        if (selectCabangTugas) selectCabangTugas.innerHTML = ''; // KODE BARU: Kosongkan dulu agar tidak ganda
+        if (tbody) tbody.innerHTML = '';
+        if (selectCabangTugas) selectCabangTugas.innerHTML = ''; // Kosongkan dulu agar tidak ganda
         
         snap.forEach(doc => {
             const data = doc.data();
@@ -2832,15 +2830,17 @@ function muatDaftarCabangKontrol() {
                 `<span style="color:#94a3b8; font-size:0.75rem; font-style:italic;">Pusat (Patokan)</span>` : 
                 `<button onclick="hapusCabang('${data.id}', '${data.nama}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer;">Hapus</button>`;
                 
-            // 1. Mengisi Tabel Kelola Cabang
-            tbody.innerHTML += `
-                <tr style="border-bottom: 1px solid #e5e7eb;">
-                    <td style="padding: 8px;"><strong>${data.nama}</strong></td>
-                    <td style="padding: 8px; text-align: right;">${btnHapus}</td>
-                </tr>
-            `;
+            // 1. Mengisi Tabel Kelola Cabang (Hanya jika elemennya ada di layar)
+            if (tbody) {
+                tbody.innerHTML += `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 8px;"><strong>${data.nama}</strong></td>
+                        <td style="padding: 8px; text-align: right;">${btnHapus}</td>
+                    </tr>
+                `;
+            }
             
-            // 2. KODE BARU: Mengisi Dropdown Cabang Tugas di Form Tambah Akun
+            // 2. Mengisi Dropdown Cabang Tugas di Form Tambah Akun (Hanya jika elemennya ada)
             if (selectCabangTugas) {
                 selectCabangTugas.innerHTML += `<option value="${data.id}">${data.nama}</option>`;
             }
