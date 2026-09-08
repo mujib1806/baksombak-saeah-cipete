@@ -436,17 +436,24 @@ function inisiatisasiRealtimeListener() {
         applyLockUI(); 
     });
 
-    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => { 
-        if (doc.exists && doc.data().list) { 
-            masterProduk = doc.data().list; 
-        } else { 
-            masterProduk = [...defaultMasterProduk]; 
-            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
-        } 
-        loadDataTanggalLocal(); 
-        renderTabelMasterProduk(); 
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => {  
+        if (doc.exists && doc.data().list) {  
+            masterProduk = doc.data().list;  
+        } else {  
+            masterProduk = [...defaultMasterProduk];  
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });  
+        }  
+        
+        // Cek apakah user sedang mengetik di input stok
+        const activeEl = document.activeElement;
+        const isTypingStok = activeEl && (activeEl.classList.contains('input-stok') || activeEl.tagName === 'INPUT');
+        
+        // Hanya muat ulang jika user TIDAK sedang mengetik
+        if (!isTypingStok) {
+            loadDataTanggalLocal();  
+            renderTabelMasterProduk();  
+        }
     });
-
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { 
         if (doc.exists) daftarKategori = doc.data().list; 
         else db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({ list: defaultKategori }); 
@@ -830,7 +837,6 @@ function updateNilaiStokLokal(idx, tipe, val) {
         const valLama = parseFloat(p.tambah) || 0;
         const selisih = valBaru - valLama;  
         
-        // Update stok gudang ditunda ke dalam timer agar tidak memutus fokus keyboard saat mengetik
         if (selisih !== 0) {
             clearTimeout(window.gudangSaveTimeout);
             window.gudangSaveTimeout = setTimeout(() => {
@@ -842,7 +848,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
                 }
             }, 1000);
         }
-        dbStok[tgl][idx].tambah = val; 
+        dbStok[tgl][idx].tambah = val;  
     } else {
         if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
@@ -856,6 +862,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
 
+    // Update langsung teks kolom total & terjual di baris terkait tanpa merender ulang seluruh tabel
     const elTotal = document.getElementById('td_total_' + idx);  
     if(elTotal) elTotal.innerText = totalStok;  
 
@@ -865,10 +872,11 @@ function updateNilaiStokLokal(idx, tipe, val) {
     updateKalkulasi();  
     
     clearTimeout(autoSaveTimeout); 
-    autoSaveTimeout = setTimeout(() => { 
-        simpanStokKeFirebase(); 
+    autoSaveTimeout = setTimeout(() => {  
+        simpanStokKeFirebase();  
     }, 1500);  
 
+    // Pastikan fokus tetap terjaga diinput yang sedang diketik
     if (activeElementId) {
         requestAnimationFrame(() => {
             const elToFocus = document.getElementById(activeElementId);
