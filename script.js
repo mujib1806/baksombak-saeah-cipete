@@ -818,6 +818,9 @@ function simpanStokKeFirebase() {
 }
 
 function updateNilaiStokLokal(idx, tipe, val) {  
+    // Ambil ID elemen input yang sedang diketik saat ini agar fokusnya tidak hilang
+    const activeElementId = document.activeElement ? document.activeElement.id : null;
+
     const tgl = document.getElementById('tglOps').value;  
     if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
     
@@ -836,7 +839,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
                 if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             }
         }
-        dbStok[tgl][idx].tambah = valBaru;
+        dbStok[tgl][idx].tambah = val; // Pertahankan string agar user bisa menghapus (backspace) dengan leluasa
     } else {
         if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
@@ -863,13 +866,20 @@ function updateNilaiStokLokal(idx, tipe, val) {
         simpanStokKeFirebase(); 
     }, 1500);  
 
-    // Trik pengaman agar fokus input di HP tidak lepas (mengunci keyboard tetap terbuka)
-    setTimeout(() => {
-        let inputAktif = document.activeElement;
-        if (inputAktif && inputAktif.tagName === 'INPUT' && inputAktif.id.includes(`_${idx}`)) {
-            // Biarkan fokus tetap di situ, tidak melakukan apa-apa agar keyboard tidak 'blur'
-        }
-    }, 10);
+    // Kembalikan fokus secara paksa ke input yang sedang diketik agar keyboard HP tidak tertutup
+    if (activeElementId) {
+        requestAnimationFrame(() => {
+            const elToFocus = document.getElementById(activeElementId);
+            if (elToFocus && document.activeElement !== elToFocus) {
+                elToFocus.focus();
+                // Posisikan kursor di akhir teks agar nyaman diketik
+                if (typeof elToFocus.setSelectionRange === 'function') {
+                    let len = elToFocus.value.length;
+                    elToFocus.setSelectionRange(len, len);
+                }
+            }
+        });
+    }
 }
 
 function loadDataTanggalLocal() { 
