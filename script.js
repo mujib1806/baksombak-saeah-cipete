@@ -836,7 +836,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
                 if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             }
         }
-        dbStok[tgl][idx].tambah = val; // Biarkan bentuk string sementara agar tidak mengganggu ketikan
+        dbStok[tgl][idx].tambah = val; 
     } else {
         if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
@@ -850,7 +850,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
 
-    // Update angka Total & Terjual secara instan TANPA merender ulang tabel (agar keyboard tidak tertutup)
+    // Update angka Total & Terjual secara instan
     const elTotal = document.getElementById('td_total_' + idx);  
     if(elTotal) elTotal.innerText = totalStok;  
 
@@ -859,13 +859,25 @@ function updateNilaiStokLokal(idx, tipe, val) {
 
     updateKalkulasi();  
     
-    // Auto-save ke Firebase tetap berjalan di latar belakang tanpa mengganggu ketikan
+    // Auto-save ke Firebase berjalan di latar belakang tanpa mengganggu laci ketikan user
     clearTimeout(autoSaveTimeout); 
     autoSaveTimeout = setTimeout(() => { 
-        simpanStokKeFirebase(); 
-    }, 1500); // Diperpanjang sedikit waktunya jadi 1.5 detik agar lebih santai saat mengetik
-}
+        // Jangan panggil renderTabelMatriks() di sini agar fokus input tidak terganggu
+        if(db && typeof simpanStokKeFirebase === 'function') {
+            let elemenProfit = document.getElementById('totalProfitBersih').innerText;
+            let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,""));
+            let profitSiapBagi = Math.max(0, profitAngka);
 
+            db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({  
+                items: dbStok[tgl],
+                profitBersih: profitSiapBagi,
+                danaDarurat: profitSiapBagi * 0.20,
+                tabunganAnak: profitSiapBagi * 0.40,
+                labaBersih: profitSiapBagi * 0.40
+            }, { merge: true });
+        }
+    }, 1500); 
+}
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
