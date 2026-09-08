@@ -961,7 +961,7 @@
                         <div class="summary-item"><span>Total Libur/Absen:</span><strong id="gbHariLibur" style="color:#dc2626;">0 Hari</strong></div>
                         <div class="summary-item"><span>Jatah Libur Gratis:</span><strong style="color:#475569;">2 Hari / Bulan</strong></div>
                         <hr style="margin: 10px 0; border-top:1px dashed #fda4af;">
-                        <div class="summary-item"><span>Gaji Pokok Bulanan:</span><strong style="font-size:1rem;">Rp 1.500.000</strong></div>
+                        <div class="summary-item"><span>Gaji Pokok Bulanan:</span><strong style="font-size:1rem;"><span id="lblGajiPokokBulanan">Rp 1.500.000</span></strong></div>
                         <div class="summary-item" style="color:#dc2626;"><span>➖ Potongan Libur (>2x):</span><strong id="gbPotonganLibur">Rp 0</strong></div>
                         <div class="summary-item bold" style="color:#be185d; font-size:1.1rem; border-top:2px solid #fda4af; padding-top:10px; margin-top:6px;"><span>GAJI BERSIH (TF):</span><span id="gbGajiUtamaTF">Rp 0</span></div>
                         <div style="font-size:0.65rem; color:#881337; text-align:right; margin-top:2px;">*Tidak termasuk uang makan harian yg memotong profit harian.</div>
@@ -1132,9 +1132,9 @@
                             <span>Profit Bersih (Siap Bagi):</span><span id="totalProfitBersih">Rp 0</span>
                         </div>
 
-                        <div class="summary-item"><span>🛡️ Dana Darurat(20%):</span><span id="allocDarurat" style="font-weight:700;">Rp 0</span></div>
-                        <div class="summary-item"><span>👶 Tabungan(40%):</span><span id="allocAnak" style="font-weight:700;">Rp 0</span></div>
-                       <div class="summary-item bold" style="color:#0f172a; border-top-color:#86efac; font-size:0.95rem;"><span>💵 Laba Bersih(40%):</span><span id="allocLabaBersih">Rp 0</span></div>
+                        <div class="summary-item"><span>🛡️ <span id="lblPos1">Dana Darurat(20%)</span>:</span><span id="allocDarurat" style="font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item"><span>👶 <span id="lblPos2">Tabungan(40%)</span>:</span><span id="allocAnak" style="font-weight:700;">Rp 0</span></div>
+                       <div class="summary-item bold" style="color:#0f172a; border-top-color:#86efac; font-size:0.95rem;"><span>💵 <span id="lblPos3">Laba Bersih(40%)</span>:</span><span id="allocLabaBersih">Rp 0</span></div>
                 </div>
             </div>
         </div>
@@ -1260,9 +1260,9 @@
                         <div class="summary-item"><span>TF Setoran Bakso:</span><strong id="rtTfBakso">Rp 0</span></div>
                         <div class="summary-item"><span>Kas Reseller:</span><strong id="rtKasReseller" style="color:#3b82f6;">Rp 0</span></div>
                         <div class="summary-item"><span>Kas Plastik:</span><strong id="rtKasPlastik" style="color:#ca8a04;">Rp 0</span></div>
-                        <div class="summary-item"><span>Dana Darurat:</span><strong id="rtKasDarurat" style="color:#ef4444;">Rp 0</span></div>
-                        <div class="summary-item"><span>Laba Bersih:</span><strong id="rtKasLaba" style="color:#16a34a;">Rp 0</span></div>
-                        <div class="summary-item"><span>Tabungan Anak:</span><strong id="rtKasAnak" style="color:#a855f7;">Rp 0</span></div>
+                        <div class="summary-item"><span><span id="lblRtPos1">Dana Darurat:</span></span><strong id="rtKasDarurat" style="color:#ef4444;">Rp 0</span></div>
+                        <div class="summary-item"><span><span id="lblRtPos3">Laba Bersih:</span></span><strong id="rtKasLaba" style="color:#16a34a;">Rp 0</span></div>
+                        <div class="summary-item"><span><span id="lblRtPos2">Tabungan Anak:</span></span><strong id="rtKasAnak" style="color:#a855f7;">Rp 0</span></div>
                         <div class="summary-item bold" style="color:#0f172a; font-size:1.05rem; border-top:2px solid #94a3b8; padding-top:10px; margin-top:10px;"><span>TOTAL (A):</span><span id="rtTotalA">Rp 0</span></div>
                     </div>
                     <div class="summary-box" style="background:#f0fdf4; border-color:#86efac;">
@@ -1671,7 +1671,7 @@
     <div class="pdf-header" style="border-bottom: 2px solid #e11d48;"><h2 style="color: #be185d;">SLIP GAJI KARYAWAN (BULANAN)</h2><p id="pdfSgBulan" style="font-weight: bold; font-size:0.9rem; color:#475569; margin:0;"></p></div>
     <div class="pdf-box" style="border-color:#fda4af; background:#fff1f2;"><div class="pdf-row"><span>Total Hari Kerja (Aktif):</span><span id="pdfSgHadir" style="font-weight:bold;">0 Hari</span></div><div class="pdf-row"><span>Total Hari Libur/Absen:</span><span id="pdfSgLibur" style="font-weight:bold; color:#dc2626;">0 Hari</span></div></div>
     <div class="pdf-section-title" style="border-left-color: #e11d48;">RINCIAN PENDAPATAN & POTONGAN</div>
-    <div class="pdf-box"><div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;">Rp 1.500.000</span></div><div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div><div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div></div>
+    <div class="pdf-box"><div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;"><span id="lblGajiPokokBulanan">Rp 1.500.000</span></span></div><div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div><div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div></div>
     <div style="margin-top:40px; text-align:right; font-size:0.85rem;"><p>Jakarta, <span id="pdfSgTglCetak"></span></p><br><br><br><p style="font-weight:bold;">( Owner / Pengelola )</p></div>
 </div>
 
