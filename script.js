@@ -316,7 +316,7 @@ function bukaLayarAplikasi() {
     document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';      
     // KODE BARU: Memunculkan menu Dashboard Global khusus Owner
-    const menuGlobal = document.getElementById('menuDashboardGlobal');
+    cconst menuGlobal = document.getElementById('menuDashboardGlobal');
     if (menuGlobal) menuGlobal.style.display = isOwner ? 'block' : 'none';
     document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
     document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
