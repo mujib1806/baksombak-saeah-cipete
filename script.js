@@ -554,11 +554,11 @@ function inisiatisasiRealtimeListener() {
             
             // Perbarui form di layar jika ada
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-            if(document.getElementById('cfgGajiHarian')) {
-                setVal('cfgGajiHarian', formatRibuanInput({ value: pengaturanCabangAktif.gajiHarian.toString() }, true));
-                setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur);
-                setVal('cfgGajiBulanan', formatRibuanInput({ value: pengaturanCabangAktif.gajiBulanan.toString() }, true));
-                
+          if(document.getElementById('cfgGajiHarian')) {
+            setVal('cfgGajiHarian', (pengaturanCabangAktif.gajiHarian || 50000).toLocaleString('id-ID'));
+            setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur || 2);
+            setVal('cfgGajiBulanan', (pengaturanCabangAktif.gajiBulanan || 1500000).toLocaleString('id-ID'));
+              
                 if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
                 if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
                 if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
