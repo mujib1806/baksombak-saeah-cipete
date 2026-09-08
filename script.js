@@ -72,6 +72,15 @@ let vendorCatalog = defaultVendorCatalog;
 let dbStok = {}, dbPengeluaranHarian = [], dbKasMasuk = {}, dbLogKas = [], dbSetoranDapur = {}, dbGajiHarian = {}, dbStatusKunci = {};
 let activeKasTab = 'Reseller';
 let currentUser = null;
+// Variabel Global Pengaturan Finansial
+let pengaturanCabangAktif = {
+    gajiHarian: 50000,
+    toleransiLibur: 2,
+    gajiBulanan: 1500000,
+    pos1: { nama: "Dana Darurat", persen: 20 },
+    pos2: { nama: "Tabungan Anak", persen: 40 },
+    pos3: { nama: "Laba Bersih", persen: 40 }
+};
 let listAkunKasir = [];
 
 let hasAlertedTgl = "";
