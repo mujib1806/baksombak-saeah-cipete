@@ -817,16 +817,16 @@ function simpanStokKeFirebase() {
     }); 
 }
 
-function updateNilaiStokLokal(idx, tipe, val) { 
-    const tgl = document.getElementById('tglOps').value; 
-    if (!dbStok[tgl]) syncStokDenganMaster(tgl); 
+function updateNilaiStokLokal(idx, tipe, val) {  
+    const tgl = document.getElementById('tglOps').value;  
+    if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
     
     const p = dbStok[tgl][idx];
     
     if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
-        const selisih = valBaru - valLama; 
+        const selisih = valBaru - valLama;  
         
         if (selisih !== 0) {
             const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
@@ -836,28 +836,34 @@ function updateNilaiStokLokal(idx, tipe, val) {
                 if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             }
         }
-        dbStok[tgl][idx].tambah = valBaru;
+        dbStok[tgl][idx].tambah = val; // Biarkan bentuk string sementara agar tidak mengganggu ketikan
     } else {
-        if (tipe === 'awal') dbStok[tgl][idx].awal = val; 
-        if (tipe === 'kurang') dbStok[tgl][idx].kurang = val; 
-        if (tipe === 'sisa') dbStok[tgl][idx].sisa = val; 
+        if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
+        if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
+        if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;  
     }
 
-    const awal = parseFloat(p.awal) || 0; 
-    const tambah = parseFloat(p.tambah) || 0; 
-    const kurang = parseFloat(p.kurang) || 0; 
-    const totalStok = awal + tambah - kurang; 
-    const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
-    let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
+    const awal = parseFloat(p.awal) || 0;  
+    const tambah = parseFloat(p.tambah) || 0;  
+    const kurang = parseFloat(p.kurang) || 0;  
+    const totalStok = awal + tambah - kurang;  
+    const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
+    let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
 
-    const elTotal = document.getElementById('td_total_' + idx); 
-    if(elTotal) elTotal.innerText = totalStok; 
+    // Update angka Total & Terjual secara instan TANPA merender ulang tabel (agar keyboard tidak tertutup)
+    const elTotal = document.getElementById('td_total_' + idx);  
+    if(elTotal) elTotal.innerText = totalStok;  
 
-    const elTerjual = document.getElementById('td_terjual_' + idx); 
-    if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-'; 
+    const elTerjual = document.getElementById('td_terjual_' + idx);  
+    if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';  
 
-    updateKalkulasi(); 
-    clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { simpanStokKeFirebase(); }, 1000); 
+    updateKalkulasi();  
+    
+    // Auto-save ke Firebase tetap berjalan di latar belakang tanpa mengganggu ketikan
+    clearTimeout(autoSaveTimeout); 
+    autoSaveTimeout = setTimeout(() => { 
+        simpanStokKeFirebase(); 
+    }, 1500); // Diperpanjang sedikit waktunya jadi 1.5 detik agar lebih santai saat mengetik
 }
 
 function loadDataTanggalLocal() { 
