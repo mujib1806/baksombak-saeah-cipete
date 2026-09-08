@@ -123,14 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-let pengaturanCabangAktif = {
-    gajiHarian: 50000,
-    toleransiLibur: 2,
-    gajiBulanan: 1500000,
-    pos1: { nama: "Dana Darurat", persen: 20 },
-    pos2: { nama: "Tabungan Anak", persen: 40 },
-    pos3: { nama: "Laba Bersih", persen: 40 }
-};
 
 // Fungsi menyimpan pengaturan dari Form HTML
 function simpanPengaturanFinansialCabang(e) {
