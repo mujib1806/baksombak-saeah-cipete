@@ -229,7 +229,6 @@ function prosesLogin(e) {
         CABANG_AKTIF = cabangPilihan;
 
         // 👉 KODE BARU DITAMBAHKAN DI SINI:
-        tarikPengaturanCabangOtomatis();
 
         const headerCabang = document.getElementById('headerNamaCabang');
         if (headerCabang) {
@@ -997,7 +996,11 @@ function simpanAbsensi() {
     
     const utama = document.getElementById('inAbsenUtama').value === 'ya'; 
     const tambahan = parseInt(document.getElementById('inAbsenTambahan').value) || 0; 
-    const nominal = (utama ? 50000 : 0) + (tambahan * 50000); 
+    
+    // Tarik nominal dinamis dari pengaturan cabang (default 50000 jika kosong)
+    const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000;
+    const nominal = (utama ? nominalGaji : 0) + (tambahan * nominalGaji); 
+    
     const data = { utama, tambahan, nominal }; 
     
     if(db) { 
@@ -1007,14 +1010,18 @@ function simpanAbsensi() {
     } else { 
         dbGajiHarian[tgl] = data; updateKalkulasi(); loadGajiUI(); 
     } 
-} 
-
+}
 function loadGajiUI() { 
     const tgl = document.getElementById('tglOps').value; 
-    const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 50000 }; 
+    
+    // Gunakan nilai dinamis untuk tampilan di layar
+    const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000;
+    const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: nominalGaji }; 
+    
     const elUtama = document.getElementById('inAbsenUtama');
     const elTambahan = document.getElementById('inAbsenTambahan');
     const elTotal = document.getElementById('txtTotalGajiHarian');
+    
     if(elUtama) elUtama.value = d.utama ? 'ya' : 'tidak'; 
     if(elTambahan) elTambahan.value = d.tambahan; 
     if(elTotal) elTotal.innerText = formatRupiah(d.nominal); 
@@ -1515,7 +1522,7 @@ function hitungAkumulasiKasTotal() {
         }); 
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
+        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
         const pBersih = pKotor - gajiHarian - pengeluaranHarianBulan; 
         const basis = Math.max(0, pBersih); 
 
@@ -1576,7 +1583,7 @@ function renderMutasiTabKas(jenis) {
         }); 
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 50000;
+        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
         const pB = Math.max(0, pKotor - gajiHarian - pengeluaranHarianBulan); 
 
         if (jenis === 'Reseller' && modalR > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Modal Reseller', nominal: modalR, auto: true }); 
@@ -2799,9 +2806,6 @@ function ownerPindahCabang(idCabangBaru) {
         localStorage.setItem('cabangAktif', idCabangBaru);
         localStorage.setItem('namaCabangAktif', namaCabangBaru);
         
-        // 👉 KODE BARU DITAMBAHKAN DI SINI:
-        tarikPengaturanCabangOtomatis();
-        
         // Catat di log aktivitas
         if(typeof catatAktivitas === 'function'){
             catatAktivitas('Pindah Cabang', `${currentUser.nama} pindah pantauan ke ${namaCabangBaru}`);
@@ -3398,93 +3402,3 @@ async function prosesSimpanMutasiStok() {
         alert('❌ Terjadi kesalahan saat sinkronisasi: ' + error.message);
     }
 }
-// ========================================================
-// KODE BARU: PENGATURAN FINANSIAL CABANG
-// ========================================================
-
-// 1. Variabel Global Pengaturan (Nilai Default)
-let pengaturanCabangAktif = {
-    gajiHarian: 50000,
-    toleransiLibur: 2,
-    gajiBulanan: 1500000,
-    pos1: { nama: "Dana Darurat", persen: 20 },
-    pos2: { nama: "Tabungan Anak", persen: 40 },
-    pos3: { nama: "Laba Bersih", persen: 40 }
-};
-
-// 2. Fungsi Menyimpan Pengaturan dari Form HTML ke Database
-function simpanPengaturanFinansialCabang(e) {
-    e.preventDefault();
-    if (!db || !CABANG_AKTIF) return;
-
-    // Bersihkan titik ribuan sebelum masuk ke database
-    const bersihkanAngka = (id) => {
-        let el = document.getElementById(id);
-        if (!el) return 0;
-        return parseFloat(el.value.replace(/\./g, '')) || 0;
-    };
-
-    const dataBaru = {
-        gajiHarian: bersihkanAngka('cfgGajiHarian') || 50000,
-        toleransiLibur: bersihkanAngka('cfgToleransiLibur') || 2,
-        gajiBulanan: bersihkanAngka('cfgGajiBulanan') || 1500000,
-        pos1: {
-            nama: document.getElementById('cfgLabelPos1').value.trim() || "Dana Darurat",
-            persen: parseFloat(document.getElementById('cfgPersenPos1').value) || 20
-        },
-        pos2: {
-            nama: document.getElementById('cfgLabelPos2').value.trim() || "Tabungan Anak",
-            persen: parseFloat(document.getElementById('cfgPersenPos2').value) || 40
-        },
-        pos3: {
-            nama: document.getElementById('cfgLabelPos3').value.trim() || "Laba Bersih",
-            persen: parseFloat(document.getElementById('cfgPersenPos3').value) || 40
-        }
-    };
-
-    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').set(dataBaru)
-    .then(() => {
-        pengaturanCabangAktif = dataBaru;
-        if(typeof showToast === 'function') showToast('✅ Pengaturan Finansial Disimpan!');
-        else alert('✅ Pengaturan Finansial Cabang Disimpan!');
-        
-        // Langsung perbarui hitungan di layar
-        updateKalkulasi();
-        if(document.getElementById('viewGajiBulanan') && document.getElementById('viewGajiBulanan').style.display === 'block') {
-            renderRekapGajiBulanan();
-        }
-    })
-    .catch(err => {
-        alert("Gagal menyimpan pengaturan: " + err.message);
-    });
-}
-
-// 3. Fungsi Menarik Data Otomatis (Real-time Listener)
-let listenerPengaturan = null;
-function tarikPengaturanCabangOtomatis() {
-    if (!db || !CABANG_AKTIF) return;
-    
-    // Matikan listener cabang sebelumnya (jika owner pindah cabang)
-    if (listenerPengaturan) listenerPengaturan();
-
-    listenerPengaturan = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').onSnapshot(doc => {
-        if (doc.exists) {
-            pengaturanCabangAktif = doc.data();
-            
-            // Isi form di Pusat Kontrol dengan data terbaru dari database
-            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    if(document.getElementById('cfgGajiHarian')) {
-    setVal('cfgGajiHarian', (pengaturanCabangAktif.gajiHarian || 50000).toLocaleString('id-ID'));
-    setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur || 2);
-    setVal('cfgGajiBulanan', (pengaturanCabangAktif.gajiBulanan || 1500000).toLocaleString('id-ID'));
-    
-    if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
-    if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
-    if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
-}
-            
-            updateKalkulasi();
-        }
-    });
-}
-tarikPengaturanCabangOtomatis();
