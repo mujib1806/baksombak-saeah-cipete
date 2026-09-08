@@ -416,8 +416,13 @@ function simpanAkunBaru(e) {
     const role = document.getElementById('inAkunRole').value; 
     
     // KODE BARU: Ambil cabang penugasan (Jika owner, otomatis ber-value 'semua')
-   const cabangTugas = (role === 'owner' || role === 'dapur') ? 'semua' : document.getElementById('inAkunCabangTugas').value;
-
+   // KODE PERBAIKAN: Ambil cabang penugasan dengan aman
+    let cabangTugas = 'semua';
+    if (role === 'kasir') {
+        const elCabangTugas = document.getElementById('inAkunCabangTugas');
+        cabangTugas = elCabangTugas ? elCabangTugas.value : 'cipete_utara';
+    }
+    
     if(!db || !aplikasiPendaftaran) {
         alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
         return; 
