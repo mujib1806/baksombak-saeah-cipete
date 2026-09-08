@@ -1312,6 +1312,7 @@ const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).re
 const pengeluaranDapur = dataSetoran.pengeluaran || 0; 
 const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur;
 const totalUangFisikDigital = (kas.cash || 0) + (kas.qris || 0) + (kas.gojek || 0) + (kas.grab || 0) + (kas.shopee || 0);
+const totalAktualUang = totalUangFisikDigital + totalStrukPengeluaran;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('txtUangSeharusnya', formatRupiah(totalUangSeharusnya)); 
