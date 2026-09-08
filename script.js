@@ -1310,6 +1310,18 @@ function updateKalkulasi() {
     let p1 = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
     let p2 = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
     let p3 = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
+    const n1 = pengaturanCabangAktif.pos1?.nama || "Dana Darurat";
+    const n2 = pengaturanCabangAktif.pos2?.nama || "Tabungan Anak";
+    const n3 = pengaturanCabangAktif.pos3?.nama || "Laba Bersih";
+
+    const p1Num = pengaturanCabangAktif.pos1?.persen || 20;
+    const p2Num = pengaturanCabangAktif.pos2?.persen || 40;
+    const p3Num = pengaturanCabangAktif.pos3?.persen || 40;
+
+    setTxt('lblPos1', `${n1}(${p1Num}%)`);
+    setTxt('lblPos2', `${n2}(${p2Num}%)`);
+    setTxt('lblPos3', `${n3}(${p3Num}%)`);
+    
     setTxt('allocDarurat', formatRupiah(profitAlokasiBasis * p1)); 
     setTxt('allocAnak', formatRupiah(profitAlokasiBasis * p2)); 
     setTxt('allocLabaBersih', formatRupiah(profitAlokasiBasis * p3));
@@ -1346,18 +1358,87 @@ function renderViewSetoranBakso() {
 }
 
 function renderViewRekapTransfer() {
-    const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || []; let totalModalBakso = 0, omsetLebihanBakso = 0, modalReseller = 0, profitKotor = 0;
-    items.forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const terjual = totalStok - sisa; profitKotor += (terjual * p.margin); if (p.kategori === 'Bakso Malang') totalModalBakso += (terjual * p.modal); else if (p.kategori === 'Reseller') { if (p.nama.toLowerCase().includes('lebihan bakso')) omsetLebihanBakso += (terjual * p.jual); else modalReseller += (terjual * p.modal); } } });
-    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, pengeluaran: 0 }; const setoranTfBakso = Math.max(0, totalModalBakso - dataSetoran.cash - dataSetoran.pengeluaran); const gajiInfo = dbGajiHarian[tgl] || { nominal: 50000 }; const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const profitBersih = profitKotor - (gajiInfo.nominal || 0) - totalPengeluaranHarian; const alokasiBasis = Math.max(0, profitBersih); const danaDarurat = alokasiBasis * 0.20, labaBersih = alokasiBasis * 0.40, tabAnak = alokasiBasis * 0.40; const totalA = setoranTfBakso + modalReseller + omsetLebihanBakso + danaDarurat + labaBersih + tabAnak;
+    const tgl = document.getElementById('tglOps').value; 
+    const items = dbStok[tgl] || []; 
+    let totalModalBakso = 0, omsetLebihanBakso = 0, modalReseller = 0, profitKotor = 0;
+    
+    items.forEach(p => { 
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        if (sisa !== null && sisa <= totalStok) { 
+            const terjual = totalStok - sisa; 
+            profitKotor += (terjual * p.margin); 
+            if (p.kategori === 'Bakso Malang') totalModalBakso += (terjual * p.modal); 
+            else if (p.kategori === 'Reseller') { 
+                if (p.nama.toLowerCase().includes('lebihan bakso')) omsetLebihanBakso += (terjual * p.jual); 
+                else modalReseller += (terjual * p.modal); 
+            } 
+        } 
+    });
+    
+    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, pengeluaran: 0 }; 
+    const setoranTfBakso = Math.max(0, totalModalBakso - dataSetoran.cash - dataSetoran.pengeluaran); 
+    
+    // Tarik Gaji Harian Dinamis
+    const nominalHarian = pengaturanCabangAktif.gajiHarian || 50000;
+    const gajiInfo = dbGajiHarian[tgl] || { nominal: nominalHarian }; 
+    const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+    const profitBersih = profitKotor - (gajiInfo.nominal || 0) - totalPengeluaranHarian; 
+    const alokasiBasis = Math.max(0, profitBersih); 
+    
+    // Hitungan Persentase Dinamis
+    let p1Num = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
+    let p2Num = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
+    let p3Num = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
+
+    const danaDarurat = alokasiBasis * p1Num; 
+    const tabAnak = alokasiBasis * p2Num;
+    const labaBersih = alokasiBasis * p3Num; 
+    
+    const totalA = setoranTfBakso + modalReseller + omsetLebihanBakso + danaDarurat + labaBersih + tabAnak;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-    setTxt('rtTfBakso', formatRupiah(setoranTfBakso)); setTxt('rtKasReseller', formatRupiah(modalReseller)); setTxt('rtKasPlastik', formatRupiah(omsetLebihanBakso)); setTxt('rtKasDarurat', formatRupiah(danaDarurat)); setTxt('rtKasLaba', formatRupiah(labaBersih)); setTxt('rtKasAnak', formatRupiah(tabAnak)); setTxt('rtTotalA', formatRupiah(totalA));
-    const kas = dbKasMasuk[tgl] || { qris: 0, gojek: 0, grab: 0, shopee: 0, modalBesok: 0 }; const totalB = (kas.qris||0) + (kas.gojek||0) + (kas.grab||0) + (kas.shopee||0) + (kas.modalBesok||0);
-    setTxt('rtQris', formatRupiah(kas.qris)); setTxt('rtGojek', formatRupiah(kas.gojek)); setTxt('rtGrab', formatRupiah(kas.grab)); setTxt('rtShopee', formatRupiah(kas.shopee)); setTxt('rtModalBesok', formatRupiah(kas.modalBesok)); setTxt('rtTotalB', formatRupiah(totalB));
     
-    const sisaSetor = totalA - totalB; const finalBox = document.getElementById('rtFinalBox'), finalValue = document.getElementById('rtFinalValue'), finalKet = document.getElementById('rtFinalKet');
+    // Update Label Teks Dinamis HTML
+    setTxt('lblRtPos1', (pengaturanCabangAktif.pos1?.nama || "Dana Darurat") + ":");
+    setTxt('lblRtPos2', (pengaturanCabangAktif.pos2?.nama || "Tabungan Anak") + ":");
+    setTxt('lblRtPos3', (pengaturanCabangAktif.pos3?.nama || "Laba Bersih") + ":");
+
+    setTxt('rtTfBakso', formatRupiah(setoranTfBakso)); 
+    setTxt('rtKasReseller', formatRupiah(modalReseller)); 
+    setTxt('rtKasPlastik', formatRupiah(omsetLebihanBakso)); 
+    setTxt('rtKasDarurat', formatRupiah(danaDarurat)); 
+    setTxt('rtKasAnak', formatRupiah(tabAnak)); 
+    setTxt('rtKasLaba', formatRupiah(labaBersih)); 
+    setTxt('rtTotalA', formatRupiah(totalA));
+    
+    const kas = dbKasMasuk[tgl] || { qris: 0, gojek: 0, grab: 0, shopee: 0, modalBesok: 0 }; 
+    const totalB = (kas.qris||0) + (kas.gojek||0) + (kas.grab||0) + (kas.shopee||0) + (kas.modalBesok||0);
+    
+    setTxt('rtQris', formatRupiah(kas.qris)); 
+    setTxt('rtGojek', formatRupiah(kas.gojek)); 
+    setTxt('rtGrab', formatRupiah(kas.grab)); 
+    setTxt('rtShopee', formatRupiah(kas.shopee)); 
+    setTxt('rtModalBesok', formatRupiah(kas.modalBesok)); 
+    setTxt('rtTotalB', formatRupiah(totalB));
+    
+    const sisaSetor = totalA - totalB; 
+    const finalBox = document.getElementById('rtFinalBox'), finalValue = document.getElementById('rtFinalValue'), finalKet = document.getElementById('rtFinalKet');
+    
     if (finalBox && finalValue && finalKet) {
-        if (sisaSetor > 0) { finalBox.style.background = '#fff1f2'; finalBox.style.border = '2px solid #fda4af'; finalValue.style.color = '#be123c'; finalValue.innerText = formatRupiah(sisaSetor); finalKet.style.color = '#9f1239'; finalKet.innerText = "⚠️ Anda WAJIB MENGAMBIL uang fisik dari laci kasir sebesar nilai di atas untuk disetor tunai via ATM/Bank."; } else if (sisaSetor === 0) { finalBox.style.background = '#f0fdf4'; finalBox.style.border = '2px solid #86efac'; finalValue.style.color = '#15803d'; finalValue.innerText = formatRupiah(0); finalKet.style.color = '#166534'; finalKet.innerText = "✅ PAS! Uang tagihan hari ini persis menutupi semua uang digital & uang tertahan."; } else { finalBox.style.background = '#eff6ff'; finalBox.style.border = '2px solid #93c5fd'; finalValue.style.color = '#1d4ed8'; finalValue.innerText = `+ ${formatRupiah(Math.abs(sisaSetor))}`; finalKet.style.color = '#1e3a8a'; finalKet.innerText = "✨ SURPLUS DIGITAL! Tagihan tertutup sepenuhnya. Angka di atas adalah sisa uang lebih di saldo digital Anda."; }
+        if (sisaSetor > 0) { 
+            finalBox.style.background = '#fff1f2'; finalBox.style.border = '2px solid #fda4af'; finalValue.style.color = '#be123c'; 
+            finalValue.innerText = formatRupiah(sisaSetor); finalKet.style.color = '#9f1239'; finalKet.innerText = "⚠️ Anda WAJIB MENGAMBIL uang fisik dari laci kasir sebesar nilai di atas untuk disetor tunai via ATM/Bank."; 
+        } else if (sisaSetor === 0) { 
+            finalBox.style.background = '#f0fdf4'; finalBox.style.border = '2px solid #86efac'; finalValue.style.color = '#15803d'; 
+            finalValue.innerText = formatRupiah(0); finalKet.style.color = '#166534'; finalKet.innerText = "✅ PAS! Uang tagihan hari ini persis menutupi semua uang digital & uang tertahan."; 
+        } else { 
+            finalBox.style.background = '#eff6ff'; finalBox.style.border = '2px solid #93c5fd'; finalValue.style.color = '#1d4ed8'; 
+            finalValue.innerText = `+ ${formatRupiah(Math.abs(sisaSetor))}`; finalKet.style.color = '#1e3a8a'; finalKet.innerText = "✨ SURPLUS DIGITAL! Tagihan tertutup sepenuhnya. Angka di atas adalah sisa uang lebih di saldo digital Anda."; 
+        }
     }
 }
 
@@ -1404,6 +1485,7 @@ function renderRekapGajiBulanan() {
     setTxt('gbUangHarianUtama', formatRupiah(totalGajiUtamaDiambil)); 
     setTxt('gbUangHarianTambahan', formatRupiah(totalGajiTambahanDiambil)); 
     setTxt('gbTotalHarianLaci', formatRupiah(totalGajiUtamaDiambil + totalGajiTambahanDiambil));
+    setTxt('lblGajiPokokBulanan', formatRupiah(gajiPokok));
 }
 
 function hitungAkumulasiKasTotal() { 
@@ -3391,16 +3473,15 @@ function tarikPengaturanCabangOtomatis() {
             
             // Isi form di Pusat Kontrol dengan data terbaru dari database
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-            if(document.getElementById('cfgGajiHarian')) {
-                // Tambahkan titik ribuan secara otomatis untuk tampilan
-                setVal('cfgGajiHarian', pengaturanCabangAktif.gajiHarian.toLocaleString('id-ID'));
-                setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur);
-                setVal('cfgGajiBulanan', pengaturanCabangAktif.gajiBulanan.toLocaleString('id-ID'));
-                
-                if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
-                if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
-                if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
-            }
+    if(document.getElementById('cfgGajiHarian')) {
+    setVal('cfgGajiHarian', (pengaturanCabangAktif.gajiHarian || 50000).toLocaleString('id-ID'));
+    setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur || 2);
+    setVal('cfgGajiBulanan', (pengaturanCabangAktif.gajiBulanan || 1500000).toLocaleString('id-ID'));
+    
+    if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
+    if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
+    if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
+}
             
             updateKalkulasi();
         }
