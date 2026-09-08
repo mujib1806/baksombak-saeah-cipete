@@ -818,7 +818,6 @@ function simpanStokKeFirebase() {
 }
 
 function updateNilaiStokLokal(idx, tipe, val) {  
-    // Ambil ID elemen input yang sedang diketik saat ini agar fokusnya tidak hilang
     const activeElementId = document.activeElement ? document.activeElement.id : null;
 
     const tgl = document.getElementById('tglOps').value;  
@@ -831,15 +830,19 @@ function updateNilaiStokLokal(idx, tipe, val) {
         const valLama = parseFloat(p.tambah) || 0;
         const selisih = valBaru - valLama;  
         
+        // Update stok gudang ditunda ke dalam timer agar tidak memutus fokus keyboard saat mengetik
         if (selisih !== 0) {
-            const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
-            if (masterIdx !== -1) {
-                let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
-                masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
-                if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
-            }
+            clearTimeout(window.gudangSaveTimeout);
+            window.gudangSaveTimeout = setTimeout(() => {
+                const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
+                if (masterIdx !== -1) {
+                    let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
+                    masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
+                    if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+                }
+            }, 1000);
         }
-        dbStok[tgl][idx].tambah = val; // Pertahankan string agar user bisa menghapus (backspace) dengan leluasa
+        dbStok[tgl][idx].tambah = val; 
     } else {
         if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
@@ -866,13 +869,11 @@ function updateNilaiStokLokal(idx, tipe, val) {
         simpanStokKeFirebase(); 
     }, 1500);  
 
-    // Kembalikan fokus secara paksa ke input yang sedang diketik agar keyboard HP tidak tertutup
     if (activeElementId) {
         requestAnimationFrame(() => {
             const elToFocus = document.getElementById(activeElementId);
             if (elToFocus && document.activeElement !== elToFocus) {
                 elToFocus.focus();
-                // Posisikan kursor di akhir teks agar nyaman diketik
                 if (typeof elToFocus.setSelectionRange === 'function') {
                     let len = elToFocus.value.length;
                     elToFocus.setSelectionRange(len, len);
@@ -881,7 +882,6 @@ function updateNilaiStokLokal(idx, tipe, val) {
         });
     }
 }
-
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
