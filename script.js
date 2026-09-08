@@ -410,19 +410,19 @@ function cekRoleAkunBaru() {
 // Fungsi Simpan Akun yang sudah di-update
 function simpanAkunBaru(e) { 
     e.preventDefault(); 
-    const nama = document.getElementById('inAkunNama').value.trim(); 
-    const hp = document.getElementById('inAkunHp').value.trim(); 
-    const password = document.getElementById('inAkunPass').value.trim(); 
-    const role = document.getElementById('inAkunRole').value; 
+    // PERBAIKAN: Menggunakan ID HTML yang sesuai (reg...)
+    const nama = document.getElementById('regNama').value.trim(); 
+    const hp = document.getElementById('regHp').value.trim(); 
+    const password = document.getElementById('regPass').value.trim(); 
+    const role = document.getElementById('regRole').value; 
     
-    // KODE BARU: Ambil cabang penugasan (Jika owner, otomatis ber-value 'semua')
-   // KODE PERBAIKAN: Ambil cabang penugasan dengan aman
+    // PERBAIKAN: Mengambil nilai dari regCabangTugas dengan aman
     let cabangTugas = 'semua';
     if (role === 'kasir') {
-        const elCabangTugas = document.getElementById('inAkunCabangTugas');
+        const elCabangTugas = document.getElementById('regCabangTugas');
         cabangTugas = elCabangTugas ? elCabangTugas.value : 'cipete_utara';
     }
-    
+
     if(!db || !aplikasiPendaftaran) {
         alert("Koneksi ke sistem gagal. Pastikan internet stabil.");
         return; 
@@ -432,15 +432,16 @@ function simpanAkunBaru(e) {
         return;
     }
 
-    const emailPalsu = hp + "@bakso.com";
+    const emailPalsu = hp + "@bakso.com"; 
     
-    btnSimpan = e.target.querySelector('button[type="submit"]');
-    btnSimpan.disabled = true;
-    btnSimpan.innerText = "Menyimpan...";
+    let btnSimpan = e.target.querySelector('button[type="submit"]');
+    if(btnSimpan) {
+        btnSimpan.disabled = true;
+        btnSimpan.innerText = "Menyimpan...";
+    }
 
     aplikasiPendaftaran.auth().createUserWithEmailAndPassword(emailPalsu, password)
     .then((userCredential) => {
-        // KODE BARU: Memasukkan field 'cabang_tugas' ke dalam database user
         return db.collection('users').doc(hp).set({ 
             nama: nama, 
             hp: hp, 
@@ -451,13 +452,16 @@ function simpanAkunBaru(e) {
     })
     .then(() => { 
         alert(`✅ Akun Karyawan Berhasil Dibuat!\n\nNama: ${nama}\nRole: ${role.toUpperCase()}\nPenugasan: ${cabangTugas === 'semua' ? 'Semua Cabang' : cabangTugas}`); 
-        document.getElementById('inAkunNama').value = ''; 
-        document.getElementById('inAkunHp').value = ''; 
-        document.getElementById('inAkunPass').value = ''; 
+        // PERBAIKAN: Mengosongkan form menggunakan ID HTML yang benar
+        document.getElementById('regNama').value = ''; 
+        document.getElementById('regHp').value = ''; 
+        document.getElementById('regPass').value = ''; 
         if(typeof muatDaftarAkun === 'function') muatDaftarAkun(); 
         aplikasiPendaftaran.auth().signOut();
-        btnSimpan.disabled = false;
-        btnSimpan.innerText = "+ Simpan Akun";
+        if(btnSimpan) {
+            btnSimpan.disabled = false;
+            btnSimpan.innerText = "+ Simpan Akun";
+        }
     })
     .catch(err => {
         if (err.code === 'auth/email-already-in-use') {
@@ -465,8 +469,10 @@ function simpanAkunBaru(e) {
         } else {
             alert("Gagal menambahkan akun: " + err.message);
         }
-        btnSimpan.disabled = false;
-        btnSimpan.innerText = "+ Simpan Akun";
+        if(btnSimpan) {
+            btnSimpan.disabled = false;
+            btnSimpan.innerText = "+ Simpan Akun";
+        }
     }); 
 }
 
@@ -2823,7 +2829,7 @@ function buatCabangBaru() {
 function muatDaftarCabangKontrol() {
     if(!db) return;
     const tbody = document.getElementById('tbodyDaftarCabang');
-    const selectCabangTugas = document.getElementById('inAkunCabangTugas'); 
+    const selectCabangTugas = document.getElementById('regCabangTugas'); // PERBAIKAN DI SINI
     
     db.collection('daftarCabang').onSnapshot(snap => {
         if (tbody) tbody.innerHTML = '';
@@ -2835,7 +2841,7 @@ function muatDaftarCabangKontrol() {
                 `<span style="color:#94a3b8; font-size:0.75rem; font-style:italic;">Pusat (Patokan)</span>` : 
                 `<button onclick="hapusCabang('${data.id}', '${data.nama}')" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:0.7rem; cursor:pointer;">Hapus</button>`;
                 
-            // 1. Mengisi Tabel Kelola Cabang (Hanya jika elemennya ada di layar)
+            // 1. Mengisi Tabel Kelola Cabang
             if (tbody) {
                 tbody.innerHTML += `
                     <tr style="border-bottom: 1px solid #e5e7eb;">
@@ -2845,7 +2851,7 @@ function muatDaftarCabangKontrol() {
                 `;
             }
             
-            // 2. Mengisi Dropdown Cabang Tugas di Form Tambah Akun (Hanya jika elemennya ada)
+            // 2. Mengisi Dropdown Cabang Tugas di Form Tambah Akun
             if (selectCabangTugas) {
                 selectCabangTugas.innerHTML += `<option value="${data.id}">${data.nama}</option>`;
             }
