@@ -1022,18 +1022,23 @@ function simpanAbsensi() {
 }
 function loadGajiUI() { 
     const tgl = document.getElementById('tglOps').value; 
-    
-    // Gunakan nilai dinamis untuk tampilan di layar
-    const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000;
-    const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: nominalGaji }; 
-    
-    const elUtama = document.getElementById('inAbsenUtama');
-    const elTambahan = document.getElementById('inAbsenTambahan');
-    const elTotal = document.getElementById('txtTotalGajiHarian');
-    
+    const d = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 0 }; 
+    const locked = isDataLocked(tgl); 
+    const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; 
+
+    // Jika belum digembok, paksa hitung pakai setting terbaru
+    let hitungNominal = d.nominal; 
+    if (!locked) { 
+        hitungNominal = (d.utama ? nominalGaji : 0) + ((parseInt(d.tambahan) || 0) * nominalGaji); 
+    } 
+
+    const elUtama = document.getElementById('inAbsenUtama'); 
+    const elTambahan = document.getElementById('inAbsenTambahan'); 
+    const elTotal = document.getElementById('txtTotalGajiHarian'); 
+
     if(elUtama) elUtama.value = d.utama ? 'ya' : 'tidak'; 
-    if(elTambahan) elTambahan.value = d.tambahan; 
-    if(elTotal) elTotal.innerText = formatRupiah(d.nominal); 
+    if(elTambahan) elTambahan.value = d.tambahan || 0; 
+    if(elTotal) elTotal.innerText = formatRupiah(hitungNominal); 
 }
 
 function renderTabelMatriks() {
@@ -1289,9 +1294,24 @@ function updateKalkulasi() {
         Object.keys(katData).forEach(kat => { if (currentUser && currentUser.role === 'dapur' && kat !== 'Bakso Malang') return; const d = katData[kat]; let boxStyle = kat.toLowerCase().includes('bakso') ? "background: #fff7ed; border: 1px solid #fdba74;" : "background: #f0f9ff; border: 1px solid #7dd3fc;"; let titleColor = kat.toLowerCase().includes('bakso') ? "#ea580c" : "#0284c7"; const div = document.createElement('div'); div.style.cssText = `${boxStyle} padding: 12px; border-radius: 12px;`; div.innerHTML = `<h4 style="color: ${titleColor}; margin-bottom: 8px; font-size: 0.85rem; font-weight:800; text-transform:uppercase;">📌 Akumulasi ${kat}</h4><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Omset:</span><strong style="color:var(--text-main);">${formatRupiah(d.omset)}</strong></div><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Modal:</span><strong style="color: #d97706;">${formatRupiah(d.modal)}</strong></div><div style="font-size: 0.8rem; display: flex; justify-content: space-between; border-top: 1px dashed ${titleColor}; padding-top: 6px; margin-top:6px;"><span style="font-weight:700;">Profit:</span><strong style="color: #16a34a;">${formatRupiah(d.profit)}</strong></div>`; containerAkumulasi.appendChild(div); });
     }
 
-    const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: pengaturanCabangAktif.gajiHarian || 50000 };
-    const totalUangSeharusnya = omsetPenjualan + (kas.petty || 0); const gajiHarianNominal = dataGaji.nominal; const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); const pengeluaranDapur = dataSetoran.pengeluaran || 0; const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur; const totalUangFisikDigital = (kas.cash || 0) + (kas.qris || 0) + (kas.gojek || 0) + (kas.grab || 0) + (kas.shopee || 0); const totalAktualUang = totalUangFisikDigital + totalStrukPengeluaran; const selisih = totalAktualUang - totalUangSeharusnya;
+    const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
+const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
 
+const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 0 }; 
+const locked = isDataLocked(tgl); 
+const nominalGajiSetting = pengaturanCabangAktif.gajiHarian || 50000; 
+
+// Jika belum digembok, paksa hitung pakai setting terbaru
+let gajiHarianNominal = dataGaji.nominal; 
+if (!locked) { 
+    gajiHarianNominal = (dataGaji.utama ? nominalGajiSetting : 0) + ((parseInt(dataGaji.tambahan) || 0) * nominalGajiSetting); 
+} 
+
+const totalUangSeharusnya = omsetPenjualan + (kas.petty || 0); 
+const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+const pengeluaranDapur = dataSetoran.pengeluaran || 0; 
+const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur;
+    
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('txtUangSeharusnya', formatRupiah(totalUangSeharusnya)); 
     setTxt('txtDetailMasuk', formatRupiah(totalUangFisikDigital)); 
