@@ -1275,8 +1275,12 @@ function cekPeringatanStok() {
 }
 
 function updateKalkulasi() {
-    const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || [];
-    let omsetPenjualan = 0, profitBakso = 0, profitReseller = 0, katData = {}; daftarKategori.forEach(k => { katData[k] = { omset: 0, modal: 0, profit: 0 }; });
+    const tgl = document.getElementById('tglOps').value; 
+    const items = dbStok[tgl] || [];
+    let omsetPenjualan = 0, profitBakso = 0, profitReseller = 0, katData = {}; 
+    
+    daftarKategori.forEach(k => { katData[k] = { omset: 0, modal: 0, profit: 0 }; });
+    
     let idxTeh = items.findIndex(p => p.nama.toLowerCase() === 'teh manis');
     if(idxTeh !== -1) { 
         let pTeh = items[idxTeh]; 
@@ -1286,35 +1290,68 @@ function updateKalkulasi() {
         let terjualTeh = parseFloat(pTeh.awal) || 0; 
         if(elInfo) { elInfo.innerText = `Nominal Omset: ${formatRupiah(terjualTeh * pTeh.jual)}`; } 
     }
-    items.forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; if (sisa !== null && sisa <= totalStok) { const terjual = totalStok - sisa; const omset = terjual * p.jual; const modal = terjual * p.modal; const profit = terjual * p.margin; omsetPenjualan += omset; if (!katData[p.kategori]) katData[p.kategori] = { omset: 0, modal: 0, profit: 0 }; katData[p.kategori].omset += omset; katData[p.kategori].modal += modal; katData[p.kategori].profit += profit; if (p.kategori === 'Bakso Malang') profitBakso += profit; else profitReseller += profit; } });
+    
+    items.forEach(p => { 
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        
+        if (sisa !== null && sisa <= totalStok) { 
+            const terjual = totalStok - sisa; 
+            const omset = terjual * p.jual; 
+            const modal = terjual * p.modal; 
+            const profit = terjual * p.margin; 
+            
+            omsetPenjualan += omset; 
+            
+            if (!katData[p.kategori]) katData[p.kategori] = { omset: 0, modal: 0, profit: 0 }; 
+            katData[p.kategori].omset += omset; 
+            katData[p.kategori].modal += modal; 
+            katData[p.kategori].profit += profit; 
+            
+            if (p.kategori === 'Bakso Malang') profitBakso += profit; 
+            else profitReseller += profit; 
+        } 
+    });
     
     const containerAkumulasi = document.getElementById('containerAkumulasiKategori'); 
     if(containerAkumulasi) {
         containerAkumulasi.innerHTML = '';
-        Object.keys(katData).forEach(kat => { if (currentUser && currentUser.role === 'dapur' && kat !== 'Bakso Malang') return; const d = katData[kat]; let boxStyle = kat.toLowerCase().includes('bakso') ? "background: #fff7ed; border: 1px solid #fdba74;" : "background: #f0f9ff; border: 1px solid #7dd3fc;"; let titleColor = kat.toLowerCase().includes('bakso') ? "#ea580c" : "#0284c7"; const div = document.createElement('div'); div.style.cssText = `${boxStyle} padding: 12px; border-radius: 12px;`; div.innerHTML = `<h4 style="color: ${titleColor}; margin-bottom: 8px; font-size: 0.85rem; font-weight:800; text-transform:uppercase;">📌 Akumulasi ${kat}</h4><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Omset:</span><strong style="color:var(--text-main);">${formatRupiah(d.omset)}</strong></div><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Modal:</span><strong style="color: #d97706;">${formatRupiah(d.modal)}</strong></div><div style="font-size: 0.8rem; display: flex; justify-content: space-between; border-top: 1px dashed ${titleColor}; padding-top: 6px; margin-top:6px;"><span style="font-weight:700;">Profit:</span><strong style="color: #16a34a;">${formatRupiah(d.profit)}</strong></div>`; containerAkumulasi.appendChild(div); });
+        Object.keys(katData).forEach(kat => { 
+            if (currentUser && currentUser.role === 'dapur' && kat !== 'Bakso Malang') return; 
+            const d = katData[kat]; 
+            let boxStyle = kat.toLowerCase().includes('bakso') ? "background: #fff7ed; border: 1px solid #fdba74;" : "background: #f0f9ff; border: 1px solid #7dd3fc;"; 
+            let titleColor = kat.toLowerCase().includes('bakso') ? "#ea580c" : "#0284c7"; 
+            const div = document.createElement('div'); 
+            div.style.cssText = `${boxStyle} padding: 12px; border-radius: 12px;`; 
+            div.innerHTML = `<h4 style="color: ${titleColor}; margin-bottom: 8px; font-size: 0.85rem; font-weight:800; text-transform:uppercase;">📌 Akumulasi ${kat}</h4><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Omset:</span><strong style="color:var(--text-main);">${formatRupiah(d.omset)}</strong></div><div style="font-size: 0.75rem; display: flex; justify-content: space-between; margin-bottom: 4px; color:#475569;"><span>Modal:</span><strong style="color: #d97706;">${formatRupiah(d.modal)}</strong></div><div style="font-size: 0.8rem; display: flex; justify-content: space-between; border-top: 1px dashed ${titleColor}; padding-top: 6px; margin-top:6px;"><span style="font-weight:700;">Profit:</span><strong style="color: #16a34a;">${formatRupiah(d.profit)}</strong></div>`; 
+            containerAkumulasi.appendChild(div); 
+        });
     }
 
     const kas = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 }; 
-const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
+    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
 
-const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 0 }; 
-const locked = isDataLocked(tgl); 
-const nominalGajiSetting = pengaturanCabangAktif.gajiHarian || 50000; 
+    const dataGaji = dbGajiHarian[tgl] || { utama: true, tambahan: 0, nominal: 0 }; 
+    const locked = isDataLocked(tgl); 
+    const nominalGajiSetting = pengaturanCabangAktif.gajiHarian || 50000; 
 
-// Jika belum digembok, paksa hitung pakai setting terbaru
-let gajiHarianNominal = dataGaji.nominal; 
-if (!locked) { 
-    gajiHarianNominal = (dataGaji.utama ? nominalGajiSetting : 0) + ((parseInt(dataGaji.tambahan) || 0) * nominalGajiSetting); 
-} 
+    // Jika belum digembok, paksa hitung pakai setting terbaru
+    let gajiHarianNominal = dataGaji.nominal; 
+    if (!locked) { 
+        gajiHarianNominal = (dataGaji.utama ? nominalGajiSetting : 0) + ((parseInt(dataGaji.tambahan) || 0) * nominalGajiSetting); 
+    } 
 
-const totalUangSeharusnya = omsetPenjualan + (kas.petty || 0); 
-const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-const pengeluaranDapur = dataSetoran.pengeluaran || 0; 
-const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur;
+    const totalUangSeharusnya = omsetPenjualan + (kas.petty || 0); 
+    const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+    const pengeluaranDapur = dataSetoran.pengeluaran || 0; 
+    const totalStrukPengeluaran = totalPengeluaranHarian + pengeluaranDapur;
 
-const totalUangFisikDigital = (kas.cash || 0) + (kas.qris || 0) + (kas.gojek || 0) + (kas.grab || 0) + (kas.shopee || 0);
-const totalAktualUang = totalUangFisikDigital + totalStrukPengeluaran;
-const selisih = totalAktualUang - totalUangSeharusnya;
+    const totalUangFisikDigital = (kas.cash || 0) + (kas.qris || 0) + (kas.gojek || 0) + (kas.grab || 0) + (kas.shopee || 0);
+    const totalAktualUang = totalUangFisikDigital + totalStrukPengeluaran;
+    const selisih = totalAktualUang - totalUangSeharusnya;
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('txtUangSeharusnya', formatRupiah(totalUangSeharusnya)); 
@@ -1373,7 +1410,6 @@ const selisih = totalAktualUang - totalUangSeharusnya;
         if(document.getElementById('viewDashboard') && document.getElementById('viewDashboard').style.display === 'block') renderDashboardGrafik(); 
     }
 }
-
 function formatRupiah(angka) { 
     return "Rp " + new Intl.NumberFormat('id-ID').format(angka || 0); 
 }
