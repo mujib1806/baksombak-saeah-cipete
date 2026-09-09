@@ -1574,15 +1574,17 @@ function renderRekapGajiBulanan() {
     setTxt('gbTotalHarianLaci', formatRupiah(totalGajiUtamaDiambil + totalGajiTambahanDiambil));
     setTxt('lblGajiPokokBulanan', formatRupiah(gajiPokok));
 }
-
 function hitungAkumulasiKasTotal() {  
     let kasReseller = 0, kasPlastik = 0, kasDarurat = 0, kasLaba = 0, kasAnak = 0;  
     const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort();  
 
-    // Ambil persentase dinamis dari pengaturan cabang aktif
     let p1 = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
     let p2 = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
     let p3 = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
+
+    let n1 = pengaturanCabangAktif.pos1?.nama || "Dana Darurat";
+    let n2 = pengaturanCabangAktif.pos2?.nama || "Tabungan Anak";
+    let n3 = pengaturanCabangAktif.pos3?.nama || "Laba Bersih";
 
     validDates.forEach(tgl => {  
         let pKotor = 0, omsetLebihan = 0, modalReseller = 0;  
@@ -1607,24 +1609,25 @@ function hitungAkumulasiKasTotal() {
         });  
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0);  
-        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
+        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; 
+        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
         const pBersih = pKotor - gajiHarian - pengeluaranHarianBulan;  
         const basis = Math.max(0, pBersih);  
 
         kasReseller += modalReseller;  
         kasPlastik += omsetLebihan;  
-        kasDarurat += (basis * p1);  // <-- Mengikuti persentase dinamis Pos 1
-        kasLaba += (basis * p3);      // <-- Mengikuti persentase dinamis Pos 3 (Laba Bersih)
-        kasAnak += (basis * p2);      // <-- Mengikuti persentase dinamis Pos 2 (Tabungan Anak)
+        kasDarurat += (basis * p1);  
+        kasLaba += (basis * p3);      
+        kasAnak += (basis * p2);      
     });  
 
     dbLogKas.forEach(l => {  
         const n = l.tipe === 'masuk' ? l.nominal : -l.nominal;  
         if (l.jenis === 'Reseller') kasReseller += n;  
         else if (l.jenis === 'Plastik') kasPlastik += n;  
-        else if (l.jenis === 'Dana Darurat') kasDarurat += n;  
-        else if (l.jenis === 'Laba Bersih') kasLaba += n;  
-        else if (l.jenis === 'Tabungan Anak') kasAnak += n;  
+        else if (l.jenis === n1 || l.jenis === 'Dana Darurat') kasDarurat += n;  
+        else if (l.jenis === n3 || l.jenis === 'Laba Bersih') kasLaba += n;  
+        else if (l.jenis === n2 || l.jenis === 'Tabungan Anak') kasAnak += n;  
     });  
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
@@ -1637,7 +1640,12 @@ function hitungAkumulasiKasTotal() {
     if (typeof activeKasTab !== 'undefined') renderMutasiTabKas(activeKasTab);  
 }
 
-function gantiTabKas(jenis, el) { activeKasTab = jenis; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); if(el) el.classList.add('active'); renderMutasiTabKas(jenis); }
+function gantiTabKas(jenis, el) { 
+    activeKasTab = jenis; 
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+    if(el) el.classList.add('active'); 
+    renderMutasiTabKas(jenis); 
+}
 
 function renderMutasiTabKas(jenis) {  
     const elNama = document.getElementById('txtNamaTabKas');
@@ -1648,7 +1656,6 @@ function renderMutasiTabKas(jenis) {
     let mutasiList = [];  
     const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort();  
 
-    // Ambil persentase dan nama pos dinamis dari pengaturan cabang aktif
     let p1Num = pengaturanCabangAktif.pos1?.persen || 20;
     let p2Num = pengaturanCabangAktif.pos2?.persen || 40;
     let p3Num = pengaturanCabangAktif.pos3?.persen || 40;
@@ -1681,18 +1688,27 @@ function renderMutasiTabKas(jenis) {
         });  
 
         const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0);  
-        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
+        const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; 
+        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
         const pB = Math.max(0, pKotor - gajiHarian - pengeluaranHarianBulan);  
 
-        if (jenis === 'Reseller' && modalR > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Modal Reseller', nominal: modalR, auto: true });  
-        else if (jenis === 'Plastik' && omsetL > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Jual Plastik', nominal: omsetL, auto: true });  
-        else if (jenis === n1 && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit (${p1Num}%)`, nominal: pB * p1, auto: true });  
-        else if (jenis === n3 && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit (${p3Num}%)`, nominal: pB * p3, auto: true });  
-        else if (jenis === n2 && pB > 0) mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit (${p2Num}%)`, nominal: pB * p2, auto: true });  
+        if (jenis === 'Reseller' && modalR > 0) {
+            mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Modal Reseller', nominal: modalR, auto: true });  
+        } else if (jenis === 'Plastik' && omsetL > 0) {
+            mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: 'Masuk: Jual Plastik', nominal: omsetL, auto: true });  
+        } else if ((jenis === n1 || jenis === 'Dana Darurat') && pB > 0) {
+            mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit ${n1} (${p1Num}%)`, nominal: pB * p1, auto: true });  
+        } else if ((jenis === n3 || jenis === 'Laba Bersih') && pB > 0) {
+            mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit ${n3} (${p3Num}%)`, nominal: pB * p3, auto: true });  
+        } else if ((jenis === n2 || jenis === 'Tabungan Anak') && pB > 0) {
+            mutasiList.push({ id: null, tgl, tipe: 'masuk', ket: `Masuk: Profit ${n2} (${p2Num}%)`, nominal: pB * p2, auto: true });  
+        }
     });  
 
     dbLogKas.forEach(l => {  
-        if (l.jenis === jenis) mutasiList.push({ ...l, auto: false });  
+        if (l.jenis === jenis || (jenis === n1 && l.jenis === 'Dana Darurat') || (jenis === n3 && l.jenis === 'Laba Bersih') || (jenis === n2 && l.jenis === 'Tabungan Anak')) {
+            mutasiList.push({ ...l, auto: false });  
+        }
     });  
 
     mutasiList.sort((a, b) => a.tgl.localeCompare(b.tgl));  
@@ -1717,6 +1733,7 @@ function renderMutasiTabKas(jenis) {
     const elTotalKas = document.getElementById('txtTotalTabKas');
     if(elTotalKas) elTotalKas.innerText = formatRupiah(saldoTotal);  
 }
+
 function hapusMutasiKas(docId) { 
     if(db && confirm("Hapus transaksi kas ini?")) {
         db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').doc(docId).delete(); 
