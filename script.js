@@ -1637,6 +1637,16 @@ function hitungAkumulasiKasTotal() {
     setTxt('sbKasLaba', formatRupiah(kasLaba));  
     setTxt('sbKasAnak', formatRupiah(kasAnak));  
 
+    // Update Label Judul Kartu Atas Secara Dinamis sesuai Pos Cabang Aktif
+    setTxt('lblCardPos1', n1);
+    setTxt('lblCardPos3', n3);
+    setTxt('lblCardPos2', n2);
+
+    // Update Teks pada Tombol Tab secara Dinamis
+    const elTab1 = document.getElementById('btnTabPos1'); if(elTab1) elTab1.innerText = `🛡️ ${n1}`;
+    const elTab3 = document.getElementById('btnTabPos3'); if(elTab3) elTab3.innerText = `💵 ${n3}`;
+    const elTab2 = document.getElementById('btnTabPos2'); if(elTab2) elTab2.innerText = `👶 ${n2}`;
+
     if (typeof activeKasTab !== 'undefined') renderMutasiTabKas(activeKasTab);  
 }
 
@@ -1645,6 +1655,16 @@ function gantiTabKas(jenis, el) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
     if(el) el.classList.add('active'); 
     renderMutasiTabKas(jenis); 
+}
+
+function gantiTabKasDinamis(posKey, el) {
+    const namaPos = pengaturanCabangAktif[posKey]?.nama || posKey;
+    gantiTabKas(namaPos, el);
+}
+
+function bukaModalKasDinamis(posKey, tipe) {
+    const namaPos = pengaturanCabangAktif[posKey]?.nama || posKey;
+    bukaModalKas(namaPos, tipe);
 }
 
 function renderMutasiTabKas(jenis) {  
@@ -1733,7 +1753,6 @@ function renderMutasiTabKas(jenis) {
     const elTotalKas = document.getElementById('txtTotalTabKas');
     if(elTotalKas) elTotalKas.innerText = formatRupiah(saldoTotal);  
 }
-
 function hapusMutasiKas(docId) { 
     if(db && confirm("Hapus transaksi kas ini?")) {
         db.collection('cabang').doc(CABANG_AKTIF).collection('logKas').doc(docId).delete(); 
