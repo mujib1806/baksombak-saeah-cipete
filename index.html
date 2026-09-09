@@ -861,21 +861,32 @@
         <div id="viewMutasiKas" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #10b981;">
                 <h2 style="color: #047857; margin-bottom: 16px;">💰 Ringkasan & Mutasi Kas</h2>
-                <div class="grid-kas-cards">
-                    <div class="kas-card"><div class="kas-title">Kas Reseller</div><div class="kas-val" id="sbKasReseller" style="color:#60a5fa;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Reseller', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Reseller', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card kas-card-plastik"><div class="kas-title" style="color:#fef08a;">Kas Plastik</div><div class="kas-val" id="sbKasPlastik">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Plastik', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">+ Saldo</button><button onclick="bukaModalKas('Plastik', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">- Tarik</button></div></div>
-                    <div class="kas-card"><div class="kas-title" style="color:#fca5a5;">Kas Dana Darurat</div><div class="kas-val" id="sbKasDarurat" style="color:#f87171;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Dana Darurat', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Dana Darurat', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card kas-card-laba"><div class="kas-title" style="color:#bbf7d0;">Kas Laba Bersih</div><div class="kas-val" id="sbKasLaba">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Laba Bersih', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">+ Saldo</button><button onclick="bukaModalKas('Laba Bersih', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">- Tarik</button></div></div>
-                    <div class="kas-card"><div class="kas-title" style="color:#e879f9;">Kas Tabungan Anak</div><div class="kas-val" id="sbKasAnak" style="color:#c084fc;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Tabungan Anak', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Tabungan Anak', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                </div>
-                <hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border-color);">
-                <div class="tab-container">
-                    <button class="tab-btn active" onclick="gantiTabKas('Reseller', this)">🥤 Reseller</button>
-                    <button class="tab-btn" onclick="gantiTabKas('Plastik', this)">🛍️ Plastik</button>
-                    <button class="tab-btn" onclick="gantiTabKas('Dana Darurat', this)">🛡️ Darurat</button>
-                    <button class="tab-btn" onclick="gantiTabKas('Laba Bersih', this)">💵 Laba</button>
-                    <button class="tab-btn" onclick="gantiTabKas('Tabungan Anak', this)">👶 Anak</button>
-                </div>
+                <!-- KARTU ATAS -->
+<div class="grid-kas-cards">
+    <div class="kas-card"><div class="kas-title">Kas Reseller</div><div class="kas-val" id="sbKasReseller" style="color:#60a5fa;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Reseller', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Reseller', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+    
+    <div class="kas-card kas-card-plastik"><div class="kas-title" style="color:#fef08a;">Kas Plastik</div><div class="kas-val" id="sbKasPlastik">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Plastik', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">+ Saldo</button><button onclick="bukaModalKas('Plastik', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos1 -->
+    <div class="kas-card"><div class="kas-title" id="lblCardPos1" style="color:#fca5a5;">Dana Darurat</div><div class="kas-val" id="sbKasDarurat" style="color:#f87171;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos1', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos1', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos3 -->
+    <div class="kas-card kas-card-laba"><div class="kas-title" id="lblCardPos3" style="color:#bbf7d0;">Laba Bersih</div><div class="kas-val" id="sbKasLaba">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos3', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">+ Saldo</button><button onclick="bukaModalKasDinamis('pos3', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos2 -->
+    <div class="kas-card"><div class="kas-title" id="lblCardPos2" style="color:#e879f9;">Tabungan Anak</div><div class="kas-val" id="sbKasAnak" style="color:#c084fc;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos2', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos2', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+</div>
+
+<hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border-color);">
+
+<!-- TOMBOL TAB BAWAH -->
+<div class="tab-container">
+    <button class="tab-btn active" onclick="gantiTabKas('Reseller', this)">🥤 Reseller</button>
+    <button class="tab-btn" onclick="gantiTabKas('Plastik', this)">🛍️ Plastik</button>
+    <button class="tab-btn" id="btnTabPos1" onclick="gantiTabKasDinamis('pos1', this)">🛡️ Darurat</button>
+    <button class="tab-btn" id="btnTabPos3" onclick="gantiTabKasDinamis('pos3', this)">💵 Laba</button>
+    <button class="tab-btn" id="btnTabPos2" onclick="gantiTabKasDinamis('pos2', this)">👶 Anak</button>
+</div>
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color:white; padding:16px; border-radius:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                     <div><span style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase; font-weight:800;">Saldo Terkini DOMPET</span><h3 id="txtNamaTabKas" style="font-size:0.95rem; color:#38bdf8; margin-top:2px;">Kas Reseller</h3></div>
                     <div id="txtTotalTabKas" style="font-size:1.3rem; font-weight:800; color:#4ade80;">Rp 0</div>
