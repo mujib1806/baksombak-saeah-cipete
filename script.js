@@ -1065,6 +1065,29 @@ function updateNilaiStokLokal(idx, tipe, val) {
         });
     }
 }
+// Fungsi untuk menambah/mengurangi nilai di kolom Tambah harian secara cepat (misal ambil susulan sore hari)
+function ubahStokHarianCepat(idx, tipe, nominalUbah) {
+    const tgl = document.getElementById('tglOps').value;
+    if (isDataLocked(tgl)) {
+        alert("Data hari ini terkunci!");
+        return;
+    }
+    
+    if (!dbStok[tgl]) syncStokDenganMaster(tgl);
+    const p = dbStok[tgl][idx];
+    
+    let nilaiLama = parseFloat(p.tambah) || 0;
+    let nilaiBaru = Math.max(0, nilaiLama + nominalUbah);
+    
+    // Perbarui nilai di input HTML-nya secara langsung
+    const inputEl = document.getElementById(`tambah_${idx}`);
+    if (inputEl) {
+        inputEl.value = nilaiBaru === 0 ? '' : nilaiBaru;
+    }
+    
+    // Panggil fungsi utama penyimpan lokal & pemotong gudang
+    updateNilaiStokLokal(idx, tipe, nilaiBaru === 0 ? '' : nilaiBaru);
+}
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
@@ -1185,7 +1208,7 @@ function renderTabelMatriks() {
             <td style="text-align:center; font-weight:700; color:#94a3b8;">${counter++}</td>
             <td><div style="font-weight:700; color:var(--text-main); font-size:0.8rem;">${p.nama}</div>${badgeHTML}</td>
             <td style="text-align:center;"><input type="number" class="input-stok input-pagi" id="pagi_${idx}" value="${p.awal}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
-            <td style="text-align:center;"><input type="number" class="input-stok input-tambah" style="width:45px;" id="tambah_${idx}" value="${p.tambah || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambah', this.value)" ${locked ? 'disabled' : ''}></td>
+            <td style="text-align:center;">     <div style="display:flex; align-items:center; justify-content:center; gap:2px;">         <input type="number" class="input-stok input-tambah" style="width:40px;" id="tambah_${idx}" value="${p.tambah || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambah', this.value)" ${locked ? 'disabled' : ''}>         ${!locked ? `         <div style="display:flex; flex-direction:column; gap:1px;">             <button type="button" onclick="ubahStokHarianCepat(${idx}, 'tambah', 1)" style="background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:2px; font-size:0.55rem; padding:0 3px; cursor:pointer;" title="Tambah 1 Pcs">➕</button>             <button type="button" onclick="ubahStokHarianCepat(${idx}, 'tambah', -1)" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:2px; font-size:0.55rem; padding:0 3px; cursor:pointer;" title="Kurangi 1 Pcs">➖</button>         </div>` : ''}     </div> </td>
             <td style="text-align:center;"><input type="number" class="input-stok input-kurang" style="width:45px;" id="kurang_${idx}" value="${p.kurang || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'kurang', this.value)" ${locked ? 'disabled' : ''}></td>
             <td id="td_total_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
             <td style="text-align:center;"><input type="number" class="input-stok input-malam" id="malam_${idx}" value="${p.sisa}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
