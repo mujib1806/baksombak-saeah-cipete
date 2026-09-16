@@ -1927,19 +1927,73 @@ function renderTabelMasterProduk() {
             ? 'color: #dc2626; font-weight: bold; background: #fef2f2;' 
             : 'color: #64748b; background: #f8fafc; font-weight: 600;';  
 
-        t.innerHTML += `<tr>
+t.innerHTML += `<tr>
             <td style="text-align:center;">${i+1}</td>
             <td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td>
             <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
             <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
-            <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">${gudang}</td>
+            <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">
+                ${gudang} 
+                <div style="margin-top:4px; display:flex; justify-content:center; gap:4px;">
+                    <button onclick="promptUbahStokGudang(${i}, 'in')" style="background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer;" title="Tambah Stok Gudang">➕ In</button>
+                    <button onclick="promptUbahStokGudang(${i}, 'out')" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer;" title="Kurangi Stok (Rusak/Kadaluarsa)">➖ Out</button>
+                </div>
+            </td>
             <td style="text-align:center; font-size:0.95rem; ${warnaBatas}">${batas}</td>
             <td style="text-align:center;">
                 <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit">✏️</button>
                 <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
             </td>
-        </tr>`; 
+        </tr>`;
     }); 
+}
+// Fungsi untuk menambah atau mengurangi stok gudang langsung dari Master Produk
+function promptUbahStokGudang(i, jenis) {
+    const p = masterProduk[i];
+    if (!p) return;
+
+    const labelJenis = jenis === 'in' ? 'TAMBAH STOK GUDANG (Restock / Masuk)' : 'KURANGI STOK GUDANG (Rusak / Kadaluarsa / Hilang)';
+    const tanda = jenis === 'in' ? '+' : '-';
+    
+    let inputStr = prompt(`📦 ${p.nama}\nStok Gudang Saat Ini: ${p.stokGudang || 0} Pcs\n\nMasukkan jumlah Pcs yang ingin di-${jenis === 'in' ? 'tambah' : 'kurang'}:`);
+    if (inputStr === null) return; // Batal
+
+    let jumlah = parseInt(inputStr) || 0;
+    if (jumlah <= 0) {
+        alert("Jumlah harus lebih dari 0!");
+        return;
+    }
+
+    let stokLama = parseFloat(p.stokGudang) || 0;
+    let stokBaru = 0;
+
+    if (jenis === 'in') {
+        stokBaru = stokLama + jumlah;
+    } else {
+        stokBaru = Math.max(0, stokLama - jumlah);
+    }
+
+    // Update stok gudang di master produk
+    masterProduk[i].stokGudang = stokBaru;
+
+    // Simpan ke Firebase
+    if (db) {
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+        .then(() => {
+            renderTabelMasterProduk();
+            showToast('✅ Stok Gudang Diperbarui!');
+        });
+    } else {
+        renderTabelMasterProduk();
+        showToast('✅ Stok Gudang Diperbarui (Lokal)!');
+    }
+
+    // Catat ke audit trail / tabel riwayat pergerakan stok
+    const jenisAksi = jenis === 'in' ? 'In' : 'Out';
+    catatRiwayatStok(p.nama, jenisAksi, jumlah, stokBaru);
+    
+    // Catat juga ke log aktivitas umum
+    catatAktivitas('Master Produk', `Ubah stok gudang "${p.nama}": ${tanda}${jumlah} Pcs (Sisa Gudang: ${stokBaru})`);
 }
 // Fungsi untuk merender tabel riwayat pergerakan stok
 function renderTabelRiwayatStok() {
