@@ -1086,7 +1086,7 @@ MODALS DAN CETAK PDF
         </div>
     </div>
     
-  <div class="table-wrapper" style="padding-bottom: 30px;">
+  <div class="table-wrapper" style="padding-bottom: 20px;">
         <table style="width: 100%;">
             <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
                 <tr>
@@ -1102,7 +1102,35 @@ MODALS DAN CETAK PDF
             <tbody id="tbodyMasterProduk"></tbody>
         </table>
     </div>
+
+    <!-- KARTU RIWAYAT PERGERAKAN STOK GUDANG (BARU) -->
+    <div class="card" style="margin-top: 20px; border-top: 4px solid #0284c7; background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <h3 style="color: #0369a1; margin:0; font-size: 1rem; font-weight: 800;">📜 Riwayat Pergerakan Stok Gudang</h3>
+            <span style="font-size: 0.7rem; color: #64748b; background: #f0f9ff; padding: 3px 6px; border-radius: 4px;">Audit Trail Masuk & Keluar</span>
+        </div>
+
+        <div class="table-wrapper">
+            <table style="width: 100%; font-size: 0.8rem;">
+                <thead>
+                    <tr style="background: #f0f9ff; color: #0369a1;">
+                        <th style="text-align:center; width:30px; padding: 6px;">No</th>
+                        <th style="padding: 6px;">Waktu</th>
+                        <th style="padding: 6px;">Produk</th>
+                        <th style="text-align:center; padding: 6px;">Aksi</th>
+                        <th style="text-align:center; padding: 6px;">Perubahan</th>
+                        <th style="text-align:center; padding: 6px;">Sisa Stok Gudang</th>
+                        <th style="padding: 6px;">Oleh</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyRiwayatStok">
+                    <tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+        
 
 <div class="modal" id="modalKelolaProduk">
     <div class="modal-content">
