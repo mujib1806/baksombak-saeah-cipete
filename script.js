@@ -1887,8 +1887,8 @@ function renderTabelMasterProduk() {
         t.innerHTML += `<tr>
             <td style="text-align:center;">${i+1}</td>
             <td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td>
-            <td style="text-align:right;">${p.modal}</td>
-            <td style="text-align:right;">${p.jual}</td>
+            <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
+            <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
             <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">${gudang}</td>
             <td style="text-align:center; font-size:0.95rem; ${warnaBatas}">${batas}</td>
             <td style="text-align:center;">
