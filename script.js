@@ -1007,22 +1007,36 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const p = dbStok[tgl][idx];
     if (!p) return;
 
-    if (tipe === 'tambah') {
+   if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
-        const selisih = valBaru - valLama;  
+        const selisih = valBaru - valLama;  // Bisa bernilai positif (tambah ambil) atau negatif (kurangi/kembalikan)
         
         if (selisih !== 0) {
             const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
             if (masterIdx !== -1) {
                 let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
-                let sisaGudangBaru = Math.max(0, stokGudangSekarang - selisih);
+                
+                let sisaGudangBaru = 0;
+                let jenisAksi = '';
+                
+                if (selisih > 0) {
+                    // Kasus 1: Mengambil barang dari gudang ke etalase (Stok gudang berkurang)
+                    sisaGudangBaru = Math.max(0, stokGudangSekarang - selisih);
+                    jenisAksi = 'Out';
+                } else {
+                    // Kasus 2: Mengembalikan barang dari etalase ke gudang / koreksi (Stok gudang bertambah kembali)
+                    let jumlahKembali = Math.abs(selisih);
+                    sisaGudangBaru = stokGudangSekarang + jumlahKembali;
+                    jenisAksi = 'In';
+                }
+
                 masterProduk[masterIdx].stokGudang = sisaGudangBaru;
                 
                 if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
                 
-                // Catat riwayat pergerakan stok keluar (Out)
-                catatRiwayatStok(p.nama, 'Out', selisih, sisaGudangBaru);
+                // Catat ke riwayat secara otomatis (Out jika ambil, In jika dikembalikan)
+                catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), sisaGudangBaru);
             }
         }
         dbStok[tgl][idx].tambah = val;  
