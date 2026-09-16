@@ -335,12 +335,16 @@
     </div>
 </div>
 <div id="pdfAreaVendor" style="display: none; width: 700px; padding: 25px; background: #ffffff; color: #1e293b; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box;">
-    <!-- Header PO dengan Identitas Toko -->
-    <div style="border-bottom: 3px solid #f59e0b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start;">
-        <div>
-            <div style="font-size: 10px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Purchase Order (PO) Vendor</div>
-            <h1 style="margin: 0; color: #0f172a; font-size: 20px; font-weight: 900;">Bakso Malang Asli Mbak Sae'ah</h1>
-            <p style="margin: 4px 0 0 0; font-size: 11px; color: #64748b;">Cabang Aktif &bull; Dokumen Resmi Pemesanan Stok</p>
+    <!-- Header PO dengan Logo & Identitas Toko -->
+    <div style="border-bottom: 3px solid #f59e0b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- Logo menggunakan file AGAK HIDUP.png -->
+            <img src="AGAK HIDUP.png" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0;" onerror="this.style.display='none'">
+            <div>
+                <div style="font-size: 10px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Purchase Order (PO) Vendor</div>
+                <h1 style="margin: 0; color: #0f172a; font-size: 18px; font-weight: 900;">Bakso Malang Asli Mbak Sae'ah</h1>
+                <p style="margin: 2px 0 0 0; font-size: 10px; color: #64748b;">Dokumen Resmi Pemesanan Stok Cabang</p>
+            </div>
         </div>
         <div style="text-align: right; background: #fffbeb; padding: 8px 12px; border-radius: 6px; border: 1px solid #fde68a;">
             <span style="display: block; font-size: 9px; font-weight: bold; color: #b45309; text-transform: uppercase;">Tanggal Pesanan</span>
@@ -348,7 +352,7 @@
         </div>
     </div>
     
-    <!-- Tabel Barang dengan Proteksi Tinggi Baris agar tidak terpotong -->
+    <!-- Tabel Barang -->
     <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;" border="1" cellpadding="6">
         <thead>
             <tr style="background: #f8fafc; color: #475569; text-align: center;">
