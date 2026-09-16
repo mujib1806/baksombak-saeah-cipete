@@ -994,27 +994,28 @@ function updateNilaiStokLokal(idx, tipe, val) {
     if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
     
     const p = dbStok[tgl][idx];
-    
     if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
         const selisih = valBaru - valLama;  
         
         if (selisih !== 0) {
-            clearTimeout(window.gudangSaveTimeout);
-            window.gudangSaveTimeout = setTimeout(() => {
-                const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
-                if (masterIdx !== -1) {
-                    let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
-                    masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
-                    if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
-               // 👉 TAMBAHKAN PANGGILAN PENCATAT RIWAYAT DI SINI
-                    catatRiwayatStok(p.nama, 'Out', selisih, sisaGudangBaru);
-                }
-            }, 1000);
+            const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
+            if (masterIdx !== -1) {
+                let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
+                let sisaGudangBaru = Math.max(0, stokGudangSekarang - selisih);
+                masterProduk[masterIdx].stokGudang = sisaGudangBaru;
+                
+                if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+                
+                // Catat riwayat pergerakan stok keluar (Out)
+                catatRiwayatStok(p.nama, 'Out', selisih, sisaGudangBaru);
+            }
         }
         dbStok[tgl][idx].tambah = val;  
-    } else {
+    }
+    
+    else {
         if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
         if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
         if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;  
