@@ -1008,6 +1008,8 @@ function updateNilaiStokLokal(idx, tipe, val) {
                     let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
                     masterProduk[masterIdx].stokGudang = Math.max(0, stokGudangSekarang - selisih);
                     if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+               // 👉 TAMBAHKAN PANGGILAN PENCATAT RIWAYAT DI SINI
+                    catatRiwayatStok(p.nama, 'Out', selisih, sisaGudangBaru);
                 }
             }, 1000);
         }
