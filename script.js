@@ -693,7 +693,7 @@ function renderFormOrderVendor() {
             <td style="text-align:center;">${item.isi}</td>
             <td>${item.rasa || '-'}</td>
             <td style="background:#eff6ff;"><input type="number" class="input-stok input-vendor" value="${item.qty}" min="0" placeholder="0" style="width:60px;" oninput="updateItemVendor(${index}, 'qty', this.value)"></td>
-            <td style="background:#fefce8;"><input type="number" class="input-stok input-pagi" value="${item.harga}" min="0" style="width:80px; text-align:right;" oninput="updateItemVendor(${index}, 'harga', this.value)"></td>
+            <td style="background:#fefce8;"><input type="text" class="input-stok input-pagi" value="${item.harga ? parseInt(item.harga, 10).toLocaleString('id-ID') : ''}" style="width:80px; text-align:right;" oninput="formatRibuanInput(this); updateItemVendor(${index}, 'harga', this.value.replace(/\./g, ''))"></td>
             <td id="vendor-total-${index}" style="text-align:right; font-weight:800; color:#15803d; background:#f0fdf4;">${formatRupiah(total)}</td>
             <td style="text-align:center;"><button onclick="hapusItemVendor(${index})" class="btn btn-danger" style="padding:4px 8px; font-size:0.6rem; width:auto; margin:0; border-radius:6px;">Hapus</button></td>
         `;
