@@ -72,6 +72,39 @@ let vendorCatalog = defaultVendorCatalog;
 let dbStok = {}, dbPengeluaranHarian = [], dbKasMasuk = {}, dbLogKas = [], dbSetoranDapur = {}, dbGajiHarian = {}, dbStatusKunci = {};
 let activeKasTab = 'Reseller';
 let currentUser = null;
+// Array penampung riwayat pergerakan stok
+let riwayatStok = [];
+
+// Fungsi untuk mencatat mutasi stok
+function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir) {
+    const now = new Date();
+    const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    const waktuStr = `${tglFormat}, ${jamFormat}`;
+
+    let namaUser = "Admin";
+    if (typeof currentUser !== 'undefined' && currentUser && currentUser.role) {
+        namaUser = currentUser.role;
+    }
+
+    const itemBaru = {
+        waktu: waktuStr,
+        produk: namaProduk,
+        aksi: jenisAksi, // 'In' atau 'Out'
+        perubahan: jenisAksi === 'In' ? `+${jumlahPerubahan}` : `-${jumlahPerubahan}`,
+        sisa: sisaStokAkhir,
+        oleh: namaUser
+    };
+
+    riwayatStok.unshift(itemBaru);
+    if (riwayatStok.length > 50) riwayatStok.pop();
+
+    if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').set({ list: riwayatStok });
+    }
+
+    renderTabelRiwayatStok();
+}
 // Variabel Global Pengaturan Finansial
 let pengaturanCabangAktif = {
     gajiHarian: 50000,
@@ -1856,8 +1889,15 @@ function simpanProdukBaru(e) {
     const idx = parseInt(document.getElementById('editIndexProduk').value); 
     const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}" (Jual: Rp ${p.jual.toLocaleString('id-ID')})` : `Menambahkan produk baru "${p.nama}"`;
 
-    if(idx >= 0) masterProduk[idx] = p; 
-    else masterProduk.push(p); 
+   if(idx >= 0) {
+        masterProduk[idx] = p; 
+    } else {
+        masterProduk.push(p);
+        // Jika ada stok gudang awal saat produk baru dibuat, catat sebagai In
+        if (p.stokGudang > 0) {
+            catatRiwayatStok(p.nama, 'In', p.stokGudang, p.stokGudang);
+        }
+    } 
     catatAktivitas('Master Produk', aksiTeks);
 
     if(db) {
@@ -1897,6 +1937,38 @@ function renderTabelMasterProduk() {
             </td>
         </tr>`; 
     }); 
+}
+// Fungsi untuk merender tabel riwayat pergerakan stok
+function renderTabelRiwayatStok() {
+    const tbody = document.getElementById('tbodyRiwayatStok');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!riwayatStok || riwayatStok.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>`;
+        return;
+    }
+
+    riwayatStok.forEach((item, index) => {
+        const isIn = item.aksi === 'In';
+        const badgeStyle = isIn 
+            ? 'background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold;' 
+            : 'background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-weight: bold;';
+        
+        const warnaPerubahan = isIn ? 'color: #16a34a; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="text-align:center; color:#94a3b8; padding: 6px;">${index + 1}</td>
+                <td style="padding: 6px;">${item.waktu}</td>
+                <td style="padding: 6px;"><strong>${item.produk}</strong></td>
+                <td style="text-align:center; padding: 6px;"><span style="${badgeStyle}">${item.aksi}</span></td>
+                <td style="text-align:center; padding: 6px; ${warnaPerubahan}">${item.perubahan}</td>
+                <td style="text-align:center; padding: 6px; font-weight:bold; color:#0284c7;">${item.sisa}</td>
+                <td style="padding: 6px;">${item.oleh}</td>
+            </tr>
+        `;
+    });
 }
 
 function editProdukMaster(i) { 
