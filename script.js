@@ -592,6 +592,16 @@ function inisiatisasiRealtimeListener() {
         snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
         loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
     });
+    // Listener untuk memuat data riwayat pergerakan stok secara real-time
+    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').onSnapshot(doc => {
+        if (doc.exists && doc.data().list) {
+            riwayatStok = doc.data().list;
+            renderTabelRiwayatStok();
+        } else {
+            riwayatStok = [];
+            renderTabelRiwayatStok();
+        }
+    });
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').onSnapshot(doc => {
         if (doc.exists) {
             pengaturanCabangAktif = doc.data();
