@@ -1003,6 +1003,10 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const tgl = document.getElementById('tglOps').value;  
     if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
     
+    // 👉 PASTIKAN VARIABEL P DIDEKLARASIKAN DI SINI (SEBELUM PENGECEKAN TIPE)
+    const p = dbStok[tgl][idx];
+    if (!p) return;
+
     if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
@@ -1017,7 +1021,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
                 
                 if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
                 
-                // Pastikan baris ini ada agar masuk ke riwayat!
+                // Catat riwayat pergerakan stok keluar (Out)
                 catatRiwayatStok(p.nama, 'Out', selisih, sisaGudangBaru);
             }
         }
