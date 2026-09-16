@@ -816,9 +816,23 @@ function kirimWhatsAppOrder() {
     element.style.display = 'block';
 
     html2pdf().set({
-        margin: 5, filename: `PO_Vendor_${tglFile}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+        margin: [10, 10, 10, 10], 
+        filename: `PO_Vendor_${tglFile}.pdf`, 
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            letterRendering: true
+        }, 
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' 
+        }, 
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
     }).from(element).output('blob').then(function(pdfBlob) {
         element.style.display = 'none'; 
+        // Lanjutkan sisa kode share WhatsApp / download...
         const namaFile = `PO_Vendor_${tglFile}.pdf`;
         const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
         const resetForm = () => { 
