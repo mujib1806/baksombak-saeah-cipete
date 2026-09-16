@@ -319,7 +319,43 @@
                     <span style="font-size: 0.85rem; font-weight: 800; color: #c2410c; text-transform: uppercase;">GRAND TOTAL PEMESANAN:</span>
                     <div id="vendorGrandTotal" style="font-size: 2rem; font-weight: 900; color: #ea580c; margin: 8px 0;">Rp 0</div>
                     <p style="font-size: 0.75rem; color: #9a3412; margin-bottom: 15px;">*Siapkan uang sejumlah di atas saat kurir barang datang.</p>
-                    
+                    <!-- TEMPLAT CETAK PDF VENDOR (Tambahkan ini di bawah kode formulirmu) -->
+<div id="pdfAreaVendor" style="display: none; padding: 20px; background: white; color: black; font-family: Arial, sans-serif;">
+    <h2 style="text-align: center; margin-bottom: 5px;">PURCHASE ORDER (PO) VENDOR</h2>
+    <p id="pdfVendorTgl" style="text-align: center; font-size: 12px; margin-bottom: 20px;"></p>
+    
+    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;" border="1" cellpadding="6">
+        <thead>
+            <tr style="background: #f1f5f9;">
+                <th style="text-align: center;">No</th>
+                <th>Nama Barang</th>
+                <th style="text-align: center;">Kemasan</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Harga Satuan</th>
+                <th style="text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody id="pdfTbodyVendor">
+            <!-- Data item pesanan akan terisi otomatis di sini -->
+        </tbody>
+    </table>
+    
+    <div style="text-align: right; font-size: 14px; font-weight: bold; margin-bottom: 20px;">
+        Grand Total: <span id="pdfVendorTotal">Rp 0</span>
+    </div>
+
+    <div style="font-size: 12px; display: flex; justify-content: space-between;">
+        <div>
+            <p>Dipesan Oleh:</p>
+            <br><br>
+            <strong id="pdfNamaPemesanCetak">-</strong>
+        </div>
+        <div style="text-align: right;">
+            <p>Tanggal Cetak:</p>
+            <span id="pdfTanggalCetakVendor">-</span>
+        </div>
+    </div>
+</div>
                     <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px;">
                         <span style="font-size: 13px; font-weight: bold; color: #c2410c;">Dipesan Oleh:</span>
                         <input type="text" id="inputNamaPemesanVendor" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #fdba74; outline: none; font-weight: bold; color: #9a3412; width: 140px; text-align: center; background: #fff;" placeholder="Nama Anda...">
