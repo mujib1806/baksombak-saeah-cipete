@@ -770,31 +770,49 @@ function kirimWhatsAppOrder() {
     const tglKirim = new Date().toLocaleDateString('id-ID', tglOptions);
     const tglFile = new Date().toISOString().split('T')[0];
 
-    document.getElementById('pdfVendorTgl').innerText = 'Tanggal Pesanan: ' + tglKirim;
+    // Pengaman elemen Tgl Vendor
+    const elTgl = document.getElementById('pdfVendorTgl');
+    if (elTgl) elTgl.innerText = 'Tanggal Pesanan: ' + tglKirim;
+
     const tbody = document.getElementById('pdfTbodyVendor');
-    tbody.innerHTML = '';
-    let grandTotal = 0;
+    if (tbody) {
+        tbody.innerHTML = '';
+        let grandTotal = 0;
 
-    orderItems.forEach((item, index) => {
-        const qty = parseInt(item.qty); const harga = parseInt(item.harga); const total = qty * harga; grandTotal += total;
-        const rasaTxt = item.rasa ? ` - ${item.rasa}` : '';
-        const namaLengkap = `${item.nama} (${item.vol}${rasaTxt})`;
-        tbody.innerHTML += `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${namaLengkap}</strong></td><td style="text-align: center;">${item.kemasan}</td><td style="text-align: center; font-weight: bold; color: #15803d; font-size: 13px;">${qty}</td><td style="text-align: right;">${formatRupiah(harga)}</td><td style="text-align: right; font-weight: bold; color: #d97706;">${formatRupiah(total)}</td></tr>`;
-    });
+        orderItems.forEach((item, index) => {
+            const qty = parseInt(item.qty); 
+            const harga = parseInt(item.harga); 
+            const total = qty * harga; 
+            grandTotal += total;
+            const rasaTxt = item.rasa ? ` - ${item.rasa}` : '';
+            const namaLengkap = `${item.nama} (${item.vol}${rasaTxt})`;
+            tbody.innerHTML += `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${namaLengkap}</strong></td><td style="text-align: center;">${item.kemasan}</td><td style="text-align: center; font-weight: bold; color: #15803d; font-size: 13px;">${qty}</td><td style="text-align: right;">${formatRupiah(harga)}</td><td style="text-align: right; font-weight: bold; color: #d97706;">${formatRupiah(total)}</td></tr>`;
+        });
 
-    document.getElementById('pdfVendorTotal').innerText = formatRupiah(grandTotal);
+        const elTotal = document.getElementById('pdfVendorTotal');
+        if (elTotal) elTotal.innerText = formatRupiah(grandTotal);
+    }
 
-    let namaPemesan = document.getElementById('inputNamaPemesanVendor').value;
+    let inputPemesan = document.getElementById('inputNamaPemesanVendor');
+    let namaPemesan = inputPemesan ? inputPemesan.value : "";
     if (!namaPemesan || namaPemesan.trim() === "") {
         namaPemesan = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
-        document.getElementById('inputNamaPemesanVendor').value = namaPemesan;
+        if (inputPemesan) inputPemesan.value = namaPemesan;
     }
-    if (document.getElementById('pdfNamaPemesanCetak')) document.getElementById('pdfNamaPemesanCetak').innerText = namaPemesan;
+
+    const elPemesanCetak = document.getElementById('pdfNamaPemesanCetak');
+    if (elPemesanCetak) elPemesanCetak.innerText = namaPemesan;
+
     const hariIni = new Date();
     const formatTanggal = hariIni.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (document.getElementById('pdfTanggalCetakVendor')) document.getElementById('pdfTanggalCetakVendor').innerText = formatTanggal;
+    const elTglCetak = document.getElementById('pdfTanggalCetakVendor');
+    if (elTglCetak) elTglCetak.innerText = formatTanggal;
 
     const element = document.getElementById('pdfAreaVendor');
+    if (!element) {
+        alert("Area cetak PDF tidak ditemukan di halaman ini!");
+        return;
+    }
     element.style.display = 'block';
 
     html2pdf().set({
@@ -803,15 +821,35 @@ function kirimWhatsAppOrder() {
         element.style.display = 'none'; 
         const namaFile = `PO_Vendor_${tglFile}.pdf`;
         const filePdf = new File([pdfBlob], namaFile, { type: 'application/pdf' });
-        const resetForm = () => { vendorCatalog.forEach(item => item.qty = ""); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }); renderFormOrderVendor(); };
+        const resetForm = () => { 
+            vendorCatalog.forEach(item => item.qty = ""); 
+            if(typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+                db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('vendorCatalog').set({ list: vendorCatalog }); 
+            }
+            if(typeof renderFormOrderVendor === 'function') renderFormOrderVendor(); 
+        };
 
+        // Cek kemampuan perangkat untuk langsung membagikan file PDF (Share Sheet)
         if (navigator.canShare && navigator.canShare({ files: [filePdf] })) {
-            navigator.share({ files: [filePdf], title: 'Purchase Order (PO)', text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
-            }).then(() => { resetForm(); }).catch((error) => { console.error('Batal bagikan:', error); if(confirm("Batal membagikan. Tetap ingin mereset/mengosongkan form pemesanan?")) resetForm(); });
+            navigator.share({ 
+                files: [filePdf], 
+                title: 'Purchase Order (PO)', 
+                text: `Berikut terlampir dokumen Purchase Order (PO) tanggal ${tglKirim}. Mohon diproses.`
+            }).then(() => { 
+                resetForm(); 
+            }).catch((error) => { 
+                console.error('Batal bagikan:', error); 
+                if(confirm("Batal membagikan. Tetap ingin mereset/mengosongkan form pemesanan?")) resetForm(); 
+            });
         } else {
+            // Fallback untuk perangkat/browser yang tidak mendukung direct file sharing
             const urlObj = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
-            if(confirm("File PO telah didownload. Reset/kosongkan form pesanan sekarang?")) resetForm();
+            const link = document.createElement('a'); 
+            link.href = urlObj; 
+            link.download = namaFile; 
+            link.click(); 
+            URL.revokeObjectURL(urlObj);
+            if(confirm("File PO PDF telah didownload. Reset/kosongkan form pesanan sekarang?")) resetForm();
         }
     });
 }
