@@ -334,44 +334,57 @@
         </div>
     </div>
 </div>
-
-<!-- TEMPLAT CETAK PDF VENDOR (Ditaruh di luar card utama agar tidak mengganggu tampilan dan terbaca sempurna oleh script) -->
-<div id="pdfAreaVendor" style="display: none; padding: 20px; background: white; color: black; font-family: Arial, sans-serif;">
-    <h2 style="text-align: center; margin-bottom: 5px;">PURCHASE ORDER (PO) VENDOR</h2>
-    <p id="pdfVendorTgl" style="text-align: center; font-size: 12px; margin-bottom: 20px;"></p>
+<div id="pdfAreaVendor" style="display: none; width: 700px; padding: 30px; background: #ffffff; color: #1e293b; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+    <!-- Header PO -->
+    <div style="border-bottom: 3px solid #f59e0b; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0; color: #d97706; font-size: 22px; font-weight: 800; text-transform: uppercase;">Purchase Order (PO)</h2>
+            <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">Bakso Malang Asli Mbak Sae'ah</p>
+        </div>
+        <div style="text-align: right;">
+            <p id="pdfVendorTgl" style="margin: 0; font-size: 12px; font-weight: bold; color: #334155;"></p>
+        </div>
+    </div>
     
-    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;" border="1" cellpadding="6">
+    <!-- Tabel Barang -->
+    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
         <thead>
-            <tr style="background: #f1f5f9;">
-                <th style="text-align: center;">No</th>
-                <th>Nama Barang</th>
-                <th style="text-align: center;">Kemasan</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Harga Satuan</th>
-                <th style="text-align: right;">Total</th>
+            <tr style="background: #f8fafc; color: #475569; border-bottom: 2px solid #e2e8f0;">
+                <th style="padding: 10px; text-align: center; width: 35px;">No</th>
+                <th style="padding: 10px; text-align: left;">Nama Barang & Spesifikasi</th>
+                <th style="padding: 10px; text-align: center;">Kemasan</th>
+                <th style="padding: 10px; text-align: center;">Qty</th>
+                <th style="padding: 10px; text-align: right;">Harga Satuan</th>
+                <th style="padding: 10px; text-align: right;">Total</th>
             </tr>
         </thead>
         <tbody id="pdfTbodyVendor">
-            <!-- Data item pesanan akan terisi otomatis di sini -->
+            <!-- Data item pesanan terisi otomatis -->
         </tbody>
     </table>
     
-    <div style="text-align: right; font-size: 14px; font-weight: bold; margin-bottom: 20px;">
-        Grand Total: <span id="pdfVendorTotal">Rp 0</span>
+    <!-- Grand Total Box -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 30px;">
+        <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 12px 20px; border-radius: 8px; text-align: right; min-width: 250px;">
+            <span style="font-size: 11px; font-weight: 800; color: #b45309; text-transform: uppercase; display: block;">Grand Total Pemesanan:</span>
+            <span id="pdfVendorTotal" style="font-size: 18px; font-weight: 900; color: #d97706; display: block; margin-top: 4px;">Rp 0</span>
+        </div>
     </div>
 
-    <div style="font-size: 12px; display: flex; justify-content: space-between;">
+    <!-- Tanda Tangan / Footer -->
+    <div style="font-size: 11px; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; paddingTop: 20px;">
         <div>
-            <p>Dipesan Oleh:</p>
+            <p style="margin: 0; color: #64748b;">Dipesan Oleh:</p>
             <br><br>
-            <strong id="pdfNamaPemesanCetak">-</strong>
+            <strong id="pdfNamaPemesanCetak" style="font-size: 13px; color: #0f172a; border-bottom: 1px dashed #94a3b8; padding-bottom: 2px;">-</strong>
         </div>
         <div style="text-align: right;">
-            <p>Tanggal Cetak:</p>
-            <span id="pdfTanggalCetakVendor">-</span>
+            <p style="margin: 0; color: #64748b;">Tanggal Cetak Sistem:</p>
+            <span id="pdfTanggalCetakVendor" style="font-weight: bold; color: #334155;">-</span>
         </div>
     </div>
 </div>
+
         <!-- LAPORAN BERKALA -->
         <div id="viewLaporanBerkala" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #3b82f6;">
