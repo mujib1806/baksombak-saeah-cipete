@@ -2032,7 +2032,7 @@ function editProdukMaster(i) {
 }
 
 // ==========================================
-// 4. RENDER TABEL MASTER PRODUK DENGAN RUMUS OTOMATIS
+// 4. RENDER TABEL MASTER PRODUK DENGAN RUMUS OTOMATIS & FILTER BAKSO
 // ==========================================
 function renderTabelMasterProduk() { 
     const t = document.getElementById('tbodyMasterProduk'); 
@@ -2042,24 +2042,43 @@ function renderTabelMasterProduk() {
     if(!masterProduk || masterProduk.length === 0) return;
 
     masterProduk.forEach((p, i) => { 
-        // 1. Ambil data mentah
-        const awalGudang = parseFloat(p.stokAwalGudang) || 0;
-        const rusak = parseFloat(p.stokRusak) || 0;
-        const minGudang = parseFloat(p.minGudang) || 0;
-        const minEtalase = parseFloat(p.minEtalase) || 0;
+        // Cek apakah ini produk Bakso Malang
+        const isBakso = p.kategori.toLowerCase().includes('bakso');
         
-        // 2. Hitung Stok Keluar (Dari Kolom Tambah Etalase Harian)
-        const keluarEtalase = hitungTotalStokKeluar(p.nama);
+        let kolomStokHtml = '';
 
-        // 3. RUMUS UTAMA: Sisa Gudang
-        const sisaGudang = awalGudang - keluarEtalase - rusak;
-        
-        // 4. Warna Peringatan
-        let warnaSisa = 'color: #0284c7; font-weight: bold; background: #f0f9ff;'; // Biru default
-        if (sisaGudang <= 0) {
-            warnaSisa = 'color: #dc2626; font-weight: 900; background: #fef2f2;'; // Merah (Habis)
-        } else if (sisaGudang <= minGudang) {
-            warnaSisa = 'color: #d97706; font-weight: 800; background: #fffbeb;'; // Kuning (Warning)
+        if (isBakso) {
+            // JIKA BAKSO: Gabungkan 6 kolom stok menjadi 1 penanda khusus produksi dapur
+            kolomStokHtml = `
+                <td colspan="6" style="text-align:center; background:#fff7ed; color:#ea580c; font-weight:bold; font-size: 0.8rem; letter-spacing: 1px; border-left: 1px dashed #fdba74; border-right: 1px dashed #fdba74;">
+                    🍲 PRODUKSI DAPUR (TANPA STOK GUDANG)
+                </td>
+            `;
+        } else {
+            // JIKA PRODUK RESELLER / PLASTIK: Jalankan rumus gudang normal
+            const awalGudang = parseFloat(p.stokAwalGudang) || 0;
+            const rusak = parseFloat(p.stokRusak) || 0;
+            const minGudang = parseFloat(p.minGudang) || 0;
+            const minEtalase = parseFloat(p.minEtalase) || 0;
+            
+            const keluarEtalase = hitungTotalStokKeluar(p.nama);
+            const sisaGudang = awalGudang - keluarEtalase - rusak;
+            
+            let warnaSisa = 'color: #0284c7; font-weight: bold; background: #f0f9ff;'; 
+            if (sisaGudang <= 0) {
+                warnaSisa = 'color: #dc2626; font-weight: 900; background: #fef2f2;'; // Habis
+            } else if (sisaGudang <= minGudang) {
+                warnaSisa = 'color: #d97706; font-weight: 800; background: #fffbeb;'; // Warning
+            }
+
+            kolomStokHtml = `
+                <td style="text-align:center; font-weight:bold; color:#16a34a; background:#f0fdf4;">${awalGudang}</td>
+                <td style="text-align:center; font-weight:bold; color:#e11d48; background:#fff1f2;">${keluarEtalase}</td>
+                <td style="text-align:center; font-weight:bold; color:#9f1239; background:#fff1f2;">${rusak}</td>
+                <td style="text-align:center; font-size:1.1rem; ${warnaSisa}">${sisaGudang}</td>
+                <td style="text-align:center; color:#d97706;">${minGudang}</td>
+                <td style="text-align:center; color:#b45309;">${minEtalase}</td>
+            `;
         }
 
         t.innerHTML += `<tr>
@@ -2068,14 +2087,12 @@ function renderTabelMasterProduk() {
             <td><span style="font-size: 0.65rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${p.kategori}</span></td>
             <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
             <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
-            <td style="text-align:center; font-weight:bold; color:#16a34a; background:#f0fdf4;">${awalGudang}</td>
-            <td style="text-align:center; font-weight:bold; color:#e11d48; background:#fff1f2;">${keluarEtalase}</td>
-            <td style="text-align:center; font-weight:bold; color:#9f1239; background:#fff1f2;">${rusak}</td>
-            <td style="text-align:center; font-size:1.1rem; ${warnaSisa}">${sisaGudang}</td>
-            <td style="text-align:center; color:#d97706;">${minGudang}</td>
-            <td style="text-align:center; color:#b45309;">${minEtalase}</td>
+            
+            ${kolomStokHtml} <!-- Kolom Stok Ditempel di sini -->
+            
             <td style="text-align:center;">
-                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit Data Gudang">✏️</button>
+                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit Data">✏️</button>
+                <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
             </td>
         </tr>`;
     }); 
