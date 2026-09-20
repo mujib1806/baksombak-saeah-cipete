@@ -1092,15 +1092,20 @@ MODALS DAN CETAK PDF
   <div class="table-wrapper" style="padding-bottom: 20px;">
         <table style="width: 100%;">
             <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
-                <tr>
+             <tr style="font-size: 0.75rem;">
                     <th style="width: 40px; text-align: center;">No</th>
                     <th style="text-align: left;">Nama Produk</th>
+                    <th style="text-align: left;">Kategori</th>
                     <th style="text-align: right;">Modal</th>
-                   <th style="text-align: right;">Jual</th>
-                   <th style="text-align: center; color: #0284c7;">📦 Gudang</th>
-                   <th style="text-align: center; color: #dc2626;">🚨 Min.</th>
-                   <th style="text-align: center;">Aksi</th>
-                </tr>
+                    <th style="text-align: right;">Jual</th>
+                    <th style="text-align: center; background: #f0fdf4; color: #16a34a;">Awal Gudang</th>
+                    <th style="text-align: center; background: #fff1f2; color: #e11d48;">Keluar (Ke Etalase)</th>
+                    <th style="text-align: center; background: #fff1f2; color: #9f1239;">Rusak</th>
+                    <th style="text-align: center; background: #f0f9ff; color: #0284c7;">Sisa Gudang</th>
+                    <th style="text-align: center; background: #fffbeb; color: #d97706;">Min. Gudang</th>
+                    <th style="text-align: center; background: #fff7ed; color: #b45309;">Min. Etalase</th>
+                    <th style="text-align: center;">Aksi</th>
+                </tr>   
             </thead>
             <tbody id="tbodyMasterProduk"></tbody>
         </table>
@@ -1153,19 +1158,27 @@ MODALS DAN CETAK PDF
                 <div class="form-group"><label>Jual (Rp):</label><input type="number" id="inputJualProduk" min="0" required oninput="hitungMarginForm()"></div>
             </div>
             <div class="form-group"><label>Margin:</label><input type="number" id="inputMarginProduk" readonly style="color:#16a34a; background: #f0fdf4;"></div>
-            
             <div class="grid-mobile" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
                 <div class="form-group">
-                    <label style="color: #0284c7;">📦 Stok Gudang Awal (Pcs):</label>
-                    <input type="number" id="inputStokGudang" min="0" value="0" required style="border-color: #7dd3fc; background: #f0f9ff;">
-                    <div style="font-size: 0.65rem; color: #0284c7; margin-top: 2px;">*Stok fisik di ruang penyimpanan belakang.</div>
+                    <label style="color: #16a34a;">📦 Stok Awal Gudang (Pcs):</label>
+                    <input type="number" id="inputStokGudang" min="0" value="0" required style="border-color: #86efac; background: #f0fdf4;">
                 </div>
                 <div class="form-group">
-                    <label style="color: #dc2626;">🚨 Batas Minimum (Warning):</label>
-                    <input type="number" id="inputBatasMinimum" min="0" value="10" required style="border-color: #fca5a5; background: #fef2f2;">
-                    <div style="font-size: 0.65rem; color: #dc2626; margin-top: 2px;">*Muncul warning order jika total stok &le; angka ini.</div>
+                    <label style="color: #9f1239;">🗑️ Stok Rusak/Basi (Pcs):</label>
+                    <input type="number" id="inputStokRusak" min="0" value="0" style="border-color: #fda4af; background: #fff1f2;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #d97706;">🚨 Min. Stok Gudang:</label>
+                    <input type="number" id="inputMinGudang" min="0" value="10" required style="border-color: #fcd34d; background: #fffbeb;">
+                    <div style="font-size: 0.65rem; color: #d97706; margin-top: 2px;">*Warning order ke vendor.</div>
+                </div>
+                <div class="form-group">
+                    <label style="color: #b45309;">⚠️ Min. Stok Etalase:</label>
+                    <input type="number" id="inputMinEtalase" min="0" value="5" required style="border-color: #fdba74; background: #fff7ed;">
+                    <div style="font-size: 0.65rem; color: #b45309; margin-top: 2px;">*Warning kasir utk ambil barang ke belakang.</div>
                 </div>
             </div>
+
             <div style="display:flex; gap:8px; margin-top:20px;">
                 <button type="button" class="btn btn-outline" onclick="tutupModalKelolaProduk()">Batal</button>
                 <button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button>
