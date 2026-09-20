@@ -1452,8 +1452,17 @@ function updateKalkulasi() {
         if (sisa !== null && sisa <= totalStok) {  
             const terjual = totalStok - sisa;  
             const omset = terjual * p.jual;  
-            const modal = terjual * p.modal;  
-            const profit = terjual * p.margin;  
+            let modal = terjual * p.modal;  
+            let profit = terjual * p.margin;  
+            
+            // 👉 PERLAKUAN KHUSUS LEBIHAN BAKSO:
+            // Lebihan bakso murni sebagai omset penambah uang laci, 
+            // tidak menghasilkan profit usaha dan modalnya dipisahkan dari modal reseller
+            const isLebihanBakso = p.nama.toLowerCase().includes('lebihan bakso');
+            if (isLebihanBakso) {
+                profit = 0;
+                modal = 0; // Agar tidak masuk ke hitungan modal reseller di akumulasi kategori
+            }
             
             omsetPenjualan += omset;  
             
@@ -1465,9 +1474,7 @@ function updateKalkulasi() {
             if (p.kategori === 'Bakso Malang') {
                 profitBakso += profit;  
             } else {  
-                // 👉 PERLAKUAN KHUSUS LEBIHAN BAKSO: 
-                // Jika produk adalah lebihan bakso, jangan masukkan profit/modalnya ke profit reseller biasa
-                if (!p.nama.toLowerCase().includes('lebihan bakso')) {
+                if (!isLebihanBakso) {
                     profitReseller += profit;  
                 }
             }  
