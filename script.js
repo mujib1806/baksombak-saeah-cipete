@@ -1442,29 +1442,36 @@ function updateKalkulasi() {
         if(elInfo) { elInfo.innerText = `Nominal Omset: ${formatRupiah(terjualTeh * pTeh.jual)}`; } 
     }
     
-    items.forEach(p => { 
-        const awal = parseFloat(p.awal) || 0; 
-        const tambah = parseFloat(p.tambah) || 0; 
-        const kurang = parseFloat(p.kurang) || 0; 
-        const totalStok = awal + tambah - kurang; 
-        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+    items.forEach(p => {  
+        const awal = parseFloat(p.awal) || 0;  
+        const tambah = parseFloat(p.tambah) || 0;  
+        const kurang = parseFloat(p.kurang) || 0;  
+        const totalStok = awal + tambah - kurang;  
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
         
-        if (sisa !== null && sisa <= totalStok) { 
-            const terjual = totalStok - sisa; 
-            const omset = terjual * p.jual; 
-            const modal = terjual * p.modal; 
-            const profit = terjual * p.margin; 
+        if (sisa !== null && sisa <= totalStok) {  
+            const terjual = totalStok - sisa;  
+            const omset = terjual * p.jual;  
+            const modal = terjual * p.modal;  
+            const profit = terjual * p.margin;  
             
-            omsetPenjualan += omset; 
+            omsetPenjualan += omset;  
             
-            if (!katData[p.kategori]) katData[p.kategori] = { omset: 0, modal: 0, profit: 0 }; 
-            katData[p.kategori].omset += omset; 
-            katData[p.kategori].modal += modal; 
-            katData[p.kategori].profit += profit; 
+            if (!katData[p.kategori]) katData[p.kategori] = { omset: 0, modal: 0, profit: 0 };  
+            katData[p.kategori].omset += omset;  
+            katData[p.kategori].modal += modal;  
+            katData[p.kategori].profit += profit;  
             
-            if (p.kategori === 'Bakso Malang') profitBakso += profit; 
-            else profitReseller += profit; 
-        } 
+            if (p.kategori === 'Bakso Malang') {
+                profitBakso += profit;  
+            } else {  
+                // 👉 PERLAKUAN KHUSUS LEBIHAN BAKSO: 
+                // Jika produk adalah lebihan bakso, jangan masukkan profit/modalnya ke profit reseller biasa
+                if (!p.nama.toLowerCase().includes('lebihan bakso')) {
+                    profitReseller += profit;  
+                }
+            }  
+        }  
     });
     
     const containerAkumulasi = document.getElementById('containerAkumulasiKategori'); 
