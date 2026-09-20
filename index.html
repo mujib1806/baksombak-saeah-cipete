@@ -823,29 +823,6 @@
                 </div>
             </div>
 
-            <!-- SETORAN DAPUR -->
-            <div class="card" id="cardSetoranDapur" style="border-top: 4px solid #ea580c;">
-                <h2 style="color: #c2410c;">🍲 Setoran & Pengeluaran Dapur</h2>
-                <div style="background:#fff7ed; border:1px solid #fdba74; padding:12px; border-radius:8px;">
-                    <div class="form-group">
-                        <label style="color:#9a3412;">💵 Uang Cash Fisik (Diserahkan ke Dapur):</label>
-                        <input type="text" inputmode="numeric" id="inBmCash" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Setoran Dapur" style="border-color:#fdba74;">
-                        <div style="font-size:0.65rem; color:#d97706; margin-top:2px;">*Sekadar laporan. Uang disisihkan dari total 💵 Cash Laci di atas.</div>
-                    </div>
-                    <hr style="margin: 12px 0; border-top:1px dashed #fdba74;">
-                    <div style="font-size:0.75rem; font-weight:800; color:#dc2626; margin-bottom:8px;">⚠️ PENGELUARAN DAPUR (SITUASIONAL)</div>
-                    <div class="form-group">
-                        <label style="color:#b91c1c;">📝 Catatan Keluar (Beli Gas, Kecap, dll):</label>
-                        <input type="text" id="inBmKetPengeluaran" placeholder="Contoh: Beli Gas" onchange="simpanSetoranDapurManual()" style="border-color:#fca5a5;">
-                    </div>
-                    <div class="form-group">
-                        <label style="color:#b91c1c;">🔻 Nominal Keluar Dapur:</label>
-                        <input type="text" inputmode="numeric" id="inBmPengeluaran" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Rp" style="border-color:#fca5a5;">
-                        <div style="font-size:0.65rem; color:#dc2626; margin-top:2px;">*Otomatis disatukan ke total Pengeluaran Harian agar laci balance.</div>
-                    </div>
-                </div>
-            </div>
-
             <!-- ALOKASI HARIAN -->
             <div class="card" id="cardAlokasiHarian" style="margin-bottom: 40px;">
                 <h2>📊 Alokasi Harian (Profit & Gaji)</h2>
@@ -962,8 +939,7 @@
                 </div>  
             </div>
         </div>
-
-        <!-- SETORAN BAKSO -->
+<!-- SETORAN BAKSO -->
         <div id="viewSetoranBakso" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top:4px solid #ea580c;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -983,6 +959,30 @@
                     </table>
                 </div>
             </div>
+
+            <!-- PASTE SETORAN DAPUR DI SINI (DIPINDAH DARI HARIAN) -->
+            <div class="card" id="cardSetoranDapur" style="border-top: 4px solid #ea580c;">
+                <h2 style="color: #c2410c;">🍲 Form Setoran & Pengeluaran Dapur</h2>
+                <div style="background:#fff7ed; border:1px solid #fdba74; padding:12px; border-radius:8px;">
+                    <div class="form-group">
+                        <label style="color:#9a3412;">💵 Uang Cash Fisik (Diserahkan ke Dapur):</label>
+                        <input type="text" inputmode="numeric" id="inBmCash" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Setoran Dapur" style="border-color:#fdba74;">
+                        <div style="font-size:0.65rem; color:#d97706; margin-top:2px;">*Input uang tunai yang fisik-nya akan langsung diserahkan ke Dapur/Owner.</div>
+                    </div>
+                    <hr style="margin: 12px 0; border-top:1px dashed #fdba74;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#dc2626; margin-bottom:8px;">⚠️ PENGELUARAN DAPUR (SITUASIONAL)</div>
+                    <div class="form-group">
+                        <label style="color:#b91c1c;">📝 Catatan Keluar (Beli Gas, Kecap, dll):</label>
+                        <input type="text" id="inBmKetPengeluaran" placeholder="Contoh: Beli Gas" onchange="simpanSetoranDapurManual()" style="border-color:#fca5a5;">
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#b91c1c;">🔻 Nominal Keluar Dapur:</label>
+                        <input type="text" inputmode="numeric" id="inBmPengeluaran" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Rp" style="border-color:#fca5a5;">
+                        <div style="font-size:0.65rem; color:#dc2626; margin-top:2px;">*Mengurangi kewajiban Sisa Wajib Transfer Setoran Bakso.</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card" style="background:linear-gradient(to bottom, #fff7ed, #ffffff); border:1px solid #fdba74;">
                 <h2 style="color:#c2410c;">💰 Laporan Setoran Ke Dapur</h2>
                 <div class="grid-mobile">
@@ -1004,6 +1004,7 @@
                 </div>
             </div>
         </div>
+      
         
         <!-- REKAP TRANSFER -->
         <div id="viewRekapTransfer" style="display:none;">
