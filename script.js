@@ -624,11 +624,14 @@ function inisiatisasiRealtimeListener() {
     });
 }
 
-
 // ==========================================
 // FUNGSI NAVIGASI
 // ==========================================
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+function toggleSidebar() { 
+    document.getElementById('sidebar').classList.toggle('active'); 
+    document.getElementById('overlay').classList.toggle('active'); 
+}
+
 function pilihMenuNav(jenis) {    
     if (typeof toggleSidebar === 'function') toggleSidebar();    
 
@@ -652,20 +655,16 @@ function pilihMenuNav(jenis) {
     const viewGlobal = document.getElementById('viewDashboardGlobal');
     if (viewGlobal) viewGlobal.style.display = 'none';
 
-    // (Kode cardSetoranDapur yang lama dihapus dari sini agar tidak bentrok)
-
     if (document.getElementById('cardAlokasiHarian')) {
         document.getElementById('cardAlokasiHarian').style.display = 'none';
     }
 
     if (jenis === 'harian') {    
         document.getElementById('viewHarian').style.display = 'block';    
-        // Halaman harian sekarang bersih dari urusan dapur
         if (document.getElementById('cardAlokasiHarian')) document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
         cekPeringatanStok();
     } else if (jenis === 'setoranBakso') {    
-        document.getElementById('viewSetoranBakso').style.display = 'block'; 
-        // 👉 PASTIKAN FORM DAPUR MUNCUL DI SINI   
+        document.getElementById('viewSetoranBakso').style.display = 'block';   
         if (document.getElementById('cardSetoranDapur')) document.getElementById('cardSetoranDapur').style.display = 'block';
         renderViewSetoranBakso();    
     } else if (jenis === 'rekapTransfer') {    
@@ -681,35 +680,12 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewDashboard').style.display = 'block';
         renderDashboardGrafik();
     } else if (jenis === 'dashboardGlobal') {
-        document.getElementById('viewDashboardGlobal').style.display = 'block';
-        renderDashboardGlobal();
-    } else if (jenis === 'pusatKontrol') {
-        const viewPK = document.getElementById('viewPusatKontrol');
-        if (viewPK) { viewPK.style.display = 'block'; renderDaftarCabang(); renderDaftarAkun(); }
-    } else if (jenis === 'orderVendor') {
-        document.getElementById('viewOrderVendor').style.display = 'block';
-        renderOrderVendor();
-    } else if (jenis === 'riwayatAktivitas') {
-        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
-        muatDataRiwayat();
-    } else if (jenis === 'produk') {
-        document.getElementById('layar-produk').style.display = 'block';
-        renderMasterProduk();
-    } else if (jenis === 'laporanBerkala') {
-        document.getElementById('viewLaporanBerkala').style.display = 'block';
-    }
-}
-    // ==========================================
-    // KODE BARU: Munculkan Layar Dashboard Global
-    // ==========================================
-else if (jenis === 'dashboardGlobal') {
         if (viewGlobal) viewGlobal.style.display = 'block';
         if (typeof renderDashboardGlobal === 'function') renderDashboardGlobal();
-    // ==========================================
-
     } else if (jenis === 'orderVendor') {
         document.getElementById('viewOrderVendor').style.display = 'block';
-        renderFormOrderVendor();
+        if (typeof renderFormOrderVendor === 'function') renderFormOrderVendor();
+        else if (typeof renderOrderVendor === 'function') renderOrderVendor();
         cekPeringatanStok(); 
     } else if (jenis === 'riwayatAktivitas') {
         document.getElementById('viewRiwayatAktivitas').style.display = 'block';
@@ -717,13 +693,17 @@ else if (jenis === 'dashboardGlobal') {
     } else if (jenis === 'produk') {
         document.getElementById('layar-produk').style.display = 'block';
         if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+        else if (typeof renderMasterProduk === 'function') renderMasterProduk();
     } else if (jenis === 'laporanBerkala') {
         document.getElementById('viewLaporanBerkala').style.display = 'block';
     } else if (jenis === 'pusatKontrol') {
         if (viewPusat) viewPusat.style.display = 'block';
         if (typeof muatDaftarAkun === 'function') muatDaftarAkun();
+        if (typeof renderDaftarCabang === 'function') renderDaftarCabang();
+        if (typeof renderDaftarAkun === 'function') renderDaftarAkun();
     }
 }
+
 
 // ==========================================
 // FUNGSI FORM ORDER VENDOR
