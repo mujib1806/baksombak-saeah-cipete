@@ -2032,7 +2032,7 @@ function editProdukMaster(i) {
 }
 
 // ==========================================
-// 4. RENDER TABEL MASTER PRODUK DENGAN RUMUS OTOMATIS & FILTER BAKSO
+// RENDER TABEL MASTER PRODUK DENGAN FITUR EDIT STOK AKTUAL
 // ==========================================
 function renderTabelMasterProduk() { 
     const t = document.getElementById('tbodyMasterProduk'); 
@@ -2042,33 +2042,31 @@ function renderTabelMasterProduk() {
     if(!masterProduk || masterProduk.length === 0) return;
 
     masterProduk.forEach((p, i) => { 
-        // Cek apakah ini produk Bakso Malang
         const isBakso = p.kategori.toLowerCase().includes('bakso');
-        
         let kolomStokHtml = '';
 
         if (isBakso) {
-            // JIKA BAKSO: Gabungkan 6 kolom stok menjadi 1 penanda khusus produksi dapur
             kolomStokHtml = `
                 <td colspan="6" style="text-align:center; background:#fff7ed; color:#ea580c; font-weight:bold; font-size: 0.8rem; letter-spacing: 1px; border-left: 1px dashed #fdba74; border-right: 1px dashed #fdba74;">
                     🍲 PRODUKSI DAPUR (TANPA STOK GUDANG)
                 </td>
             `;
         } else {
-            // JIKA PRODUK RESELLER / PLASTIK: Jalankan rumus gudang normal
+            // Ambil data langsung dari variabel produk (Bisa diedit manual)
             const awalGudang = parseFloat(p.stokAwalGudang) || 0;
+            const keluarEtalase = parseFloat(p.stokKeluar) || 0;
             const rusak = parseFloat(p.stokRusak) || 0;
             const minGudang = parseFloat(p.minGudang) || 0;
             const minEtalase = parseFloat(p.minEtalase) || 0;
             
-            const keluarEtalase = hitungTotalStokKeluar(p.nama);
+            // Hitung Sisa Gudang Aktual
             const sisaGudang = awalGudang - keluarEtalase - rusak;
             
             let warnaSisa = 'color: #0284c7; font-weight: bold; background: #f0f9ff;'; 
             if (sisaGudang <= 0) {
-                warnaSisa = 'color: #dc2626; font-weight: 900; background: #fef2f2;'; // Habis
+                warnaSisa = 'color: #dc2626; font-weight: 900; background: #fef2f2;'; 
             } else if (sisaGudang <= minGudang) {
-                warnaSisa = 'color: #d97706; font-weight: 800; background: #fffbeb;'; // Warning
+                warnaSisa = 'color: #d97706; font-weight: 800; background: #fffbeb;'; 
             }
 
             kolomStokHtml = `
@@ -2088,18 +2086,66 @@ function renderTabelMasterProduk() {
             <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
             <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
             
-            ${kolomStokHtml} <!-- Kolom Stok Ditempel di sini -->
+            ${kolomStokHtml}
             
             <td style="text-align:center;">
-                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit Data">✏️</button>
-                <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
+                ${!isBakso ? `<button onclick="bukaModalKoreksiStok(${i})" style="border:1px solid #cbd5e1; background:#f8fafc; padding:2px 6px; border-radius:4px; font-size:0.7rem; cursor:pointer; margin-right:4px;" title="Sesuaikan Stok Fisik">⚙️ Koreksi</button>` : ''}
+                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.1rem; cursor:pointer;" title="Edit Data">✏️</button>
+                <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.1rem; cursor:pointer;" title="Hapus">🗑️</button>
             </td>
         </tr>`;
     }); 
 }
 
-// Catatan: Fungsi promptUbahStokGudang sengaja tidak dimasukkan ke HTML baru ini, 
-// karena pergerakan "Out" sekarang sudah diatur otomatis dari etalase harian & form edit rusak.
+// ==========================================
+// FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL DENGAN RIWAYAT OTOMATIS
+// ==========================================
+function bukaModalKoreksiStok(i) {
+    const p = masterProduk[i];
+    if (!p) return;
+
+    let inputBaru = prompt(`⚙️ KOREKSI STOK FISIK: ${p.nama}\n\nMasukkan jumlah SISA STOK GUDANG yang aktual/riil saat ini di gudang:`, p.stokAwalGudang - (p.stokKeluar || 0) - (p.stokRusak || 0));
+    
+    if (inputBaru === null) return; // Batal
+    let stokFisikAktual = parseInt(inputBaru);
+    
+    if (isNaN(stokFisikAktual) || stokFisikAktual < 0) {
+        alert("Masukkan angka yang valid!");
+        return;
+    }
+
+    let stokLama = (parseFloat(p.stokAwalGudang) || 0) - (parseFloat(p.stokKeluar) || 0) - (parseFloat(p.stokRusak) || 0);
+    let selisih = stokFisikAktual - stokLama;
+
+    if (selisih === 0) {
+        alert("Stok sudah sesuai, tidak ada perubahan.");
+        return;
+    }
+
+    // Penyesuaian: Kita sesuaikan "Stok Awal Gudang" agar hasil akhirnya pas dengan fisik aktual
+    p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + selisih;
+
+    // Simpan ke database
+    if(db) {
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+        .then(() => { 
+            renderTabelMasterProduk(); 
+            showToast("✅ Stok Berhasil Dikoreksi!");
+        }); 
+    } else { 
+        renderTabelMasterProduk(); 
+        showToast("✅ Stok Berhasil Dikoreksi (Lokal)!"); 
+    }
+
+    // Catat otomatis ke Riwayat Pergerakan Stok
+    const jenisAksi = selisih > 0 ? 'In' : 'Out';
+    const teksPerubahan = `${selisih > 0 ? '+' : ''}${selisih} Pcs (Koreksi Opname Fisik)`;
+    
+    if (typeof catatRiwayatStok === 'function') {
+        catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), stokFisikAktual);
+    }
+    catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+}
 // ==========================================
 // 5. FUNGSI RENDER RIWAYAT STOK (YANG SEMPAT HILANG)
 // ==========================================
