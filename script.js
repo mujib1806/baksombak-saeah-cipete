@@ -2083,14 +2083,58 @@ function renderTabelMasterProduk() {
 
 // Catatan: Fungsi promptUbahStokGudang sengaja tidak dimasukkan ke HTML baru ini, 
 // karena pergerakan "Out" sekarang sudah diatur otomatis dari etalase harian & form edit rusak.
+// ==========================================
+// 5. FUNGSI RENDER RIWAYAT STOK (YANG SEMPAT HILANG)
+// ==========================================
+function renderTabelRiwayatStok() {
+    const tbody = document.getElementById('tbodyRiwayatStok');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
+    // Jika data riwayat tidak ada, tampilkan pesan kosong
+    if (typeof riwayatStok === 'undefined' || !riwayatStok || riwayatStok.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>`;
+        return;
+    }
+
+    riwayatStok.forEach((item, index) => {
+        const isIn = item.aksi === 'In';
+        const badgeStyle = isIn 
+            ? 'background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold;' 
+            : 'background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-weight: bold;';
+        
+        const warnaPerubahan = isIn ? 'color: #16a34a; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="text-align:center; color:#94a3b8; padding: 6px;">${index + 1}</td>
+                <td style="padding: 6px;">${item.waktu}</td>
+                <td style="padding: 6px;"><strong>${item.produk}</strong></td>
+                <td style="text-align:center; padding: 6px;"><span style="${badgeStyle}">${item.aksi}</span></td>
+                <td style="text-align:center; padding: 6px; ${warnaPerubahan}">${item.perubahan}</td>
+                <td style="text-align:center; padding: 6px; font-weight:bold; color:#0284c7;">${item.sisa}</td>
+                <td style="padding: 6px;">${item.oleh}</td>
+            </tr>
+        `;
+    });
+}
+
+// ==========================================
+// 6. FUNGSI HAPUS PRODUK (YANG SEMPAT HILANG)
+// ==========================================
 function hapusProdukMaster(i) { 
-    if(confirm("Hapus produk dari master?")) { 
+    if(confirm("Hapus produk ini dari Master Produk?")) { 
         const namaProd = masterProduk[i]?.nama || 'Produk';
         masterProduk.splice(i, 1); 
         catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
-        if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }); 
-        renderTabelMasterProduk(); 
+        if(db) {
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+            .then(() => {
+                renderTabelMasterProduk();
+            });
+        } else {
+            renderTabelMasterProduk(); 
+        }
     } 
 }
 
