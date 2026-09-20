@@ -699,12 +699,10 @@ function pilihMenuNav(jenis) {
         document.getElementById('viewLaporanBerkala').style.display = 'block';
     }
 }
-
-        
     // ==========================================
     // KODE BARU: Munculkan Layar Dashboard Global
     // ==========================================
-    } else if (jenis === 'dashboardGlobal') {
+else if (jenis === 'dashboardGlobal') {
         if (viewGlobal) viewGlobal.style.display = 'block';
         if (typeof renderDashboardGlobal === 'function') renderDashboardGlobal();
     // ==========================================
