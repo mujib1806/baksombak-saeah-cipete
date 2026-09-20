@@ -1936,7 +1936,30 @@ function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk')
 function tambahKategoriBaruPrompt() { const k=prompt("Nama Kategori Baru:"); if(k&&k.trim()){ daftarKategori.push(k.trim()); if(db)db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({list:daftarKategori}); bukaModalKelolaProduk(); } }
 
 function hitungMarginForm() { document.getElementById('inputMarginProduk').value=Math.max(0,(parseFloat(document.getElementById('inputJualProduk').value)||0)-(parseFloat(document.getElementById('inputModalProduk').value)||0)); }
+// ==========================================
+// 1. FUNGSI CERDAS: MENGHITUNG TOTAL BARANG KELUAR KE ETALASE
+// ==========================================
+function hitungTotalStokKeluar(namaProduk) {
+    let totalKeluar = 0;
+    // Menyapu semua data harian yang ada di dbStok
+    if (typeof dbStok !== 'undefined' && dbStok !== null) {
+        Object.keys(dbStok).forEach(tgl => {
+            let dataHariIni = dbStok[tgl];
+            if (Array.isArray(dataHariIni)) {
+                let item = dataHariIni.find(p => p.nama === namaProduk);
+                // Jika produk ditemukan, ambil angka dari kolom "Tambah"
+                if (item && item.tambah) {
+                    totalKeluar += parseFloat(item.tambah) || 0;
+                }
+            }
+        });
+    }
+    return totalKeluar;
+}
 
+// ==========================================
+// 2. SIMPAN / EDIT PRODUK BARU
+// ==========================================
 function simpanProdukBaru(e) { 
     e.preventDefault(); 
     const p = {
@@ -1945,21 +1968,22 @@ function simpanProdukBaru(e) {
         modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
         jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
         margin: 0,
-        stokGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
-        batasMinimum: parseFloat(document.getElementById('inputBatasMinimum').value) || 10
+        stokAwalGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
+        stokRusak: parseFloat(document.getElementById('inputStokRusak').value) || 0,
+        minGudang: parseFloat(document.getElementById('inputMinGudang').value) || 0,
+        minEtalase: parseFloat(document.getElementById('inputMinEtalase').value) || 0
     }; 
     p.margin = p.jual - p.modal; 
 
     const idx = parseInt(document.getElementById('editIndexProduk').value); 
-    const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}" (Jual: Rp ${p.jual.toLocaleString('id-ID')})` : `Menambahkan produk baru "${p.nama}"`;
+    const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}"` : `Menambahkan produk baru "${p.nama}"`;
 
-   if(idx >= 0) {
+    if(idx >= 0) {
         masterProduk[idx] = p; 
     } else {
         masterProduk.push(p);
-        // Jika ada stok gudang awal saat produk baru dibuat, catat sebagai In
-        if (p.stokGudang > 0) {
-            catatRiwayatStok(p.nama, 'In', p.stokGudang, p.stokGudang);
+        if (p.stokAwalGudang > 0) {
+            catatRiwayatStok(p.nama, 'In', p.stokAwalGudang, p.stokAwalGudang);
         }
     } 
     catatAktivitas('Master Produk', aksiTeks);
@@ -1967,149 +1991,98 @@ function simpanProdukBaru(e) {
     if(db) {
         db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
         .then(() => { 
-            bukaModalKelolaProduk(); 
-            alert("Berhasil disimpan!"); 
+            tutupModalKelolaProduk(); 
+            showToast("✅ Produk Berhasil Disimpan!"); 
+            renderTabelMasterProduk();
         }); 
     } else { 
-        bukaModalKelolaProduk(); 
-        alert("Lokal OK"); 
+        tutupModalKelolaProduk(); 
+        showToast("✅ Lokal OK"); 
+        renderTabelMasterProduk();
     } 
 }
 
-function renderTabelMasterProduk() { 
-    const t = document.getElementById('tbodyMasterProduk'); 
-    if(!t) return;
-    t.innerHTML = ''; 
-    masterProduk.forEach((p, i) => { 
-        const gudang = parseFloat(p.stokGudang) || 0;
-        const batas = parseFloat(p.batasMinimum) || 0;
-        
-        let warnaBatas = (batas > 0 && gudang <= batas) 
-            ? 'color: #dc2626; font-weight: bold; background: #fef2f2;' 
-            : 'color: #64748b; background: #f8fafc; font-weight: 600;';  
-
-t.innerHTML += `<tr>
-            <td style="text-align:center;">${i+1}</td>
-            <td><strong>${p.nama}</strong><br><small>${p.kategori}</small></td>
-            <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
-            <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
-            <td style="text-align:center; font-weight:bold; color:#0284c7; background:#f0f9ff; font-size:1rem;">
-                ${gudang} 
-                <div style="margin-top:4px; display:flex; justify-content:center; gap:4px;">
-                    <button onclick="promptUbahStokGudang(${i}, 'in')" style="background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer;" title="Tambah Stok Gudang">➕ In</button>
-                    <button onclick="promptUbahStokGudang(${i}, 'out')" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:4px; padding:1px 6px; font-size:0.7rem; cursor:pointer;" title="Kurangi Stok (Rusak/Kadaluarsa)">➖ Out</button>
-                </div>
-            </td>
-            <td style="text-align:center; font-size:0.95rem; ${warnaBatas}">${batas}</td>
-            <td style="text-align:center;">
-                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit">✏️</button>
-                <button onclick="hapusProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Hapus">🗑️</button>
-            </td>
-        </tr>`;
-    }); 
-}
-// Fungsi untuk menambah atau mengurangi stok gudang langsung dari Master Produk
-function promptUbahStokGudang(i, jenis) {
-    const p = masterProduk[i];
-    if (!p) return;
-
-    const labelJenis = jenis === 'in' ? 'TAMBAH STOK GUDANG (Restock / Masuk)' : 'KURANGI STOK GUDANG (Rusak / Kadaluarsa / Hilang)';
-    const tanda = jenis === 'in' ? '+' : '-';
-    
-    let inputStr = prompt(`📦 ${p.nama}\nStok Gudang Saat Ini: ${p.stokGudang || 0} Pcs\n\nMasukkan jumlah Pcs yang ingin di-${jenis === 'in' ? 'tambah' : 'kurang'}:`);
-    if (inputStr === null) return; // Batal
-
-    let jumlah = parseInt(inputStr) || 0;
-    if (jumlah <= 0) {
-        alert("Jumlah harus lebih dari 0!");
-        return;
-    }
-
-    let stokLama = parseFloat(p.stokGudang) || 0;
-    let stokBaru = 0;
-
-    if (jenis === 'in') {
-        stokBaru = stokLama + jumlah;
-    } else {
-        stokBaru = Math.max(0, stokLama - jumlah);
-    }
-
-    // Update stok gudang di master produk
-    masterProduk[i].stokGudang = stokBaru;
-
-    // Simpan ke Firebase
-    if (db) {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
-        .then(() => {
-            renderTabelMasterProduk();
-            showToast('✅ Stok Gudang Diperbarui!');
-        });
-    } else {
-        renderTabelMasterProduk();
-        showToast('✅ Stok Gudang Diperbarui (Lokal)!');
-    }
-
-    // Catat ke audit trail / tabel riwayat pergerakan stok
-    const jenisAksi = jenis === 'in' ? 'In' : 'Out';
-    catatRiwayatStok(p.nama, jenisAksi, jumlah, stokBaru);
-    
-    // Catat juga ke log aktivitas umum
-    catatAktivitas('Master Produk', `Ubah stok gudang "${p.nama}": ${tanda}${jumlah} Pcs (Sisa Gudang: ${stokBaru})`);
-}
-// Fungsi untuk merender tabel riwayat pergerakan stok
-function renderTabelRiwayatStok() {
-    const tbody = document.getElementById('tbodyRiwayatStok');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!riwayatStok || riwayatStok.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>`;
-        return;
-    }
-
-    riwayatStok.forEach((item, index) => {
-        const isIn = item.aksi === 'In';
-        const badgeStyle = isIn 
-            ? 'background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold;' 
-            : 'background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-weight: bold;';
-        
-        const warnaPerubahan = isIn ? 'color: #16a34a; font-weight: bold;' : 'color: #dc2626; font-weight: bold;';
-
-        tbody.innerHTML += `
-            <tr>
-                <td style="text-align:center; color:#94a3b8; padding: 6px;">${index + 1}</td>
-                <td style="padding: 6px;">${item.waktu}</td>
-                <td style="padding: 6px;"><strong>${item.produk}</strong></td>
-                <td style="text-align:center; padding: 6px;"><span style="${badgeStyle}">${item.aksi}</span></td>
-                <td style="text-align:center; padding: 6px; ${warnaPerubahan}">${item.perubahan}</td>
-                <td style="text-align:center; padding: 6px; font-weight:bold; color:#0284c7;">${item.sisa}</td>
-                <td style="padding: 6px;">${item.oleh}</td>
-            </tr>
-        `;
-    });
-}
-
+// ==========================================
+// 3. EDIT PRODUK (MENGISI FORM)
+// ==========================================
 function editProdukMaster(i) { 
     const select = document.getElementById('selectKategoriProduk'); 
     if(select) {
         select.innerHTML = ''; 
-        daftarKategori.forEach(k => { select.innerHTML += `<option value="${k}">${k}</option>` });
+        if(typeof daftarKategori !== 'undefined') {
+            daftarKategori.forEach(k => { select.innerHTML += `<option value="${k}">${k}</option>` });
+        }
     }
     
     const p = masterProduk[i]; 
     document.getElementById('editIndexProduk').value = i; 
     document.getElementById('inputNamaProduk').value = p.nama; 
     document.getElementById('selectKategoriProduk').value = p.kategori; 
-    document.getElementById('inputModalProduk').value = p.modal; 
-    document.getElementById('inputJualProduk').value = p.jual; 
+    document.getElementById('inputModalProduk').value = p.modal || 0; 
+    document.getElementById('inputJualProduk').value = p.jual || 0; 
     
-    document.getElementById('inputStokGudang').value = p.stokGudang || 0;
-    document.getElementById('inputBatasMinimum').value = p.batasMinimum || 10;
+    document.getElementById('inputStokGudang').value = p.stokAwalGudang || 0;
+    document.getElementById('inputStokRusak').value = p.stokRusak || 0;
+    document.getElementById('inputMinGudang').value = p.minGudang || 10;
+    document.getElementById('inputMinEtalase').value = p.minEtalase || 5;
     
-    hitungMarginForm(); 
-    document.getElementById('btnSimpanProduk').innerText = "Update"; 
+    if(typeof hitungMarginForm === 'function') hitungMarginForm(); 
+    document.getElementById('btnSimpanProduk').innerText = "Update Produk"; 
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
+
+// ==========================================
+// 4. RENDER TABEL MASTER PRODUK DENGAN RUMUS OTOMATIS
+// ==========================================
+function renderTabelMasterProduk() { 
+    const t = document.getElementById('tbodyMasterProduk'); 
+    if(!t) return;
+    t.innerHTML = ''; 
+    
+    if(!masterProduk || masterProduk.length === 0) return;
+
+    masterProduk.forEach((p, i) => { 
+        // 1. Ambil data mentah
+        const awalGudang = parseFloat(p.stokAwalGudang) || 0;
+        const rusak = parseFloat(p.stokRusak) || 0;
+        const minGudang = parseFloat(p.minGudang) || 0;
+        const minEtalase = parseFloat(p.minEtalase) || 0;
+        
+        // 2. Hitung Stok Keluar (Dari Kolom Tambah Etalase Harian)
+        const keluarEtalase = hitungTotalStokKeluar(p.nama);
+
+        // 3. RUMUS UTAMA: Sisa Gudang
+        const sisaGudang = awalGudang - keluarEtalase - rusak;
+        
+        // 4. Warna Peringatan
+        let warnaSisa = 'color: #0284c7; font-weight: bold; background: #f0f9ff;'; // Biru default
+        if (sisaGudang <= 0) {
+            warnaSisa = 'color: #dc2626; font-weight: 900; background: #fef2f2;'; // Merah (Habis)
+        } else if (sisaGudang <= minGudang) {
+            warnaSisa = 'color: #d97706; font-weight: 800; background: #fffbeb;'; // Kuning (Warning)
+        }
+
+        t.innerHTML += `<tr>
+            <td style="text-align:center;">${i+1}</td>
+            <td><strong>${p.nama}</strong></td>
+            <td><span style="font-size: 0.65rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${p.kategori}</span></td>
+            <td style="text-align:right;">${(parseFloat(p.modal) || 0).toLocaleString('id-ID')}</td>
+            <td style="text-align:right;">${(parseFloat(p.jual) || 0).toLocaleString('id-ID')}</td>
+            <td style="text-align:center; font-weight:bold; color:#16a34a; background:#f0fdf4;">${awalGudang}</td>
+            <td style="text-align:center; font-weight:bold; color:#e11d48; background:#fff1f2;">${keluarEtalase}</td>
+            <td style="text-align:center; font-weight:bold; color:#9f1239; background:#fff1f2;">${rusak}</td>
+            <td style="text-align:center; font-size:1.1rem; ${warnaSisa}">${sisaGudang}</td>
+            <td style="text-align:center; color:#d97706;">${minGudang}</td>
+            <td style="text-align:center; color:#b45309;">${minEtalase}</td>
+            <td style="text-align:center;">
+                <button onclick="editProdukMaster(${i})" style="border:none; background:transparent; font-size:1.2rem; cursor:pointer;" title="Edit Data Gudang">✏️</button>
+            </td>
+        </tr>`;
+    }); 
+}
+
+// Catatan: Fungsi promptUbahStokGudang sengaja tidak dimasukkan ke HTML baru ini, 
+// karena pergerakan "Out" sekarang sudah diatur otomatis dari etalase harian & form edit rusak.
 
 function hapusProdukMaster(i) { 
     if(confirm("Hapus produk dari master?")) { 
