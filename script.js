@@ -1914,21 +1914,28 @@ function hapusMutasiKas(docId) {
 // FUNGSI MASTER PRODUK & GUDANG
 // ==========================================
 function bukaModalKelolaProduk() { 
-    const select=document.getElementById('selectKategoriProduk'); 
-    if(select) {
-        select.innerHTML=''; daftarKategori.forEach(k=>{select.innerHTML+=`<option value="${k}">${k}</option>`}); 
+    const select = document.getElementById('selectKategoriProduk'); 
+    if(select && typeof daftarKategori !== 'undefined') {
+        select.innerHTML=''; 
+        daftarKategori.forEach(k => { select.innerHTML += `<option value="${k}">${k}</option>` }); 
     }
-    document.getElementById('editIndexProduk').value="-1"; 
-    document.getElementById('inputNamaProduk').value=""; 
-    document.getElementById('inputModalProduk').value=""; 
-    document.getElementById('inputJualProduk').value=""; 
-    document.getElementById('inputMarginProduk').value=""; 
-    document.getElementById('inputStokGudang').value="0"; 
-    document.getElementById('inputBatasMinimum').value="10"; 
     
-    document.getElementById('btnSimpanProduk').innerText="Simpan"; 
+    // SAFE CHECK: Hanya ubah value JIKA elemennya ditemukan di HTML
+    if(document.getElementById('editIndexProduk')) document.getElementById('editIndexProduk').value = "-1"; 
+    if(document.getElementById('inputNamaProduk')) document.getElementById('inputNamaProduk').value = ""; 
+    if(document.getElementById('inputModalProduk')) document.getElementById('inputModalProduk').value = ""; 
+    if(document.getElementById('inputJualProduk')) document.getElementById('inputJualProduk').value = ""; 
+    if(document.getElementById('inputMarginProduk')) document.getElementById('inputMarginProduk').value = ""; 
+    if(document.getElementById('inputStokGudang')) document.getElementById('inputStokGudang').value = "0"; 
+    if(document.getElementById('inputBatasMinimum')) document.getElementById('inputBatasMinimum').value = "10"; 
+    
+    if(document.getElementById('btnSimpanProduk')) document.getElementById('btnSimpanProduk').innerText = "Simpan"; 
+    
     renderTabelMasterProduk(); 
-    document.getElementById('modalKelolaProduk').classList.add('active'); 
+    
+    if(document.getElementById('modalKelolaProduk')) {
+        document.getElementById('modalKelolaProduk').classList.add('active'); 
+    }
 }
 
 function tutupModalKelolaProduk() { document.getElementById('modalKelolaProduk').classList.remove('active'); }
@@ -1962,46 +1969,58 @@ function hitungTotalStokKeluar(namaProduk) {
 // ==========================================
 function simpanProdukBaru(e) { 
     e.preventDefault(); 
+    
+    // Fungsi bantu pengaman agar tidak error jika input tidak ada di HTML
+    const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
+    const getNum = (id) => {
+        const el = document.getElementById(id);
+        return el && el.value ? parseFloat(el.value) : 0;
+    };
+
     const p = {
-        nama: document.getElementById('inputNamaProduk').value.trim(), 
-        kategori: document.getElementById('selectKategoriProduk').value, 
-        modal: parseFloat(document.getElementById('inputModalProduk').value) || 0, 
-        jual: parseFloat(document.getElementById('inputJualProduk').value) || 0, 
+        nama: getVal('inputNamaProduk').trim(), 
+        kategori: getVal('selectKategoriProduk'), 
+        modal: getNum('inputModalProduk'), 
+        jual: getNum('inputJualProduk'), 
         margin: 0,
-        stokAwalGudang: parseFloat(document.getElementById('inputStokGudang').value) || 0,
-        stokRusak: parseFloat(document.getElementById('inputStokRusak').value) || 0,
-        minGudang: parseFloat(document.getElementById('inputMinGudang').value) || 0,
-        minEtalase: parseFloat(document.getElementById('inputMinEtalase').value) || 0
+        stokAwalGudang: getNum('inputStokGudang'),
+        stokRusak: getNum('inputStokRusak'),
+        minGudang: getNum('inputMinGudang'),
+        minEtalase: getNum('inputMinEtalase')
     }; 
     p.margin = p.jual - p.modal; 
 
-    const idx = parseInt(document.getElementById('editIndexProduk').value); 
+    const elEdit = document.getElementById('editIndexProduk');
+    const idx = elEdit && elEdit.value ? parseInt(elEdit.value) : -1; 
     const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}"` : `Menambahkan produk baru "${p.nama}"`;
 
     if(idx >= 0) {
         masterProduk[idx] = p; 
     } else {
         masterProduk.push(p);
-        if (p.stokAwalGudang > 0) {
+        if (p.stokAwalGudang > 0 && typeof catatRiwayatStok === 'function') {
             catatRiwayatStok(p.nama, 'In', p.stokAwalGudang, p.stokAwalGudang);
         }
     } 
-    catatAktivitas('Master Produk', aksiTeks);
+    
+    if(typeof catatAktivitas === 'function') catatAktivitas('Master Produk', aksiTeks);
 
-    if(db) {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+    if(typeof db !== 'undefined' && db !== null) {
+        db.collection('cabang').doc(typeof CABANG_AKTIF !== 'undefined' ? CABANG_AKTIF : 'cipeteutara')
+          .collection('appData').doc('masterProduk').set({ list: masterProduk })
         .then(() => { 
-            tutupModalKelolaProduk(); 
-            showToast("✅ Produk Berhasil Disimpan!"); 
+            if(typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
+            if(typeof showToast === 'function') showToast("✅ Produk Berhasil Disimpan!"); 
             renderTabelMasterProduk();
+        }).catch(err => {
+            console.error("Gagal simpan:", err);
         }); 
     } else { 
-        tutupModalKelolaProduk(); 
-        showToast("✅ Lokal OK"); 
+        if(typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
+        if(typeof showToast === 'function') showToast("✅ Lokal OK"); 
         renderTabelMasterProduk();
     } 
 }
-
 // ==========================================
 // 3. EDIT PRODUK (MENGISI FORM)
 // ==========================================
