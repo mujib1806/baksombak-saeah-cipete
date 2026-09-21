@@ -2899,6 +2899,8 @@ function generatePDFSlipGaji() {
 
     const element = document.getElementById('pdfAreaSlipGaji'); 
     if(!element) return;
+    
+    // 1. Munculkan area tersembunyi HANYA untuk difoto oleh sistem
     element.style.display = 'block'; 
 
     html2pdf().set({ 
@@ -2908,7 +2910,11 @@ function generatePDFSlipGaji() {
         html2canvas: { scale: 2 }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
         pagebreak: { mode: 'avoid-all' } 
-    }).output('blob').then(function(pdfBlob) { 
+    })
+    .from(element) // <--- INI BIANG KEROKNYA KEMARIN HILANG! (Titik target cetaknya)
+    .output('blob')
+    .then(function(pdfBlob) { 
+        // 2. Setelah berhasil difoto, segera SEMBUNYIKAN lagi agar tidak bocor
         element.style.display = 'none'; 
 
         const namaFile = `Slip_Gaji_${bln}.pdf`;
@@ -2924,6 +2930,12 @@ function generatePDFSlipGaji() {
             const urlObj = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a'); link.href = urlObj; link.download = namaFile; link.click(); URL.revokeObjectURL(urlObj);
         }
+    })
+    .catch(function(error) {
+        // 3. JAGA-JAGA JIKA ERROR: Tetap wajib disembunyikan agar layout tidak hancur
+        element.style.display = 'none';
+        console.error("Gagal membuat PDF: ", error);
+        alert("Terjadi kesalahan saat memproses PDF.");
     });
 }
 
