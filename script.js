@@ -993,21 +993,19 @@ function simpanStokKeFirebase() {
         showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
     }); 
 }
-
 function updateNilaiStokLokal(idx, tipe, val) {  
     const activeElementId = document.activeElement ? document.activeElement.id : null;
 
     const tgl = document.getElementById('tglOps').value;  
     if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
     
-    // 👉 PASTIKAN VARIABEL P DIDEKLARASIKAN DI SINI (SEBELUM PENGECEKAN TIPE)
     const p = dbStok[tgl][idx];
     if (!p) return;
 
    if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
-        const selisih = valBaru - valLama;  // Bisa bernilai positif (tambah ambil) atau negatif (kurangi/kembalikan)
+        const selisih = valBaru - valLama;  
         
         if (selisih !== 0) {
             const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
@@ -1022,7 +1020,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
                     sisaGudangBaru = Math.max(0, stokGudangSekarang - selisih);
                     jenisAksi = 'Out';
                 } else {
-                    // Kasus 2: Mengembalikan barang dari etalase ke gudang / koreksi (Stok gudang bertambah kembali)
+                    // Kasus 2: Mengembalikan barang dari etalase ke gudang (Stok gudang bertambah)
                     let jumlahKembali = Math.abs(selisih);
                     sisaGudangBaru = stokGudangSekarang + jumlahKembali;
                     jenisAksi = 'In';
@@ -1030,10 +1028,11 @@ function updateNilaiStokLokal(idx, tipe, val) {
 
                 masterProduk[masterIdx].stokGudang = sisaGudangBaru;
                 
-                if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+                if(db) db.collection('cabang').doc(typeof CABANG_AKTIF !== 'undefined' ? CABANG_AKTIF : 'cipeteutara').collection('appData').doc('masterProduk').set({ list: masterProduk });
                 
-                // Catat ke riwayat secara otomatis (Out jika ambil, In jika dikembalikan)
-                catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), sisaGudangBaru);
+                if(typeof catatRiwayatStok === 'function') {
+                    catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), sisaGudangBaru);
+                }
             }
         }
         dbStok[tgl][idx].tambah = val;  
@@ -1052,21 +1051,26 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
 
-    // Update langsung teks kolom total & terjual di baris terkait tanpa merender ulang seluruh tabel
+    // PERBAIKAN: Pastikan kolom Tabel Etalase ter-update di layar!
     const elTotal = document.getElementById('td_total_' + idx);  
     if(elTotal) elTotal.innerText = totalStok;  
 
     const elTerjual = document.getElementById('td_terjual_' + idx);  
     if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';  
 
-    updateKalkulasi();  
+    // PERBAIKAN BUG: Jika ada kolom input Tambah, paksa layarnya refresh nilai terbarunya
+    const elTambah = document.getElementById('tambah_' + idx);
+    if(elTambah && document.activeElement !== elTambah) {
+        elTambah.value = tambah > 0 ? tambah : '';
+    }
+
+    if(typeof updateKalkulasi === 'function') updateKalkulasi();  
     
-    clearTimeout(autoSaveTimeout); 
+    if(typeof autoSaveTimeout !== 'undefined') clearTimeout(autoSaveTimeout); 
     autoSaveTimeout = setTimeout(() => {  
-        simpanStokKeFirebase();  
+        if(typeof simpanStokKeFirebase === 'function') simpanStokKeFirebase();  
     }, 1500);  
 
-    // Pastikan fokus tetap terjaga diinput yang sedang diketik
     if (activeElementId) {
         requestAnimationFrame(() => {
             const elToFocus = document.getElementById(activeElementId);
@@ -1080,10 +1084,11 @@ function updateNilaiStokLokal(idx, tipe, val) {
         });
     }
 }
-// Fungsi untuk menambah/mengurangi nilai di kolom Tambah harian secara cepat (misal ambil susulan sore hari)
+
+// Fungsi untuk menambah/mengurangi nilai di kolom Tambah harian secara cepat
 function ubahStokHarianCepat(idx, tipe, nominalUbah) {
     const tgl = document.getElementById('tglOps').value;
-    if (isDataLocked(tgl)) {
+    if (typeof isDataLocked === 'function' && isDataLocked(tgl)) {
         alert("Data hari ini terkunci!");
         return;
     }
@@ -1094,15 +1099,16 @@ function ubahStokHarianCepat(idx, tipe, nominalUbah) {
     let nilaiLama = parseFloat(p.tambah) || 0;
     let nilaiBaru = Math.max(0, nilaiLama + nominalUbah);
     
-    // Perbarui nilai di input HTML-nya secara langsung
+    // PERBAIKAN: Set value langsung ke HTML sebelum masuk ke fungsi pengurang gudang
     const inputEl = document.getElementById(`tambah_${idx}`);
     if (inputEl) {
         inputEl.value = nilaiBaru === 0 ? '' : nilaiBaru;
     }
     
-    // Panggil fungsi utama penyimpan lokal & pemotong gudang
+    // Panggil fungsi utama
     updateNilaiStokLokal(idx, tipe, nilaiBaru === 0 ? '' : nilaiBaru);
 }
+
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
