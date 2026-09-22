@@ -1010,23 +1010,23 @@ function updateNilaiStokLokal(idx, tipe, val) {
         if (selisih !== 0) {
             const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
             if (masterIdx !== -1) {
-                let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokGudang) || 0;
+                // PERBAIKAN: Menggunakan nama variabel asli milik Anda yaitu "stokAwalGudang"
+                let stokGudangSekarang = parseFloat(masterProduk[masterIdx].stokAwalGudang) || 0;
                 
                 let sisaGudangBaru = 0;
                 let jenisAksi = '';
                 
                 if (selisih > 0) {
-                    // Kasus 1: Mengambil barang dari gudang ke etalase (Stok gudang berkurang)
                     sisaGudangBaru = Math.max(0, stokGudangSekarang - selisih);
                     jenisAksi = 'Out';
                 } else {
-                    // Kasus 2: Mengembalikan barang dari etalase ke gudang (Stok gudang bertambah)
                     let jumlahKembali = Math.abs(selisih);
                     sisaGudangBaru = stokGudangSekarang + jumlahKembali;
                     jenisAksi = 'In';
                 }
 
-                masterProduk[masterIdx].stokGudang = sisaGudangBaru;
+                // PERBAIKAN: Timpa kembali ke variabel "stokAwalGudang"
+                masterProduk[masterIdx].stokAwalGudang = sisaGudangBaru;
                 
                 if(db) db.collection('cabang').doc(typeof CABANG_AKTIF !== 'undefined' ? CABANG_AKTIF : 'cipeteutara').collection('appData').doc('masterProduk').set({ list: masterProduk });
                 
@@ -1051,14 +1051,12 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
 
-    // PERBAIKAN: Pastikan kolom Tabel Etalase ter-update di layar!
     const elTotal = document.getElementById('td_total_' + idx);  
     if(elTotal) elTotal.innerText = totalStok;  
 
     const elTerjual = document.getElementById('td_terjual_' + idx);  
     if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';  
 
-    // PERBAIKAN BUG: Jika ada kolom input Tambah, paksa layarnya refresh nilai terbarunya
     const elTambah = document.getElementById('tambah_' + idx);
     if(elTambah && document.activeElement !== elTambah) {
         elTambah.value = tambah > 0 ? tambah : '';
@@ -1084,7 +1082,6 @@ function updateNilaiStokLokal(idx, tipe, val) {
         });
     }
 }
-
 // Fungsi untuk menambah/mengurangi nilai di kolom Tambah harian secara cepat
 function ubahStokHarianCepat(idx, tipe, nominalUbah) {
     const tgl = document.getElementById('tglOps').value;
