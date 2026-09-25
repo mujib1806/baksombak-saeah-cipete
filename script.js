@@ -2062,37 +2062,72 @@ function editProdukMaster(i) {
     document.getElementById('btnSimpanProduk').innerText = "Update Produk"; 
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
-
 // ==========================================
-// RENDER TABEL MASTER PRODUK DENGAN FITUR EDIT STOK AKTUAL
-// ==========================================
-// ==========================================
-// RENDER TABEL MASTER PRODUK DENGAN FITUR EDIT STOK AKTUAL
+// 1. RENDER TABEL MASTER PRODUK (VERSI INLINE EDITING)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
     if (!tbody) return;
+    
+    const tableEl = tbody.parentElement;
+    
+    // A. Buat Tombol Simpan Masal di atas tabel (jika belum ada)
+    let btnContainer = document.getElementById('containerBtnSimpanMasal');
+    if (!btnContainer) {
+        btnContainer = document.createElement('div');
+        btnContainer.id = 'containerBtnSimpanMasal';
+        btnContainer.style.cssText = 'margin-bottom: 15px; display: flex; justify-content: flex-end;';
+        btnContainer.innerHTML = `<button onclick="simpanMutasiGudangMasal()" style="background:#16a34a; color:white; padding:10px 20px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">💾 Simpan Perubahan Stok Masal</button>`;
+        tableEl.parentNode.insertBefore(btnContainer, tableEl);
+    } else {
+        // Pastikan tombol aktif kembali saat tabel di-render ulang
+        const btn = btnContainer.querySelector('button');
+        if (btn) { btn.innerText = "💾 Simpan Perubahan Stok Masal"; btn.disabled = false; }
+    }
+
+    // B. Ubah Judul Kolom (Header) agar sesuai dengan kolom input baru
+    const theadEl = tableEl.querySelector('thead');
+    if (theadEl) {
+        theadEl.innerHTML = `
+            <tr style="font-size: 0.85rem;">
+                <th>No</th>
+                <th>Nama Produk</th>
+                <th>Kategori</th>
+                <th>Modal</th>
+                <th>Jual</th>
+                <th style="background:#dcfce7; color:#166534;" title="Total Modal/Kulakan Awal">Awal Gudang</th>
+                <th style="background:#22c55e; color:white;" title="Isi jumlah barang yang baru dibeli hari ini">[+] Masuk Baru</th>
+                <th style="background:#fef2f2; color:#991b1b;" title="Total Barang Keluar ke Etalase Depan">Ke Etalase</th>
+                <th style="background:#fef2f2; color:#991b1b;" title="Total Barang Rusak/Expired">Total Rusak</th>
+                <th style="background:#ef4444; color:white;" title="Isi jumlah barang yang rusak hari ini">[+] Rusak Baru</th>
+                <th style="background:#e0f2fe; color:#0369a1;">Sisa Gudang Aktual</th>
+                <th>Aksi</th>
+            </tr>
+        `;
+    }
+
     tbody.innerHTML = '';
 
+    // C. Looping Data
     masterProduk.forEach((p, index) => {
-        // Ambil data atau jadikan 0 jika kosong
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
         const keluarEtalase = parseFloat(p.keluarEtalase) || 0;
-        const rusak = parseFloat(p.stokRusak) || 0;
+        const rusakTotal = parseFloat(p.stokRusak) || 0;
+        const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
-        // RUMUS SISA GUDANG
-        const sisaGudang = awalGudang - keluarEtalase - rusak;
-
-        // 🟢 PERBAIKAN: Cek apakah produk ini kategori "Bakso Malang"
         const isBakso = p.kategori.toLowerCase().includes('bakso malang');
 
-        // Jika Bakso Malang, ganti angka menjadi tanda strip (-) agar di-keep
+        // Jika Bakso Malang, cetak '-' (dikunci). Jika Reseller, cetak angkanya.
         const cetakAwal = isBakso ? '-' : awalGudang;
         const cetakKeluar = isBakso ? '-' : keluarEtalase;
-        const cetakRusak = isBakso ? '-' : rusak;
-        const cetakSisa = isBakso ? '-' : sisaGudang;
-        const cetakMinGudang = isBakso ? '-' : (p.minGudang || 0);
-        const cetakMinEtalase = isBakso ? '-' : (p.minEtalase || 0);
+        const cetakRusakTotal = isBakso ? '-' : rusakTotal;
+        
+        // Kotak Input Interaktif (Dinonaktifkan jika Bakso Malang)
+        const inputMasuk = isBakso ? `<span style="color:#94a3b8;">-</span>` : `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold; color:#166534;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
+        
+        const inputRusakBaru = isBakso ? `<span style="color:#94a3b8;">-</span>` : `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold; color:#991b1b;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
+        
+        const cetakSisa = isBakso ? '-' : `<span id="sisaRealtime_${index}">${sisaGudangAsli}</span>`;
 
         tbody.innerHTML += `
             <tr>
@@ -2102,21 +2137,131 @@ function renderTabelMasterProduk() {
                 <td style="color:#6d28d9; font-weight:bold;">${p.modal}</td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.jual}</td>
                 
-                <!-- Tampilkan angka untuk Reseller, dan strip (-) untuk Bakso Malang -->
-                <td style="color:#16a34a; font-weight:900; background:#f0fdf4;">${cetakAwal}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${cetakKeluar}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${cetakRusak}</td>
-                <td style="color:#0284c7; font-weight:900; font-size:1.1rem; background:#f0f9ff;">${cetakSisa}</td>
-                <td style="color:#d97706; font-weight:bold;">${cetakMinGudang}</td>
-                <td style="color:#d97706; font-weight:bold;">${cetakMinEtalase}</td>
+                <td style="color:#16a34a; font-weight:900; background:#f0fdf4; text-align:center;">${cetakAwal}</td>
+                <td style="background:#dcfce7; text-align:center;">${inputMasuk}</td>
+                
+                <td style="color:#dc2626; font-weight:900; background:#fef2f2; text-align:center;">${cetakKeluar}</td>
+                
+                <td style="color:#dc2626; font-weight:900; background:#fef2f2; text-align:center;">${cetakRusakTotal}</td>
+                <td style="background:#fee2e2; text-align:center;">${inputRusakBaru}</td>
+                
+                <td style="color:#0284c7; font-weight:900; font-size:1.1rem; background:#f0f9ff; text-align:center;">${cetakSisa}</td>
                 
                 <td>
-                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;">✏️</button>
-                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit Detail">✏️</button>
+                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus Produk">🗑️</button>
                 </td>
             </tr>
         `;
     });
+}
+
+// ==========================================
+// 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
+// ==========================================
+function hitungSisaGudangRealtime(index) {
+    const p = masterProduk[index];
+    if (p.kategori.toLowerCase().includes('bakso malang')) return;
+
+    const awalGudang = parseFloat(p.stokAwalGudang) || 0;
+    const keluarEtalase = parseFloat(p.keluarEtalase) || 0;
+    const rusakTotal = parseFloat(p.stokRusak) || 0;
+
+    const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
+    const inputRusakEl = document.getElementById(`inputRusak_${index}`);
+    
+    const masukBaru = parseFloat(inputMasukEl.value) || 0;
+    const rusakBaru = parseFloat(inputRusakEl.value) || 0;
+
+    // Sisa Aktual = (Awal + Masuk Baru) - Keluar - (Rusak Lama + Rusak Baru)
+    const sisaBaru = (awalGudang + masukBaru) - keluarEtalase - (rusakTotal + rusakBaru);
+    
+    const elSisa = document.getElementById(`sisaRealtime_${index}`);
+    if (elSisa) {
+        elSisa.innerText = sisaBaru;
+        // Beri warna hijau jika ada perubahan, biru jika kosong
+        if (masukBaru > 0 || rusakBaru > 0) {
+            elSisa.style.color = "#16a34a"; 
+        } else {
+            elSisa.style.color = "#0369a1";
+        }
+    }
+}
+// ==========================================
+// 3. EKSEKUSI SIMPAN MUTASI MASAL KE FIREBASE
+// ==========================================
+function simpanMutasiGudangMasal() {
+    let adaPerubahan = false;
+    let daftarRiwayatBaru = []; // Menampung log untuk dikirim ke riwayat
+
+    masterProduk.forEach((p, index) => {
+        const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
+        const inputRusakEl = document.getElementById(`inputRusak_${index}`);
+        if (!inputMasukEl || !inputRusakEl) return;
+
+        const masukBaru = parseFloat(inputMasukEl.value) || 0;
+        const rusakBaru = parseFloat(inputRusakEl.value) || 0;
+
+        if (masukBaru > 0 || rusakBaru > 0) {
+            adaPerubahan = true;
+            
+            // Proses Penambahan Stok
+            if (masukBaru > 0) {
+                p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
+                daftarRiwayatBaru.push({ 
+                    nama: p.nama, 
+                    aksi: 'In', 
+                    jumlah: masukBaru, 
+                    sisaAkhir: (p.stokAwalGudang - (p.keluarEtalase || 0) - (p.stokRusak || 0)) 
+                });
+            }
+            
+            // Proses Penambahan Barang Rusak
+            if (rusakBaru > 0) {
+                p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
+                daftarRiwayatBaru.push({ 
+                    nama: p.nama, 
+                    aksi: 'Out', // Tercatat sebagai barang keluar/hilang
+                    jumlah: rusakBaru, 
+                    sisaAkhir: (p.stokAwalGudang - (p.keluarEtalase || 0) - p.stokRusak) 
+                });
+            }
+        }
+    });
+
+    if (!adaPerubahan) {
+        alert("Peringatan: Belum ada angka [+] Masuk atau [+] Rusak yang diisi di tabel.");
+        return;
+    }
+
+    if (confirm("Simpan semua perubahan stok ke database?")) {
+        const btn = document.querySelector('#containerBtnSimpanMasal button');
+        if(btn) { btn.innerText = "⏳ Sedang Menyimpan..."; btn.disabled = true; }
+
+        if (typeof db !== 'undefined' && db !== null) {
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+            .then(() => {
+                // Tembakkan log ke halaman "Riwayat Stok" satu per satu
+                if (typeof catatRiwayatStok === 'function') {
+                    daftarRiwayatBaru.forEach(log => {
+                        catatRiwayatStok(log.nama, log.aksi, log.jumlah, log.sisaAkhir);
+                    });
+                }
+                if (typeof catatAktivitas === 'function') {
+                    catatAktivitas("Master Produk", `Mutasi masal sukses: ${daftarRiwayatBaru.length} pergerakan barang dicatat.`);
+                }
+                if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Masuk!");
+                renderTabelMasterProduk(); // Kosongkan form kembali setelah sukses
+            })
+            .catch(err => {
+                alert("Gagal menyimpan ke server: " + err);
+                if(btn) { btn.innerText = "💾 Simpan Perubahan Stok Masal"; btn.disabled = false; }
+            });
+        } else {
+            renderTabelMasterProduk();
+            alert("✅ Data tersimpan (Mode Lokal).");
+        }
+    }
 }
 
 // ==========================================
