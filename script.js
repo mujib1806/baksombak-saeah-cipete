@@ -1099,8 +1099,31 @@ function loadDataTanggalLocal() {
 
 function isDataLocked(tgl) { return dbStatusKunci[tgl] === true; }
 
-function toggleLock() { const tgl = document.getElementById('tglOps').value; const currentlyLocked = isDataLocked(tgl); if (currentlyLocked) { if(confirm("Buka gembok data hari ini?")) { setLockStatus(tgl, false); } } else { if(confirm("Kunci data hari ini?")) { setLockStatus(tgl, true); } } }
-
+function toggleLock() { 
+    const tgl = document.getElementById('tglOps').value; 
+    const currentlyLocked = isDataLocked(tgl); 
+    
+    if (currentlyLocked) { 
+        if(confirm("Buka gembok data hari ini?")) { 
+            setLockStatus(tgl, false); 
+        } 
+    } else { 
+        if(confirm("Kunci data hari ini?")) { 
+            // ==========================================
+            // PERBAIKAN BUG GAJI HILANG SAAT DIGEMBOK
+            // Paksa simpan semua form (Absensi, Kas, Dapur) sebelum dikunci
+            // agar nominal default yang tidak diklik tetap masuk ke database.
+            // ==========================================
+            if (typeof simpanAbsensi === 'function') simpanAbsensi();
+            if (typeof simpanKasMasuk === 'function') simpanKasMasuk(false);
+            if (typeof simpanSetoranDapurManual === 'function') simpanSetoranDapurManual();
+            if (typeof simpanStokKeFirebase === 'function') simpanStokKeFirebase();
+            
+            // Setelah semua tersimpan, baru gembok ditutup
+            setLockStatus(tgl, true); 
+        } 
+    } 
+}
 function setLockStatus(tgl, status) { 
     if(db) { 
         db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
