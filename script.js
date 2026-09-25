@@ -2569,17 +2569,37 @@ function prosesTransaksiKas(e) {
     }).then(tutupModalKas); 
 }
 
-function bukaModalFeedback() { document.getElementById('modalFeedback').classList.add('active'); }
+// Fungsi untuk Membuka Modal
+function bukaModalFeedback() {
+    const modal = document.getElementById('modalFeedback');
+    if (modal) {
+        modal.style.display = 'flex'; // atau 'block' tergantung CSS Anda
+    }
+}
+
+// Fungsi untuk Menutup Modal dengan Bersih
 function tutupModalFeedback() {
     const modal = document.getElementById('modalFeedback');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+    }
     
-    // Kosongkan form menggunakan ID yang baru
+    // 1. Kosongkan isian agar siap dipakai lagi
     const deskripsi = document.getElementById('inputDeskripsiLaporan');
     if (deskripsi) deskripsi.value = '';
     
     const jenis = document.getElementById('inputJenisLaporan');
-    if (jenis) jenis.value = '🐛 Lapor Error / Bug'; // Kembalikan ke pilihan pertama
+    if (jenis) jenis.value = '🐛 Lapor Error / Bug';
+    
+    // 2. Jika Anda menggunakan efek latar belakang gelap (backdrop), bersihkan di sini:
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+    
+    // 3. Pastikan layar bisa diklik/di-scroll kembali (mencegah layar freeze)
+    document.body.style.pointerEvents = 'auto';
+    document.body.style.overflow = 'auto';
 }
 function kirimFeedback(e) { e.preventDefault(); if(!db) { alert("Sistem Offline. Tidak bisa mengirim laporan."); return; } const jenis = document.getElementById('fbJenis').value; const deskripsi = document.getElementById('fbDeskripsi').value; const btn = document.getElementById('btnKirimFeedback'); btn.innerText = "Mengirim..."; btn.disabled = true; db.collection('laporanBugs').add({ waktu: new Date().toISOString(), user: currentUser ? currentUser.nama : 'Unknown', hp: currentUser ? currentUser.hp : '-', jenis: jenis, deskripsi: deskripsi }).then(() => { showToast('✅ Laporan Terkirim! Terima kasih atas masukannya.'); tutupModalFeedback(); }).catch(err => { alert("Gagal mengirim: " + err.message); }).finally(() => { btn.innerText = "Kirim Laporan"; btn.disabled = false; }); }
 
@@ -4281,11 +4301,11 @@ async function kirimLaporanBug() {
         // Bersihkan isian deskripsi
         if (deskripsiEl) deskripsiEl.value = '';
         
-        // Refresh tabel (jika Owner sedang membuka halamannya)
-        muatDataLaporanBug(); 
-        
         // Menutup modal secara otomatis setelah sukses mengirim
         tutupModalFeedback();
+        
+        // Refresh tabel (jika Owner sedang membuka halamannya)
+        muatDataLaporanBug(); 
         
         // CATATAN: Jika Anda punya fungsi menutup modal, letakkan di sini. 
         // Contoh: document.getElementById('modalBug').style.display = 'none';
