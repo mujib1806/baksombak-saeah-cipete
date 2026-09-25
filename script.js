@@ -3333,9 +3333,14 @@ function muatDataRiwayat() {
             snapshot.forEach(doc => {
                 const d = doc.data();
                 html += `<tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 10px 12px; color: #64748b; background: #ffffff; position: sticky; left: 0; z-index: 5;">${d.waktu || '-'}</td>
-                    <td style="padding: 10px 12px; font-weight: 600; color: #0f172a; background: #ffffff; position: sticky; left: 95px; z-index: 5; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">${d.user || 'Sistem'}</td>
-                    <td style="padding: 10px 12px; color: #334155; white-space: normal; word-break: break-word;">${d.keterangan || '-'}</td>
+                    <!-- Kolom Waktu: Lebar dikunci di 65px -->
+                    <td style="padding: 8px; color: #64748b; background: #ffffff; position: sticky; left: 0; z-index: 5; width: 65px; min-width: 65px; max-width: 65px; white-space: nowrap; overflow: hidden;">${d.waktu || '-'}</td>
+                    
+                    <!-- Kolom Pengguna: Digeser ke kiri (65px) mengikuti kolom waktu, lebar dikunci di 75px, nama panjang otomatis terpotong titik-titik (...) -->
+                    <td style="padding: 8px; font-weight: 600; color: #0f172a; background: #ffffff; position: sticky; left: 65px; z-index: 5; box-shadow: 3px 0 4px -2px rgba(0,0,0,0.1); width: 75px; min-width: 75px; max-width: 75px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${d.user || 'Sistem'}</td>
+                    
+                    <!-- Kolom Keterangan: Dibuat fleksibel menyesuaikan sisa layar dan otomatis turun baris jika kepanjangan -->
+                    <td style="padding: 8px; color: #334155; white-space: normal; word-break: break-word; line-height: 1.4;">${d.keterangan || '-'}</td>
                 </tr>`;
             });
         }
