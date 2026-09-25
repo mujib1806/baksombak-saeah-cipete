@@ -1603,10 +1603,16 @@ function renderViewSetoranBakso() {
 
     const isOwnerOrDapur = currentUser && (currentUser.role === 'owner' || currentUser.role === 'dapur');
 
-    // 👉 TAMBAHKAN BARIS INI: Sembunyikan/tampilkan kolom sensitif secara otomatis di HTML
+    // 👉 1. Menyembunyikan kolom tabel Modal, Jual, Omset, Profit
     document.querySelectorAll('.kolom-sensitif').forEach(el => {
         el.style.display = isOwnerOrDapur ? '' : 'none';
     });
+
+    // 👉 2. KODE BARU: Menyembunyikan kotak "Laporan Setoran Ke Dapur" khusus Kasir
+    const sectionLaporan = document.getElementById('sectionLaporanSetoran');
+    if (sectionLaporan) {
+        sectionLaporan.style.display = isOwnerOrDapur ? 'block' : 'none';
+    }
 
     // Sesuaikan Header Tabel secara dinamis agar bersih untuk Kasir
     const thead = tbody.parentElement.querySelector('thead');
@@ -1668,7 +1674,7 @@ function renderViewSetoranBakso() {
 
         const tr = document.createElement('tr'); 
         
-        // Render baris data: Jika Kasir, hentikan sampai kolom 'Sisa'. Jika Owner/Dapur, lanjutkan sampai 'Profit'.
+        // Render baris data
         if (isOwnerOrDapur) {
             tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`;
         } else {
@@ -1702,7 +1708,6 @@ function renderViewSetoranBakso() {
     setTxt('bmTotalOmset', formatRupiah(totalOmset)); 
     setTxt('bmTotalUntung', formatRupiah(totalKeuntungan));
 }
-
 function renderViewRekapTransfer() {
     const tgl = document.getElementById('tglOps').value; 
     const items = dbStok[tgl] || []; 
