@@ -2066,6 +2066,9 @@ function editProdukMaster(i) {
 // ==========================================
 // RENDER TABEL MASTER PRODUK DENGAN FITUR EDIT STOK AKTUAL
 // ==========================================
+// ==========================================
+// RENDER TABEL MASTER PRODUK DENGAN FITUR EDIT STOK AKTUAL
+// ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
     if (!tbody) return;
@@ -2080,6 +2083,17 @@ function renderTabelMasterProduk() {
         // RUMUS SISA GUDANG
         const sisaGudang = awalGudang - keluarEtalase - rusak;
 
+        // 🟢 PERBAIKAN: Cek apakah produk ini kategori "Bakso Malang"
+        const isBakso = p.kategori.toLowerCase().includes('bakso malang');
+
+        // Jika Bakso Malang, ganti angka menjadi tanda strip (-) agar di-keep
+        const cetakAwal = isBakso ? '-' : awalGudang;
+        const cetakKeluar = isBakso ? '-' : keluarEtalase;
+        const cetakRusak = isBakso ? '-' : rusak;
+        const cetakSisa = isBakso ? '-' : sisaGudang;
+        const cetakMinGudang = isBakso ? '-' : (p.minGudang || 0);
+        const cetakMinEtalase = isBakso ? '-' : (p.minEtalase || 0);
+
         tbody.innerHTML += `
             <tr>
                 <td style="color:#6d28d9; font-weight:bold;">${index + 1}</td>
@@ -2087,12 +2101,15 @@ function renderTabelMasterProduk() {
                 <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori}</span></td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.modal}</td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.jual}</td>
-                <td style="color:#16a34a; font-weight:900; background:#f0fdf4;">${awalGudang}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${keluarEtalase}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${rusak}</td>
-                <td style="color:#0284c7; font-weight:900; font-size:1.1rem; background:#f0f9ff;">${sisaGudang}</td>
-                <td style="color:#d97706; font-weight:bold;">${p.minGudang || 0}</td>
-                <td style="color:#d97706; font-weight:bold;">${p.minEtalase || 0}</td>
+                
+                <!-- Tampilkan angka untuk Reseller, dan strip (-) untuk Bakso Malang -->
+                <td style="color:#16a34a; font-weight:900; background:#f0fdf4;">${cetakAwal}</td>
+                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${cetakKeluar}</td>
+                <td style="color:#dc2626; font-weight:900; background:#fef2f2;">${cetakRusak}</td>
+                <td style="color:#0284c7; font-weight:900; font-size:1.1rem; background:#f0f9ff;">${cetakSisa}</td>
+                <td style="color:#d97706; font-weight:bold;">${cetakMinGudang}</td>
+                <td style="color:#d97706; font-weight:bold;">${cetakMinEtalase}</td>
+                
                 <td>
                     <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;">✏️</button>
                     <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
