@@ -81,6 +81,9 @@ function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir)
     const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
     const waktuStr = `${tglFormat}, ${jamFormat}`;
+    
+    // FORMAT BARU: Untuk kebutuhan filter rentang tanggal
+    const tglIso = now.toISOString().split('T')[0]; 
 
     let namaUser = "Admin";
     if (typeof currentUser !== 'undefined' && currentUser && currentUser.role) {
@@ -89,6 +92,7 @@ function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir)
 
     const itemBaru = {
         waktu: waktuStr,
+        tanggalIso: tglIso, // <--- Data baru disisipkan disini
         produk: namaProduk,
         aksi: jenisAksi, // 'In' atau 'Out'
         perubahan: jenisAksi === 'In' ? `+${jumlahPerubahan}` : `-${jumlahPerubahan}`,
@@ -97,7 +101,9 @@ function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir)
     };
 
     riwayatStok.unshift(itemBaru);
-    if (riwayatStok.length > 50) riwayatStok.pop();
+    
+    // PERBAIKAN: Perbesar daya tampung riwayat dari 50 menjadi 500 aktivitas terakhir
+    if (riwayatStok.length > 500) riwayatStok.pop(); 
 
     if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
         db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').set({ list: riwayatStok });
@@ -2319,15 +2325,79 @@ function bukaModalKoreksiStok(i) {
 function renderTabelRiwayatStok() {
     const tbody = document.getElementById('tbodyRiwayatStok');
     if (!tbody) return;
+    
+    // 1. Munculkan Kotak Filter di atas Tabel secara otomatis
+    let filterContainer = document.getElementById('containerFilterRiwayat');
+    if (!filterContainer) {
+        const tableEl = tbody.parentElement;
+        filterContainer = document.createElement('div');
+        filterContainer.id = 'containerFilterRiwayat';
+        filterContainer.style.cssText = 'display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;';
+        
+        filterContainer.innerHTML = `
+            <strong style="color:#475569; font-size:0.85rem;">Filter:</strong>
+            <input type="text" id="filterRiwayatNama" placeholder="🔍 Cari Nama Produk..." style="padding:8px; border-radius:6px; border:1px solid #cbd5e1; flex:1; min-width:150px;" oninput="terapkanFilterRiwayat()">
+            <input type="date" id="filterRiwayatMulai" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;" onchange="terapkanFilterRiwayat()">
+            <span style="color:#64748b; font-size:0.85rem;">s/d</span>
+            <input type="date" id="filterRiwayatAkhir" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;" onchange="terapkanFilterRiwayat()">
+            <button onclick="resetFilterRiwayat()" style="background:#ef4444; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Reset</button>
+        `;
+        tableEl.parentNode.insertBefore(filterContainer, tableEl);
+    }
+
+    // 2. Lempar ke fungsi filter untuk menggambar isi tabelnya
+    terapkanFilterRiwayat(); 
+}
+
+function terapkanFilterRiwayat() {
+    const tbody = document.getElementById('tbodyRiwayatStok');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    // Jika data riwayat tidak ada, tampilkan pesan kosong
+    // Tarik kata kunci dari kotak pencarian
+    const cariNama = (document.getElementById('filterRiwayatNama')?.value || '').toLowerCase();
+    const tglMulai = document.getElementById('filterRiwayatMulai')?.value || '';
+    const tglAkhir = document.getElementById('filterRiwayatAkhir')?.value || '';
+
     if (typeof riwayatStok === 'undefined' || !riwayatStok || riwayatStok.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>`;
         return;
     }
 
-    riwayatStok.forEach((item, index) => {
+    // ==========================================
+    // PROSES PENYARINGAN DATA (FILTER LOGIC)
+    // ==========================================
+    const dataFiltered = riwayatStok.filter(item => {
+        let matchNama = true;
+        let matchTanggal = true;
+
+        if (cariNama) {
+            matchNama = item.produk.toLowerCase().includes(cariNama);
+        }
+        
+        // Pengecekan rentang tanggal (Hanya untuk data baru yang sudah punya tanggalIso)
+        if (item.tanggalIso) {
+            if (tglMulai && tglAkhir) {
+                matchTanggal = (item.tanggalIso >= tglMulai && item.tanggalIso <= tglAkhir);
+            } else if (tglMulai) {
+                matchTanggal = (item.tanggalIso >= tglMulai);
+            } else if (tglAkhir) {
+                matchTanggal = (item.tanggalIso <= tglAkhir);
+            }
+        }
+
+        return matchNama && matchTanggal;
+    });
+
+    if (dataFiltered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:15px; font-weight:bold;">Pencarian tidak ditemukan. Coba ganti tanggal atau nama produk.</td></tr>`;
+        return;
+    }
+
+    // ==========================================
+    // GAMBAR TABEL HASIL PENCARIAN
+    // ==========================================
+    dataFiltered.forEach((item, index) => {
         const isIn = item.aksi === 'In';
         const badgeStyle = isIn 
             ? 'background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-weight: bold;' 
@@ -2347,6 +2417,14 @@ function renderTabelRiwayatStok() {
             </tr>
         `;
     });
+}
+
+// Tombol sapu bersih kolom pencarian
+function resetFilterRiwayat() {
+    if(document.getElementById('filterRiwayatNama')) document.getElementById('filterRiwayatNama').value = '';
+    if(document.getElementById('filterRiwayatMulai')) document.getElementById('filterRiwayatMulai').value = '';
+    if(document.getElementById('filterRiwayatAkhir')) document.getElementById('filterRiwayatAkhir').value = '';
+    terapkanFilterRiwayat();
 }
 
 // ==========================================
