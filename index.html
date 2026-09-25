@@ -877,16 +877,20 @@
         <h2 style="color: #0f172a; font-size: 1.1rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas</h2>
         <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">🔄 Muat Ulang</button>
     </div>
-    <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #e2e8f0; margin-bottom: 30px;">
-        <table id="tabelRiwayatUtama" style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; white-space: nowrap;">
+   <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <!-- white-space diubah agar teks keterangan bisa turun ke bawah (wrap) -->
+        <table id="tabelRiwayatUtama" style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.75rem;">
             <thead style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
                 <tr>
-                    <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 0; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">Waktu</th>
-                    <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 95px; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">Pengguna</th>
-                    <th style="padding: 10px 12px; font-weight: 700; min-width: 250px;">Aktivitas / Keterangan</th>
+                    <!-- Lebar Waktu dipatok 65px -->
+                    <th style="padding: 8px; font-weight: 700; position: sticky; left: 0; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; width: 65px; min-width: 65px; max-width: 65px; white-space: nowrap;">Waktu</th>
+                    <!-- Lebar Pengguna dipatok 75px, posisi beku digeser ke kiri (65px) -->
+                    <th style="padding: 8px; font-weight: 700; position: sticky; left: 65px; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; box-shadow: 3px 0 4px -2px rgba(0,0,0,0.1); width: 75px; min-width: 75px; max-width: 75px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pengguna</th>
+                    <!-- Kolom Keterangan dibuat fleksibel -->
+                    <th style="padding: 8px; font-weight: 700; width: 100%; min-width: 180px;">Aktivitas / Keterangan</th>
                 </tr>
             </thead>
-            <tbody id="tabelRiwayatBody" style="color: #1e293b;">
+            <tbody id="tabelRiwayatBody" style="color: #1e293b; line-height: 1.4;">
                 <tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Memuat data riwayat...</td></tr>
             </tbody>
         </table>
