@@ -869,27 +869,53 @@
         </div>
         </div> <!-- PENUTUP VIEW HARIAN -->
 
-        <!-- RIWAYAT AKTIVITAS -->
-        <div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px; background: #f8fafc; padding: 15px; border-radius: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="color: #0f172a; font-size: 1.1rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas</h2>
-                <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">🔄 Muat Ulang</button>
-            </div>
-            <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 65vh; border: 1px solid #e2e8f0;">
-                <table id="tabelRiwayatUtama" style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; white-space: nowrap;">
-                    <thead style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
-                        <tr>
-                            <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 0; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">Waktu</th>
-                            <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 95px; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">Pengguna</th>
-                            <th style="padding: 10px 12px; font-weight: 700; min-width: 250px;">Aktivitas / Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelRiwayatBody" style="color: #1e293b;">
-                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Memuat data riwayat...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+     <!-- RIWAYAT AKTIVITAS & LAPORAN BUG -->
+<div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px; background: #f8fafc; padding: 15px; border-radius: 16px;">
+    
+    <!-- BAGIAN 1: TABEL RIWAYAT AKTIVITAS (Bawaan) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="color: #0f172a; font-size: 1.1rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas</h2>
+        <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">🔄 Muat Ulang</button>
+    </div>
+    <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <table id="tabelRiwayatUtama" style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; white-space: nowrap;">
+            <thead style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
+                <tr>
+                    <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 0; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">Waktu</th>
+                    <th style="padding: 10px 12px; font-weight: 700; position: sticky; left: 95px; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.08);">Pengguna</th>
+                    <th style="padding: 10px 12px; font-weight: 700; min-width: 250px;">Aktivitas / Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="tabelRiwayatBody" style="color: #1e293b;">
+                <tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Memuat data riwayat...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BAGIAN 2: TABEL LAPORAN BUG & MASUKAN (Baru) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
+        <h2 style="color: #dc2626; font-size: 1.1rem; font-weight: 800; margin: 0;">🚨 Tiket Laporan & Bug</h2>
+        <button onclick="muatDataLaporanBug()" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">🔄 Refresh Tiket</button>
+    </div>
+    <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #fca5a5;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; white-space: nowrap;">
+            <thead style="background: #fef2f2; color: #991b1b; border-bottom: 2px solid #fecaca;">
+                <tr>
+                    <th style="padding: 10px 12px; font-weight: 700;">Waktu</th>
+                    <th style="padding: 10px 12px; font-weight: 700;">Pelapor</th>
+                    <th style="padding: 10px 12px; font-weight: 700;">Jenis Laporan</th>
+                    <th style="padding: 10px 12px; font-weight: 700; min-width: 250px; white-space: normal;">Deskripsi</th>
+                    <th style="padding: 10px 12px; font-weight: 700; text-align: center;">Status</th>
+                    <th style="padding: 10px 12px; font-weight: 700; text-align: center;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyLaporanBug" style="color: #1e293b;">
+                <tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">Belum ada laporan masuk.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>
 
         <!-- MUTASI KAS -->
         <div id="viewMutasiKas" style="display:none; margin-bottom: 40px;">
