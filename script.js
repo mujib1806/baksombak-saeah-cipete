@@ -350,7 +350,7 @@ function bukaLayarAplikasi() {
         dropdownPindah.style.display = 'none'; 
     }
     // ===============================================
-    document.getElementById('menuSetoran').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('menuSetoran').style.display = 'block';        
     document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';      
