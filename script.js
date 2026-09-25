@@ -1601,8 +1601,12 @@ function renderViewSetoranBakso() {
     if(!tbody) return; 
     tbody.innerHTML = ''; 
 
-    // Cek apakah yang login adalah Owner atau Dapur
     const isOwnerOrDapur = currentUser && (currentUser.role === 'owner' || currentUser.role === 'dapur');
+
+    // 👉 TAMBAHKAN BARIS INI: Sembunyikan/tampilkan kolom sensitif secara otomatis di HTML
+    document.querySelectorAll('.kolom-sensitif').forEach(el => {
+        el.style.display = isOwnerOrDapur ? '' : 'none';
+    });
 
     // Sesuaikan Header Tabel secara dinamis agar bersih untuk Kasir
     const thead = tbody.parentElement.querySelector('thead');
