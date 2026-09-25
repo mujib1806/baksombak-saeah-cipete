@@ -4266,13 +4266,16 @@ async function kirimLaporanBug() {
         listLaporan.unshift(laporanBaru); // Masukkan data baru di urutan paling atas
         await docRef.set({ list: listLaporan });
         
-        alert('Laporan berhasil dikirim! Tim pusat akan segera mengeceknya.');
+      alert('Laporan berhasil dikirim! Tim pusat akan segera mengeceknya.');
         
         // Bersihkan isian deskripsi
         if (deskripsiEl) deskripsiEl.value = '';
         
         // Refresh tabel (jika Owner sedang membuka halamannya)
         muatDataLaporanBug(); 
+        
+        // Menutup modal secara otomatis setelah sukses mengirim
+        tutupModalFeedback();
         
         // CATATAN: Jika Anda punya fungsi menutup modal, letakkan di sini. 
         // Contoh: document.getElementById('modalBug').style.display = 'none';
