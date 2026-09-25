@@ -4214,3 +4214,145 @@ async function prosesSimpanMutasiStok() {
         alert('❌ Terjadi kesalahan saat sinkronisasi: ' + error.message);
     }
 }
+// ==========================================
+// SISTEM PELAPORAN BUG & MASUKAN
+// ==========================================
+
+// 1. Fungsi untuk Mengirim Laporan (Dipanggil saat tombol 'Kirim Laporan' ditekan)
+async function kirimLaporanBug() {
+    // Sesuaikan ID ini dengan ID yang ada di form Modal HTML Anda
+    const jenisEl = document.getElementById('inputJenisLaporan'); 
+    const deskripsiEl = document.getElementById('inputDeskripsiLaporan');
+
+    const jenis = jenisEl ? jenisEl.value : 'Lapor Error / Bug';
+    const deskripsi = deskripsiEl ? deskripsiEl.value : '';
+
+    if (!deskripsi.trim()) {
+        alert('Deskripsi laporan tidak boleh kosong!');
+        return;
+    }
+
+    // Ambil waktu saat ini
+    const now = new Date();
+    const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    
+    // Identifikasi siapa yang melapor
+    let pelapor = 'Anonim';
+    if (typeof currentUser !== 'undefined' && currentUser) {
+        pelapor = `${currentUser.nama} (${currentUser.role})`;
+    }
+
+    const idUnik = Date.now().toString(); // Buat ID unik berdasarkan waktu
+
+    const laporanBaru = {
+        id: idUnik,
+        waktu: `${tglFormat}, ${jamFormat}`,
+        pelapor: pelapor,
+        jenis: jenis,
+        deskripsi: deskripsi,
+        status: 'pending' // Status bawaan saat baru dikirim
+    };
+
+    try {
+        const docRef = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('laporanBug');
+        const doc = await docRef.get();
+        let listLaporan = [];
+        
+        if (doc.exists) {
+            listLaporan = doc.data().list || [];
+        }
+        
+        listLaporan.unshift(laporanBaru); // Masukkan data baru di urutan paling atas
+        await docRef.set({ list: listLaporan });
+        
+        alert('Laporan berhasil dikirim! Tim pusat akan segera mengeceknya.');
+        
+        // Bersihkan isian deskripsi
+        if (deskripsiEl) deskripsiEl.value = '';
+        
+        // Refresh tabel (jika Owner sedang membuka halamannya)
+        muatDataLaporanBug(); 
+        
+        // CATATAN: Jika Anda punya fungsi menutup modal, letakkan di sini. 
+        // Contoh: document.getElementById('modalBug').style.display = 'none';
+
+    } catch (error) {
+        console.error('Error kirim laporan:', error);
+        alert('Gagal mengirim laporan. Pastikan koneksi internet stabil.');
+    }
+}
+
+// 2. Fungsi untuk Memuat Laporan ke Tabel (Khusus Owner)
+async function muatDataLaporanBug() {
+    const tbody = document.getElementById('tbodyLaporanBug');
+    if (!tbody) return;
+    
+    try {
+        const docRef = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('laporanBug');
+        const doc = await docRef.get();
+        
+        if (!doc.exists || !doc.data().list || doc.data().list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">Belum ada laporan masuk.</td></tr>';
+            return;
+        }
+
+        const listLaporan = doc.data().list;
+        tbody.innerHTML = '';
+        
+        listLaporan.forEach((item) => {
+            const isSelesai = item.status === 'selesai';
+            
+            // Atur bentuk Label Status
+            const statusBadge = isSelesai 
+                ? '<span style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">✅ Selesai</span>' 
+                : '<span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold;">⏳ Menunggu</span>';
+            
+            // Atur tombol aksi (Jika sudah selesai, tombol mati/berubah abu-abu)
+            const actionBtn = isSelesai 
+                ? `<button disabled style="background: #e2e8f0; color: #94a3b8; border: none; padding: 4px 8px; border-radius: 6px; cursor: not-allowed; font-size:0.75rem;">Tuntas</button>`
+                : `<button onclick="tandaiLaporanSelesai('${item.id}')" style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size:0.75rem; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">✔️ Tandai Selesai</button>`;
+
+            // Baris yang sudah selesai akan agak redup
+            const rowColor = isSelesai ? 'background: #f8fafc; opacity: 0.7;' : 'background: #fff;';
+
+            tbody.innerHTML += `
+                <tr style="${rowColor}">
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size:0.75rem;">${item.waktu}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color:#0f172a;">${item.pelapor}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;"><span style="background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size:0.75rem;">${item.jenis}</span></td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; white-space: normal; max-width: 250px; font-size:0.8rem;">${item.deskripsi}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">${statusBadge}</td>
+                    <td style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0; text-align: center;">${actionBtn}</td>
+                </tr>
+            `;
+        });
+        
+    } catch (error) {
+        console.error("Error muat laporan:", error);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #ef4444;">Gagal memuat data laporan dari server.</td></tr>';
+    }
+}
+
+// 3. Fungsi untuk Menandai Laporan Sudah Diperbaiki
+async function tandaiLaporanSelesai(idLaporan) {
+    if(!confirm('Apakah Anda yakin kendala/bug ini sudah diperbaiki?')) return;
+    
+    try {
+        const docRef = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('laporanBug');
+        const doc = await docRef.get();
+        if(doc.exists) {
+            let list = doc.data().list;
+            // Cari data dengan ID yang cocok
+            const index = list.findIndex(item => item.id === idLaporan);
+            if(index !== -1) {
+                list[index].status = 'selesai'; // Ubah statusnya
+                await docRef.set({ list: list });
+                muatDataLaporanBug(); // Refresh tabel setelah berhasil
+            }
+        }
+    } catch (error) {
+        console.error('Error update laporan:', error);
+        alert('Gagal memperbarui status. Periksa koneksi internet.');
+    }
+}
