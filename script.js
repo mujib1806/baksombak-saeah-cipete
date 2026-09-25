@@ -1595,9 +1595,95 @@ function formatRupiah(angka) {
 }
 
 function renderViewSetoranBakso() {
-    const tgl = document.getElementById('tglOps').value; const items = dbStok[tgl] || []; const tbody = document.getElementById('tbodyBaksoSetoran'); if(!tbody) return; tbody.innerHTML = ''; let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumSisa = 0; 
-    items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { const awal = parseFloat(p.awal) || 0; const tambah = parseFloat(p.tambah) || 0; const kurang = parseFloat(p.kurang) || 0; const totalStok = awal + tambah - kurang; const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; const valSisa = sisa !== null ? sisa : 0; const omset = terjual * p.jual; const modal = terjual * p.modal; const profit = terjual * p.margin; totalPorsi += terjual; totalOmset += omset; totalModal += modal; totalKeuntungan += profit; sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumSisa += valSisa; const tr = document.createElement('tr'); tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`; tbody.appendChild(tr); });
-    if (sumTotalStok > 0 || totalPorsi > 0) { const trTotal = document.createElement('tr'); trTotal.style.cssText = "background:#fed7aa; font-weight:800; font-size:0.85rem; border-top: 2px solid #ea580c;"; trTotal.innerHTML = `<td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${totalPorsi}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td colspan="4" style="background:#f8fafc;"></td>`; tbody.appendChild(trTotal); }
+    const tgl = document.getElementById('tglOps').value; 
+    const items = dbStok[tgl] || []; 
+    const tbody = document.getElementById('tbodyBaksoSetoran'); 
+    if(!tbody) return; 
+    tbody.innerHTML = ''; 
+
+    // Cek apakah yang login adalah Owner atau Dapur
+    const isOwnerOrDapur = currentUser && (currentUser.role === 'owner' || currentUser.role === 'dapur');
+
+    // Sesuaikan Header Tabel secara dinamis agar bersih untuk Kasir
+    const thead = tbody.parentElement.querySelector('thead');
+    if (thead) {
+        if (isOwnerOrDapur) {
+            thead.innerHTML = `<tr>
+                <th style="text-align:center;">No</th>
+                <th>Varian Produk</th>
+                <th style="text-align:center;">Awal</th>
+                <th style="text-align:center;">Tambah</th>
+                <th style="text-align:center;">Kurang</th>
+                <th style="text-align:center;">Total</th>
+                <th style="text-align:center;">Laku</th>
+                <th style="text-align:center;">Sisa</th>
+                <th style="text-align:right;">Modal</th>
+                <th style="text-align:right;">Jual</th>
+                <th style="text-align:right;">Omset</th>
+                <th style="text-align:right;">Profit</th>
+            </tr>`;
+        } else {
+            // Tampilan khusus Kasir (Tanpa kolom Modal, Jual, Omset, Profit)
+            thead.innerHTML = `<tr>
+                <th style="text-align:center;">No</th>
+                <th>Varian Produk</th>
+                <th style="text-align:center;">Awal</th>
+                <th style="text-align:center;">Tambah</th>
+                <th style="text-align:center;">Kurang</th>
+                <th style="text-align:center;">Total</th>
+                <th style="text-align:center;">Laku</th>
+                <th style="text-align:center;">Sisa</th>
+            </tr>`;
+        }
+    }
+
+    let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; 
+    let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumSisa = 0; 
+
+    items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { 
+        const awal = parseFloat(p.awal) || 0; 
+        const tambah = parseFloat(p.tambah) || 0; 
+        const kurang = parseFloat(p.kurang) || 0; 
+        const totalStok = awal + tambah - kurang; 
+        const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+        const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
+        const valSisa = sisa !== null ? sisa : 0; 
+        const omset = terjual * p.jual; 
+        const modal = terjual * p.modal; 
+        const profit = terjual * p.margin; 
+
+        totalPorsi += terjual; 
+        totalOmset += omset; 
+        totalModal += modal; 
+        totalKeuntungan += profit; 
+        sumAwal += awal; 
+        sumTambah += tambah; 
+        sumKurang += kurang; 
+        sumTotalStok += totalStok; 
+        sumSisa += valSisa; 
+
+        const tr = document.createElement('tr'); 
+        
+        // Render baris data: Jika Kasir, hentikan sampai kolom 'Sisa'. Jika Owner/Dapur, lanjutkan sampai 'Profit'.
+        if (isOwnerOrDapur) {
+            tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`;
+        } else {
+            tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>`;
+        }
+        tbody.appendChild(tr); 
+    });
+
+    if (sumTotalStok > 0 || totalPorsi > 0) { 
+        const trTotal = document.createElement('tr'); 
+        trTotal.style.cssText = "background:#fed7aa; font-weight:800; font-size:0.85rem; border-top: 2px solid #ea580c;"; 
+        
+        if (isOwnerOrDapur) {
+            trTotal.innerHTML = `<td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${totalPorsi}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td colspan="4" style="background:#f8fafc;"></td>`;
+        } else {
+            trTotal.innerHTML = `<td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${totalPorsi}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td>`;
+        }
+        tbody.appendChild(trTotal); 
+    }
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('bmModalAwal', formatRupiah(totalModal)); 
