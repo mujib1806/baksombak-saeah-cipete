@@ -1238,18 +1238,32 @@ MODALS DAN CETAK PDF
 <div class="modal" id="modalFeedback">
     <div class="modal-content">
         <h3 style="font-size:1.1rem; font-weight:800; color:#ea580c; margin-bottom:12px;">💬 Kirim Masukan & Laporan Bug</h3>
-        <form onsubmit="kirimFeedback(event)">
+        
+        <!-- Tag <form> dihilangkan agar halaman tidak memuat ulang (refresh) -->
+        <div>
             <div class="form-group">
                 <label>Jenis Laporan:</label>
-                <select id="fbJenis" required style="font-weight: 600;">
-                    <option value="bug">🐛 Lapor Error / Bug</option>
-                    <option value="saran">💡 Saran Fitur Baru</option>
-                    <option value="lainnya">💬 Lainnya</option>
+                <!-- ID disesuaikan dengan JavaScript: inputJenisLaporan -->
+                <select id="inputJenisLaporan" required style="font-weight: 600;">
+                    <option value="🐛 Lapor Error / Bug">🐛 Lapor Error / Bug</option>
+                    <option value="💡 Saran Fitur Baru">💡 Saran Fitur Baru</option>
+                    <option value="💬 Lainnya">💬 Lainnya</option>
                 </select>
             </div>
-            <div class="form-group"><label>Deskripsi:</label><textarea id="fbDeskripsi" rows="4" style="width:100%; border: 2px solid var(--border-color); border-radius: 8px; padding:8px;" required placeholder="Jelaskan masalah atau saran Anda..."></textarea></div>
-            <div style="display:flex; gap:8px; margin-top:12px;"><button type="button" class="btn btn-danger" onclick="tutupModalFeedback()">Batal</button><button type="submit" class="btn btn-success" id="btnKirimFeedback">Kirim Laporan</button></div>
-        </form>
+            
+            <div class="form-group">
+                <label>Deskripsi:</label>
+                <!-- ID disesuaikan dengan JavaScript: inputDeskripsiLaporan -->
+                <textarea id="inputDeskripsiLaporan" rows="4" style="width:100%; border: 2px solid var(--border-color); border-radius: 8px; padding:8px;" required placeholder="Jelaskan masalah atau saran Anda..."></textarea>
+            </div>
+            
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button type="button" class="btn btn-danger" onclick="tutupModalFeedback()">Batal</button>
+                <!-- Tombol ini sekarang memicu fungsi kirimLaporanBug() -->
+                <button type="button" class="btn btn-success" id="btnKirimFeedback" onclick="kirimLaporanBug()">Kirim Laporan</button>
+            </div>
+        </div>
+        
     </div>
 </div>
 
