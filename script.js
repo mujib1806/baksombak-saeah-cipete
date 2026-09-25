@@ -2570,7 +2570,17 @@ function prosesTransaksiKas(e) {
 }
 
 function bukaModalFeedback() { document.getElementById('modalFeedback').classList.add('active'); }
-function tutupModalFeedback() { document.getElementById('modalFeedback').classList.remove('active'); document.getElementById('fbDeskripsi').value = ''; }
+function tutupModalFeedback() {
+    const modal = document.getElementById('modalFeedback');
+    if (modal) modal.style.display = 'none';
+    
+    // Kosongkan form menggunakan ID yang baru
+    const deskripsi = document.getElementById('inputDeskripsiLaporan');
+    if (deskripsi) deskripsi.value = '';
+    
+    const jenis = document.getElementById('inputJenisLaporan');
+    if (jenis) jenis.value = '🐛 Lapor Error / Bug'; // Kembalikan ke pilihan pertama
+}
 function kirimFeedback(e) { e.preventDefault(); if(!db) { alert("Sistem Offline. Tidak bisa mengirim laporan."); return; } const jenis = document.getElementById('fbJenis').value; const deskripsi = document.getElementById('fbDeskripsi').value; const btn = document.getElementById('btnKirimFeedback'); btn.innerText = "Mengirim..."; btn.disabled = true; db.collection('laporanBugs').add({ waktu: new Date().toISOString(), user: currentUser ? currentUser.nama : 'Unknown', hp: currentUser ? currentUser.hp : '-', jenis: jenis, deskripsi: deskripsi }).then(() => { showToast('✅ Laporan Terkirim! Terima kasih atas masukannya.'); tutupModalFeedback(); }).catch(err => { alert("Gagal mengirim: " + err.message); }).finally(() => { btn.innerText = "Kirim Laporan"; btn.disabled = false; }); }
 
 // ==========================================
