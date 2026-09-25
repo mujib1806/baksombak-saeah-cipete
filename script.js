@@ -2334,12 +2334,15 @@ function renderTabelRiwayatStok() {
         filterContainer.id = 'containerFilterRiwayat';
         filterContainer.style.cssText = 'display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;';
         
+        // PERBAIKAN: Menghapus auto-trigger dan menambahkan Tombol Cari warna biru
         filterContainer.innerHTML = `
             <strong style="color:#475569; font-size:0.85rem;">Filter:</strong>
-            <input type="text" id="filterRiwayatNama" placeholder="🔍 Cari Nama Produk..." style="padding:8px; border-radius:6px; border:1px solid #cbd5e1; flex:1; min-width:150px;" oninput="terapkanFilterRiwayat()">
-            <input type="date" id="filterRiwayatMulai" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;" onchange="terapkanFilterRiwayat()">
+            <input type="text" id="filterRiwayatNama" placeholder="🔍 Cari Nama Produk..." style="padding:8px; border-radius:6px; border:1px solid #cbd5e1; flex:1; min-width:150px;">
+            <input type="date" id="filterRiwayatMulai" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
             <span style="color:#64748b; font-size:0.85rem;">s/d</span>
-            <input type="date" id="filterRiwayatAkhir" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;" onchange="terapkanFilterRiwayat()">
+            <input type="date" id="filterRiwayatAkhir" style="padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+            
+            <button onclick="terapkanFilterRiwayat()" style="background:#0284c7; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🔍 Cari</button>
             <button onclick="resetFilterRiwayat()" style="background:#ef4444; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Reset</button>
         `;
         tableEl.parentNode.insertBefore(filterContainer, tableEl);
