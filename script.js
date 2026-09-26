@@ -1708,9 +1708,14 @@ function renderViewSetoranBakso() {
     setTxt('bmTotalOmset', formatRupiah(totalOmset)); 
     setTxt('bmTotalUntung', formatRupiah(totalKeuntungan));
 }
+
 function renderViewRekapTransfer() {
-    const tgl = document.getElementById('tglOps').value; 
-    const items = dbStok[tgl] || []; 
+    const tglEl = document.getElementById('tglOps');
+    if (!tglEl) return; // Pengaman jika elemen tanggal belum siap
+    const tgl = tglEl.value; 
+    
+    // Pengaman: Jika dbStok belum siap, gunakan array kosong
+    const items = (typeof dbStok !== 'undefined' && dbStok && dbStok[tgl]) ? dbStok[tgl] : []; 
     let totalModalBakso = 0, omsetLebihanBakso = 0, modalReseller = 0, profitKotor = 0;
     
     items.forEach(p => { 
@@ -1730,20 +1735,23 @@ function renderViewRekapTransfer() {
         } 
     });
     
-    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, pengeluaran: 0 }; 
+    // Pengaman: Jika dbSetoranDapur belum siap
+    const dataSetoran = (typeof dbSetoranDapur !== 'undefined' && dbSetoranDapur && dbSetoranDapur[tgl]) ? dbSetoranDapur[tgl] : { cash: 0, pengeluaran: 0 }; 
     const setoranTfBakso = Math.max(0, totalModalBakso - dataSetoran.cash - dataSetoran.pengeluaran); 
     
-    // 👉 PERBAIKAN: Memberikan pengaman (fallback) jika pengaturanCabangAktif belum termuat
     const configCabang = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif) ? pengaturanCabangAktif : {};
 
-    // Tarik Gaji Harian Dinamis dengan pengaman
     const nominalHarian = configCabang.gajiHarian || 50000;
-    const gajiInfo = dbGajiHarian[tgl] || { nominal: nominalHarian }; 
-    const totalPengeluaranHarian = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+    
+    // Pengaman: Jika dbGajiHarian belum siap
+    const gajiInfo = (typeof dbGajiHarian !== 'undefined' && dbGajiHarian && dbGajiHarian[tgl]) ? dbGajiHarian[tgl] : { nominal: nominalHarian }; 
+    
+    // Pengaman: Jika dbPengeluaranHarian belum siap
+    const totalPengeluaranHarian = (typeof dbPengeluaranHarian !== 'undefined' && dbPengeluaranHarian) ? dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0) : 0; 
+    
     const profitBersih = profitKotor - (gajiInfo.nominal || 0) - totalPengeluaranHarian; 
     const alokasiBasis = Math.max(0, profitBersih); 
     
-    // Hitungan Persentase Dinamis dengan pengaman opsional (?.)
     let p1Num = (configCabang.pos1?.persen || 20) / 100;
     let p2Num = (configCabang.pos2?.persen || 40) / 100;
     let p3Num = (configCabang.pos3?.persen || 40) / 100;
@@ -1756,7 +1764,6 @@ function renderViewRekapTransfer() {
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     
-    // Update Label Teks Dinamis HTML dengan pengaman
     setTxt('lblRtPos1', (configCabang.pos1?.nama || "Dana Darurat") + ":");
     setTxt('lblRtPos2', (configCabang.pos2?.nama || "Tabungan Anak") + ":");
     setTxt('lblRtPos3', (configCabang.pos3?.nama || "Laba Bersih") + ":");
@@ -1769,7 +1776,8 @@ function renderViewRekapTransfer() {
     setTxt('rtKasLaba', formatRupiah(labaBersih)); 
     setTxt('rtTotalA', formatRupiah(totalA));
     
-    const kas = dbKasMasuk[tgl] || { qris: 0, gojek: 0, grab: 0, shopee: 0, modalBesok: 0 }; 
+    // Pengaman: Jika dbKasMasuk belum siap
+    const kas = (typeof dbKasMasuk !== 'undefined' && dbKasMasuk && dbKasMasuk[tgl]) ? dbKasMasuk[tgl] : { qris: 0, gojek: 0, grab: 0, shopee: 0, modalBesok: 0 }; 
     const totalB = (kas.qris||0) + (kas.gojek||0) + (kas.grab||0) + (kas.shopee||0) + (kas.modalBesok||0);
     
     setTxt('rtQris', formatRupiah(kas.qris)); 
@@ -1795,6 +1803,7 @@ function renderViewRekapTransfer() {
         }
     }
 }
+
 
 
 
