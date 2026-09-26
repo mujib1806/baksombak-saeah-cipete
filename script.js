@@ -1733,17 +1733,20 @@ function renderViewRekapTransfer() {
     const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, pengeluaran: 0 }; 
     const setoranTfBakso = Math.max(0, totalModalBakso - dataSetoran.cash - dataSetoran.pengeluaran); 
     
-    // Tarik Gaji Harian Dinamis
-    const nominalHarian = pengaturanCabangAktif.gajiHarian || 50000;
+    // 👉 PERBAIKAN: Memberikan pengaman (fallback) jika pengaturanCabangAktif belum termuat
+    const configCabang = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif) ? pengaturanCabangAktif : {};
+
+    // Tarik Gaji Harian Dinamis dengan pengaman
+    const nominalHarian = configCabang.gajiHarian || 50000;
     const gajiInfo = dbGajiHarian[tgl] || { nominal: nominalHarian }; 
-    const totalPengeluaranHarian = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+    const totalPengeluaranHarian = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
     const profitBersih = profitKotor - (gajiInfo.nominal || 0) - totalPengeluaranHarian; 
     const alokasiBasis = Math.max(0, profitBersih); 
     
-    // Hitungan Persentase Dinamis
-    let p1Num = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
-    let p2Num = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
-    let p3Num = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
+    // Hitungan Persentase Dinamis dengan pengaman opsional (?.)
+    let p1Num = (configCabang.pos1?.persen || 20) / 100;
+    let p2Num = (configCabang.pos2?.persen || 40) / 100;
+    let p3Num = (configCabang.pos3?.persen || 40) / 100;
 
     const danaDarurat = alokasiBasis * p1Num; 
     const tabAnak = alokasiBasis * p2Num;
@@ -1753,10 +1756,10 @@ function renderViewRekapTransfer() {
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     
-    // Update Label Teks Dinamis HTML
-    setTxt('lblRtPos1', (pengaturanCabangAktif.pos1?.nama || "Dana Darurat") + ":");
-    setTxt('lblRtPos2', (pengaturanCabangAktif.pos2?.nama || "Tabungan Anak") + ":");
-    setTxt('lblRtPos3', (pengaturanCabangAktif.pos3?.nama || "Laba Bersih") + ":");
+    // Update Label Teks Dinamis HTML dengan pengaman
+    setTxt('lblRtPos1', (configCabang.pos1?.nama || "Dana Darurat") + ":");
+    setTxt('lblRtPos2', (configCabang.pos2?.nama || "Tabungan Anak") + ":");
+    setTxt('lblRtPos3', (configCabang.pos3?.nama || "Laba Bersih") + ":");
 
     setTxt('rtTfBakso', formatRupiah(setoranTfBakso)); 
     setTxt('rtKasReseller', formatRupiah(modalReseller)); 
@@ -1792,6 +1795,8 @@ function renderViewRekapTransfer() {
         }
     }
 }
+
+
 
 function renderRekapGajiBulanan() {
     const bln = document.getElementById('filterBulanGaji').value; 
