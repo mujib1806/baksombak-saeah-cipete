@@ -637,78 +637,107 @@ function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('active'); 
     document.getElementById('overlay').classList.toggle('active'); 
 }
-
 function pilihMenuNav(jenis) {    
     if (typeof toggleSidebar === 'function') toggleSidebar();    
 
     const isOwner = currentUser && currentUser.role === 'owner';
     const isDapur = currentUser && currentUser.role === 'dapur';
 
-    document.getElementById('viewHarian').style.display = 'none';    
-    document.getElementById('viewSetoranBakso').style.display = 'none';    
-    document.getElementById('viewRekapTransfer').style.display = 'none';    
-    document.getElementById('viewMutasiKas').style.display = 'none';    
-    document.getElementById('viewGajiBulanan').style.display = 'none';
-    document.getElementById('viewDashboard').style.display = 'none';    
-    document.getElementById('viewOrderVendor').style.display = 'none';    
-    document.getElementById('viewRiwayatAktivitas').style.display = 'none';
-    document.getElementById('layar-produk').style.display = 'none';
-    document.getElementById('viewLaporanBerkala').style.display = 'none';    
-    
-    const viewPusat = document.getElementById('viewPusatKontrol');
-    if (viewPusat) viewPusat.style.display = 'none';
+    // 1. Kumpulkan semua ID halaman ke dalam satu wadah
+    const daftarView = [
+        'viewHarian', 'viewSetoranBakso', 'viewRekapTransfer', 'viewMutasiKas', 
+        'viewGajiBulanan', 'viewDashboard', 'viewOrderVendor', 'viewRiwayatAktivitas', 
+        'layar-produk', 'viewLaporanBerkala', 'viewPusatKontrol', 'viewDashboardGlobal',
+        'cardAlokasiHarian'
+    ];
 
-    const viewGlobal = document.getElementById('viewDashboardGlobal');
-    if (viewGlobal) viewGlobal.style.display = 'none';
+    // 2. Sembunyikan semuanya dengan AMAN (hanya disembunyikan jika ID-nya ditemukan di HTML)
+    daftarView.forEach(id => {
+        const elemen = document.getElementById(id);
+        if (elemen) {
+            elemen.style.display = 'none';
+        }
+    });
 
-    if (document.getElementById('cardAlokasiHarian')) {
-        document.getElementById('cardAlokasiHarian').style.display = 'none';
-    }
-
+    // 3. Tampilkan halaman yang dipilih dengan AMAN
     if (jenis === 'harian') {    
-        document.getElementById('viewHarian').style.display = 'block';    
-        if (document.getElementById('cardAlokasiHarian')) document.getElementById('cardAlokasiHarian').style.display = isOwner ? 'block' : 'none';
-        cekPeringatanStok();
+        const view = document.getElementById('viewHarian');
+        if (view) view.style.display = 'block';    
+        
+        const cardAlokasi = document.getElementById('cardAlokasiHarian');
+        if (cardAlokasi) cardAlokasi.style.display = isOwner ? 'block' : 'none';
+        
+        if (typeof cekPeringatanStok === 'function') cekPeringatanStok();
+        
     } else if (jenis === 'setoranBakso') {    
-        document.getElementById('viewSetoranBakso').style.display = 'block';   
-        if (document.getElementById('cardSetoranDapur')) document.getElementById('cardSetoranDapur').style.display = 'block';
-        renderViewSetoranBakso();    
+        const view = document.getElementById('viewSetoranBakso');
+        if (view) view.style.display = 'block';   
+        
+        const cardDapur = document.getElementById('cardSetoranDapur');
+        if (cardDapur) cardDapur.style.display = 'block';
+        
+        if (typeof renderViewSetoranBakso === 'function') renderViewSetoranBakso();    
+        
     } else if (jenis === 'rekapTransfer') {    
-        document.getElementById('viewRekapTransfer').style.display = 'block';    
-        renderViewRekapTransfer();    
+        const view = document.getElementById('viewRekapTransfer');
+        if (view) view.style.display = 'block';    
+        if (typeof renderViewRekapTransfer === 'function') renderViewRekapTransfer();    
+        
     } else if (jenis === 'mutasiKas') {    
-        document.getElementById('viewMutasiKas').style.display = 'block';    
-        hitungAkumulasiKasTotal();    
+        const view = document.getElementById('viewMutasiKas');
+        if (view) view.style.display = 'block';    
+        if (typeof hitungAkumulasiKasTotal === 'function') hitungAkumulasiKasTotal();    
+        
     } else if (jenis === 'gajiBulanan') {
-        document.getElementById('viewGajiBulanan').style.display = 'block';
-        renderRekapGajiBulanan();
+        const view = document.getElementById('viewGajiBulanan');
+        if (view) view.style.display = 'block';
+        if (typeof renderRekapGajiBulanan === 'function') renderRekapGajiBulanan();
+        
     } else if (jenis === 'dashboard') {
-        document.getElementById('viewDashboard').style.display = 'block';
-        renderDashboardGrafik();
+        const view = document.getElementById('viewDashboard');
+        if (view) view.style.display = 'block';
+        if (typeof renderDashboardGrafik === 'function') renderDashboardGrafik();
+        
     } else if (jenis === 'dashboardGlobal') {
-        if (viewGlobal) viewGlobal.style.display = 'block';
+        const view = document.getElementById('viewDashboardGlobal');
+        if (view) view.style.display = 'block';
         if (typeof renderDashboardGlobal === 'function') renderDashboardGlobal();
+        
     } else if (jenis === 'orderVendor') {
-        document.getElementById('viewOrderVendor').style.display = 'block';
+        const view = document.getElementById('viewOrderVendor');
+        if (view) view.style.display = 'block';
+        
         if (typeof renderFormOrderVendor === 'function') renderFormOrderVendor();
         else if (typeof renderOrderVendor === 'function') renderOrderVendor();
-        cekPeringatanStok(); 
+        
+        if (typeof cekPeringatanStok === 'function') cekPeringatanStok(); 
+        
     } else if (jenis === 'riwayatAktivitas') {
-        document.getElementById('viewRiwayatAktivitas').style.display = 'block';
-        muatDataRiwayat();
+        const view = document.getElementById('viewRiwayatAktivitas');
+        if (view) view.style.display = 'block';
+        if (typeof muatDataRiwayat === 'function') muatDataRiwayat();
+        
     } else if (jenis === 'produk') {
-        document.getElementById('layar-produk').style.display = 'block';
+        const view = document.getElementById('layar-produk');
+        if (view) view.style.display = 'block';
+        
         if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
         else if (typeof renderMasterProduk === 'function') renderMasterProduk();
+        
     } else if (jenis === 'laporanBerkala') {
-        document.getElementById('viewLaporanBerkala').style.display = 'block';
+        const view = document.getElementById('viewLaporanBerkala');
+        if (view) view.style.display = 'block';
+        
     } else if (jenis === 'pusatKontrol') {
-        if (viewPusat) viewPusat.style.display = 'block';
+        const view = document.getElementById('viewPusatKontrol');
+        if (view) view.style.display = 'block';
+        
         if (typeof muatDaftarAkun === 'function') muatDaftarAkun();
         if (typeof renderDaftarCabang === 'function') renderDaftarCabang();
         if (typeof renderDaftarAkun === 'function') renderDaftarAkun();
     }
 }
+
 
 
 // ==========================================
