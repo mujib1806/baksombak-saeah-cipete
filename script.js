@@ -2260,18 +2260,21 @@ function renderTabelMasterProduk() {
 
     // C. Looping Data
     masterProduk.forEach((p, index) => {
+        // 👉 PERBAIKAN: Pastikan semua angka adalah float agar tidak error. Gunakan nama variabel yang BENAR
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
-        const keluarEtalase = parseFloat(p.keluarEtalase) || 0;
+        const keluarEtalase = parseFloat(p.keluarEtalase) || 0; // INI YANG BENAR
         const rusakTotal = parseFloat(p.stokRusak) || 0;
+        
+        // Hitung sisa gudang dengan variabel yang benar
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
-        // 👉 PERBAIKAN: Semua kategori sekarang akan memunculkan angka (tidak diganti jadi strip '-')
+        // Cetak angka untuk SEMUA kategori (Bakso maupun bukan)
         const cetakAwal = awalGudang;
         const cetakKeluar = keluarEtalase;
         const cetakRusakTotal = rusakTotal;
         const cetakSisa = `<span id="sisaRealtime_${index}">${sisaGudangAsli}</span>`;
 
-        // Kotak Input Interaktif (Tetap aktif untuk semua produk agar bisa diupdate)
+        // Kotak Input Interaktif (Aktif untuk semua produk)
         const inputMasuk = `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold; color:#166534;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
         const inputRusakBaru = `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold; color:#991b1b;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
         
@@ -2301,7 +2304,6 @@ function renderTabelMasterProduk() {
         `;
     });
 }
-
 // ==========================================
 // 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
 // ==========================================
@@ -2417,7 +2419,10 @@ function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
     if (!p) return;
 
-    let inputBaru = prompt(`⚙️ KOREKSI STOK FISIK: ${p.nama}\n\nMasukkan jumlah SISA STOK GUDANG yang aktual/riil saat ini di gudang:`, p.stokAwalGudang - (p.stokKeluar || 0) - (p.stokRusak || 0));
+    // 👉 PERBAIKAN: Gunakan p.keluarEtalase BUKAN p.stokKeluar
+    let stokLama = (parseFloat(p.stokAwalGudang) || 0) - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0);
+
+    let inputBaru = prompt(`⚙️ KOREKSI STOK FISIK: ${p.nama}\n\nMasukkan jumlah SISA STOK GUDANG yang aktual/riil saat ini di gudang:`, stokLama);
     
     if (inputBaru === null) return; // Batal
     let stokFisikAktual = parseInt(inputBaru);
@@ -2427,7 +2432,6 @@ function bukaModalKoreksiStok(i) {
         return;
     }
 
-    let stokLama = (parseFloat(p.stokAwalGudang) || 0) - (parseFloat(p.stokKeluar) || 0) - (parseFloat(p.stokRusak) || 0);
     let selisih = stokFisikAktual - stokLama;
 
     if (selisih === 0) {
@@ -2457,7 +2461,10 @@ function bukaModalKoreksiStok(i) {
     if (typeof catatRiwayatStok === 'function') {
         catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), stokFisikAktual);
     }
-    catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+    
+    if (typeof catatAktivitas === 'function') {
+        catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+    }
 }
 // ==========================================
 // 5. FUNGSI RENDER RIWAYAT STOK (YANG SEMPAT HILANG)
