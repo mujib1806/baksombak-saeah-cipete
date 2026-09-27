@@ -2223,7 +2223,7 @@ function renderTabelMasterProduk() {
     
     const tableEl = tbody.parentElement;
     
-    // A. Buat Tombol Simpan Masal di atas tabel (jika belum ada)
+    // A. Buat Tombol Simpan Masal di atas tabel
     let btnContainer = document.getElementById('containerBtnSimpanMasal');
     if (!btnContainer) {
         btnContainer = document.createElement('div');
@@ -2232,12 +2232,10 @@ function renderTabelMasterProduk() {
         btnContainer.innerHTML = `<button onclick="simpanMutasiGudangMasal()" style="background:#16a34a; color:white; padding:10px 20px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">💾 Simpan Perubahan Stok Masal</button>`;
         tableEl.parentNode.insertBefore(btnContainer, tableEl);
     } else {
-        // Pastikan tombol aktif kembali saat tabel di-render ulang
         const btn = btnContainer.querySelector('button');
         if (btn) { btn.innerText = "💾 Simpan Perubahan Stok Masal"; btn.disabled = false; }
     }
 
-    // B. Ubah Judul Kolom (Header) agar sesuai dengan kolom input baru
     const theadEl = tableEl.querySelector('thead');
     if (theadEl) {
         theadEl.innerHTML = `
@@ -2267,25 +2265,21 @@ function renderTabelMasterProduk() {
         const rusakTotal = parseFloat(p.stokRusak) || 0;
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
-        const isBakso = p.kategori.toLowerCase().includes('bakso malang');
+        // 👉 PERBAIKAN: Semua kategori sekarang akan memunculkan angka (tidak diganti jadi strip '-')
+        const cetakAwal = awalGudang;
+        const cetakKeluar = keluarEtalase;
+        const cetakRusakTotal = rusakTotal;
+        const cetakSisa = `<span id="sisaRealtime_${index}">${sisaGudangAsli}</span>`;
 
-        // Jika Bakso Malang, cetak '-' (dikunci). Jika Reseller, cetak angkanya.
-        const cetakAwal = isBakso ? '-' : awalGudang;
-        const cetakKeluar = isBakso ? '-' : keluarEtalase;
-        const cetakRusakTotal = isBakso ? '-' : rusakTotal;
+        // Kotak Input Interaktif (Tetap aktif untuk semua produk agar bisa diupdate)
+        const inputMasuk = `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold; color:#166534;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
+        const inputRusakBaru = `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold; color:#991b1b;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
         
-        // Kotak Input Interaktif (Dinonaktifkan jika Bakso Malang)
-        const inputMasuk = isBakso ? `<span style="color:#94a3b8;">-</span>` : `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold; color:#166534;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
-        
-        const inputRusakBaru = isBakso ? `<span style="color:#94a3b8;">-</span>` : `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold; color:#991b1b;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
-        
-        const cetakSisa = isBakso ? '-' : `<span id="sisaRealtime_${index}">${sisaGudangAsli}</span>`;
-
         tbody.innerHTML += `
             <tr>
                 <td style="color:#6d28d9; font-weight:bold;">${index + 1}</td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.nama}</td>
-                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori}</span></td>
+                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori || '-'}</span></td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.modal}</td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.jual}</td>
                 
@@ -2577,24 +2571,40 @@ function resetFilterRiwayat() {
 }
 
 // ==========================================
-// 6. FUNGSI HAPUS PRODUK (YANG SEMPAT HILANG)
+// 6. FUNGSI HAPUS PRODUK (PERBAIKAN PRODUK HANTU)
 // ==========================================
-function hapusProdukMaster(i) { 
-    if(confirm("Hapus produk ini dari Master Produk?")) { 
-        const namaProd = masterProduk[i]?.nama || 'Produk';
-        masterProduk.splice(i, 1); 
-        catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
-        if(db) {
-            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
-            .then(() => {
-                renderTabelMasterProduk();
-            });
-        } else {
-            renderTabelMasterProduk(); 
+async function hapusProdukMaster(i) { 
+    if(!confirm("Hapus produk ini dari Master Produk?")) return;
+    
+    const namaProd = masterProduk[i]?.nama || 'Produk';
+    
+    // 👉 PERBAIKAN: Buat cadangan data sebelum dihapus
+    const backupMasterProduk = [...masterProduk];
+    
+    // Hapus di layar sementara
+    masterProduk.splice(i, 1); 
+    renderTabelMasterProduk(); // Update tampilan layar agar terasa cepat
+    
+    if (typeof db !== 'undefined' && db !== null) {
+        try {
+            // Tunggu kepastian dari server Firebase
+            await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+            
+            // Jika berhasil sampai sini, berarti aman
+            if (typeof catatAktivitas === 'function') {
+                catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
+            }
+            if (typeof showToast === 'function') showToast("✅ Produk berhasil dihapus!");
+            
+        } catch (error) {
+            console.error("Error menghapus produk:", error);
+            // 👉 JIKA GAGAL: Kembalikan produk hantu tadi karena server menolak/koneksi putus
+            alert("Gagal menghapus produk dari server (Koneksi bermasalah). Data akan dikembalikan.");
+            masterProduk = backupMasterProduk; // Kembalikan cadangan
+            renderTabelMasterProduk(); // Munculkan lagi di layar
         }
-    } 
+    }
 }
-
 function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
 
 function bukaModalKas(jenis, tipe) { 
