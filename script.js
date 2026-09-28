@@ -619,7 +619,7 @@ function pilihMenuNav(jenis) {
     const isOwner = currentUser && currentUser.role === 'owner';
     const isDapur = currentUser && currentUser.role === 'dapur';
 
-    // 1. Kumpulkan semua ID halaman ke dalam satu wadah (Ubah 'layar-produk' jadi 'viewProduk')
+    // 1. Kumpulkan semua ID halaman ke dalam satu wadah
     const daftarView = [
         'viewHarian', 'viewSetoranBakso', 'viewRekapTransfer', 'viewMutasiKas', 
         'viewGajiBulanan', 'viewDashboard', 'viewOrderVendor', 'viewRiwayatAktivitas', 
@@ -697,7 +697,7 @@ function pilihMenuNav(jenis) {
         const view = document.getElementById('viewProduk');
         if (view) view.style.display = 'block';
         
-        // AMBIL DATA DULU DARI FIREBASE, BARU RENDER TABEL
+        // Ambil data terbaru dari Firebase lalu render tabel
         if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').get()
             .then((doc) => {
@@ -706,15 +706,15 @@ function pilihMenuNav(jenis) {
                 } else {
                     window.masterProduk = [];
                 }
-                // Render tabel setelah data sukses ditarik
                 if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
             }).catch(err => {
                 console.error("Gagal load master produk:", err);
                 if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
             });
         } else {
-            // Fallback jika mode lokal
             if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+        }
+        
     } else if (jenis === 'laporanBerkala') {
         const view = document.getElementById('viewLaporanBerkala');
         if (view) view.style.display = 'block';
