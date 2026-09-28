@@ -4446,3 +4446,83 @@ function bersihkanGudangTotal() {
         });
     }
 }
+// ==========================================
+// FUNGSI IMPORT MASTER PRODUK DARI CSV
+// ==========================================
+function importMasterProdukCSV(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = text.split('\n');
+        
+        let jumlahBerhasil = 0;
+
+        // Lewati baris pertama jika itu adalah Header (Nama, Kategori, Modal, Jual, StokAwal, dll)
+        // Mulai looping dari baris 1
+        for (let i = 1; i < rows.length; i++) {
+            let row = rows[i].trim();
+            if (!row) continue;
+
+            // Pisahkan berdasarkan koma (format CSV standard)
+            let cols = row.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+            
+            // Urutan kolom CSV yang diharapkan:
+            // [0]: Nama Produk, [1]: Kategori, [2]: Modal, [3]: Jual, [4]: Stok Awal Gudang, [5]: Min Gudang, [6]: Min Etalase
+            if (cols.length >= 4) {
+                const namaProduk = cols[0];
+                const kategoriProduk = cols[1] || 'Umum';
+                const modalProduk = parseFloat(cols[2]) || 0;
+                const jualProduk = parseFloat(cols[3]) || 0;
+                const stokAwal = parseFloat(cols[4]) || 0;
+                const minGudangVal = parseFloat(cols[5]) || 10;
+                const minEtalaseVal = parseFloat(cols[6]) || 5;
+
+                // Cek apakah produk dengan nama yang sama sudah ada
+                let existingIndex = masterProduk.findIndex(p => p.nama.toLowerCase() === namaProduk.toLowerCase());
+
+                const produkBaru = {
+                    nama: namaProduk,
+                    kategori: kategoriProduk,
+                    modal: modalProduk,
+                    jual: jualProduk,
+                    margin: jualProduk - modalProduk,
+                    stokAwalGudang: stokAwal,
+                    keluarEtalase: 0,
+                    stokRusak: 0,
+                    minGudang: minGudangVal,
+                    minEtalase: minEtalaseVal
+                };
+
+                if (existingIndex >= 0) {
+                    // Update jika sudah ada
+                    masterProduk[existingIndex] = produkBaru;
+                } else {
+                    // Tambah baru jika belum ada
+                    masterProduk.push(produkBaru);
+                }
+                jumlahBerhasil++;
+            }
+        }
+
+        // Simpan ke Firebase secara massal
+        if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+            .then(() => {
+                if (typeof showToast === 'function') showToast(`✅ Sukses import ${jumlahBerhasil} produk!`);
+                renderTabelMasterProduk();
+                event.target.value = ''; // Reset input file
+            }).catch(err => {
+                alert("Gagal menyimpan data import ke server: " + err);
+            });
+        } else {
+            renderTabelMasterProduk();
+            alert(`✅ Sukses import ${jumlahBerhasil} produk (Mode Lokal).`);
+            event.target.value = '';
+        }
+    };
+
+    reader.readAsText(file);
+}
