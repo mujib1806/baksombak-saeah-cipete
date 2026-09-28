@@ -128,30 +128,20 @@ th {
 .badge-bakso { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
 .badge-reseller { background: #e0f2fe; color: #0284c7; border: 1px solid #7dd3fc; }
 
-/* Kolom 1 & 2 Solid (Freeze di Kiri) */
-.table-freeze th:nth-child(1), .table-freeze td:nth-child(1) { 
-    position: sticky; 
-    left: 0; 
-    z-index: 15; 
-    width: 40px; 
-    min-width: 40px; 
-    max-width: 40px; 
-    text-align: center; 
-    background-color: #ffffff !important; 
+/* 1. KHUSUS ISI TABEL (TD) - Cuma dikunci ke kiri (left) */
+.table-freeze td:nth-child(1) { 
+    position: sticky; left: 0; z-index: 15; width: 40px; min-width: 40px; max-width: 40px; text-align: center; background-color: #ffffff !important; 
 }
-.table-freeze th:nth-child(2), .table-freeze td:nth-child(2) { 
-    position: sticky; 
-    left: 40px; 
-    z-index: 15; 
-    box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); 
-    background-color: #ffffff !important; 
+.table-freeze td:nth-child(2) { 
+    position: sticky; left: 40px; z-index: 15; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); background-color: #ffffff !important; 
 }
 
-/* Pertemuan Pojok Kiri Atas (Kolom 1 & 2 dengan Header) */
-.table-freeze th:nth-child(1), .table-freeze th:nth-child(2) { 
-    z-index: 25; 
-    background-color: #f8fafc !important; 
-    top: 0; 
+/* 2. KHUSUS KEPALA TABEL (TH) - Dikunci ke Atas (top) DAN Kiri (left) SEKALIGUS! */
+.table-freeze th:nth-child(1) { 
+    position: sticky; top: 0; left: 0; z-index: 30; width: 40px; min-width: 40px; max-width: 40px; text-align: center; background-color: #f8fafc !important; 
+}
+.table-freeze th:nth-child(2) { 
+    position: sticky; top: 0; left: 40px; z-index: 30; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); background-color: #f8fafc !important; 
 }
 
 .summary-box { background: #f0f9ff; border-radius: 12px; padding: 12px; margin-top: 6px; border: 1px solid #bae6fd; }
