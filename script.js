@@ -2199,25 +2199,18 @@ function renderTabelMasterProduk() {
     
     const tableEl = tbody.parentElement;
     
-    // 👉 POSISI BARU: Tombol Simpan Masal di Pojok Kiri atas tabel (Sticky)
-    let btnContainer = document.getElementById('containerBtnSimpanMasal');
-    if (!btnContainer) {
-        btnContainer = document.createElement('div');
-        btnContainer.id = 'containerBtnSimpanMasal';
-        btnContainer.className = 'container-simpan-masal'; // Memakai kelas CSS baru
-        btnContainer.innerHTML = `<button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-sticky">💾 Simpan Perubahan Stok Masal</button>`;
-        tableEl.parentNode.insertBefore(btnContainer, tableEl);
-    } else {
-        const btn = btnContainer.querySelector('button');
-        if (btn) { btn.innerText = "💾 Simpan Perubahan Stok Masal"; btn.disabled = false; }
-    }
+    // Hapus kontainer tombol lama di luar tabel jika sempat terbuat
+    const oldContainer = document.getElementById('containerBtnSimpanMasal');
+    if (oldContainer) oldContainer.remove();
 
     const theadEl = tableEl.querySelector('thead');
     if (theadEl) {
         theadEl.innerHTML = `
             <tr style="font-size: 0.85rem;">
-                <th>No</th>
-                <th>Nama Produk</th>
+                <!-- Tombol Simpan Masal ditaruh langsung di pojok kiri atas (menyatu dengan header) -->
+                <th style="background:#f8fafc; text-align:center; min-width: 130px;" colspan="2">
+                    <button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-header">💾 Simpan Masal</button>
+                </th>
                 <th>Kategori</th>
                 <th>Modal</th>
                 <th>Jual</th>
@@ -2233,6 +2226,7 @@ function renderTabelMasterProduk() {
     }
 
     tbody.innerHTML = '';
+    // ... (lanjutan looping data produk di bawahnya seperti biasa)
 
     // C. Looping Data
     masterProduk.forEach((p, index) => {
