@@ -4440,3 +4440,38 @@ async function tandaiLaporanSelesai(idLaporan) {
         alert('Gagal memperbarui status. Periksa koneksi internet.');
     }
 }
+// ==========================================
+// FUNGSI RESET TOTAL (JALANKAN SEKALI SAJA)
+// ==========================================
+function bersihkanGudangTotal() {
+    if(!confirm("⚠️ PERINGATAN KERAS! Anda yakin ingin MENGHAPUS SEMUA RIWAYAT STOK dan MENG-NOL-KAN semua angka stok di Master Produk untuk cabang ini?")) return;
+
+    // 1. Nol-kan Master Produk
+    masterProduk.forEach(p => {
+        p.stokAwalGudang = 0;
+        p.keluarEtalase = 0;
+        p.stokRusak = 0;
+    });
+
+    // 2. Kosongkan Riwayat
+    riwayatStok = []; // Pastikan array riwayat kosong
+
+    // 3. Tembak ke Firebase
+    if(typeof db !== 'undefined' && db !== null) {
+        const batch = db.batch();
+        const refProduk = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+        
+        // Asumsi nama dokumen riwayat Anda di Firebase, sesuaikan jika berbeda
+        const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok'); 
+
+        batch.set(refProduk, { list: masterProduk });
+        batch.set(refRiwayat, { logs: [] }); // Timpa riwayat lama dengan array kosong
+
+        batch.commit().then(() => {
+            alert("✅ RESET BERHASIL! Semua stok menjadi 0 dan Riwayat telah bersih. Halaman akan dimuat ulang.");
+            window.location.reload();
+        }).catch(err => {
+            alert("❌ Gagal reset: " + err);
+        });
+    }
+}
