@@ -4447,7 +4447,7 @@ function bersihkanGudangTotal() {
     }
 }
 // ==========================================
-// FUNGSI IMPORT MASTER PRODUK DARI CSV
+// FUNGSI IMPORT MASTER PRODUK DARI CSV (DISESUAIKAN DENGAN EXPORT)
 // ==========================================
 function importMasterProdukCSV(event) {
     const file = event.target.files[0];
@@ -4456,31 +4456,31 @@ function importMasterProdukCSV(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const text = e.target.result;
-        const rows = text.split('\n');
         
+        // Tangani pemisah baris \n atau \r\n
+        const rows = text.split(/\r\n|\n/);
         let jumlahBerhasil = 0;
 
-        // Lewati baris pertama jika itu adalah Header (Nama, Kategori, Modal, Jual, StokAwal, dll)
-        // Mulai looping dari baris 1
+        // Mulai looping dari baris 1 (lewati baris 0 / Header: No;Nama Produk;Kategori;Harga Modal;dll)
         for (let i = 1; i < rows.length; i++) {
             let row = rows[i].trim();
             if (!row) continue;
 
-            // Pisahkan berdasarkan koma (format CSV standard)
-            let cols = row.split(',').map(val => val.trim().replace(/^"|"$/g, ''));
+            // PENTING: Karena export menggunakan pemisah titik koma (;), maka split pakai ';'
+            let cols = row.split(';').map(val => val.trim().replace(/^"|"$/g, ''));
             
-            // Urutan kolom CSV yang diharapkan:
-            // [0]: Nama Produk, [1]: Kategori, [2]: Modal, [3]: Jual, [4]: Stok Awal Gudang, [5]: Min Gudang, [6]: Min Etalase
-            if (cols.length >= 4) {
-                const namaProduk = cols[0];
-                const kategoriProduk = cols[1] || 'Umum';
-                const modalProduk = parseFloat(cols[2]) || 0;
-                const jualProduk = parseFloat(cols[3]) || 0;
-                const stokAwal = parseFloat(cols[4]) || 0;
-                const minGudangVal = parseFloat(cols[5]) || 10;
-                const minEtalaseVal = parseFloat(cols[6]) || 5;
+            // Urutan kolom dari fungsi Export Anda:
+            // [0]: No, [1]: Nama Produk, [2]: Kategori, [3]: Harga Modal, [4]: Harga Jual, [5]: Margin, [6]: Stok Gudang
+            if (cols.length >= 5) {
+                const namaProduk = cols[1]; // Kolom ke-2 (index 1) adalah Nama Produk
+                if (!namaProduk || namaProduk === '-') continue;
 
-                // Cek apakah produk dengan nama yang sama sudah ada
+                const kategoriProduk = cols[2] || 'Umum';
+                const modalProduk = parseFloat(cols[3]) || 0;
+                const jualProduk = parseFloat(cols[4]) || 0;
+                const stokGudangVal = parseFloat(cols[6]) || 0; // Kolom ke-7 adalah Stok Gudang
+
+                // Cek apakah produk dengan nama yang sama sudah ada (case-insensitive)
                 let existingIndex = masterProduk.findIndex(p => p.nama.toLowerCase() === namaProduk.toLowerCase());
 
                 const produkBaru = {
@@ -4489,16 +4489,19 @@ function importMasterProdukCSV(event) {
                     modal: modalProduk,
                     jual: jualProduk,
                     margin: jualProduk - modalProduk,
-                    stokAwalGudang: stokAwal,
+                    stokAwalGudang: stokGudangVal, // Diselaraskan dengan data stok gudang saat di-export
                     keluarEtalase: 0,
                     stokRusak: 0,
-                    minGudang: minGudangVal,
-                    minEtalase: minEtalaseVal
+                    minGudang: 10,   // Nilai default aman
+                    minEtalase: 5    // Nilai default aman
                 };
 
                 if (existingIndex >= 0) {
-                    // Update jika sudah ada
-                    masterProduk[existingIndex] = produkBaru;
+                    // Jika sudah ada, update datanya (misal update harga atau stok)
+                    masterProduk[existingIndex].modal = modalProduk;
+                    masterProduk[existingIndex].jual = jualProduk;
+                    masterProduk[existingIndex].margin = jualProduk - modalProduk;
+                    masterProduk[existingIndex].stokAwalGudang = stokGudangVal;
                 } else {
                     // Tambah baru jika belum ada
                     masterProduk.push(produkBaru);
@@ -4511,7 +4514,11 @@ function importMasterProdukCSV(event) {
         if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
             .then(() => {
-                if (typeof showToast === 'function') showToast(`✅ Sukses import ${jumlahBerhasil} produk!`);
+                if (typeof showToast === 'function') {
+                    showToast(`✅ Sukses import ${jumlahBerhasil} produk!`);
+                } else {
+                    alert(`✅ Sukses import ${jumlahBerhasil} produk!`);
+                }
                 renderTabelMasterProduk();
                 event.target.value = ''; // Reset input file
             }).catch(err => {
