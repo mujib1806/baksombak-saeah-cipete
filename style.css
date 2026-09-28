@@ -150,14 +150,19 @@ th { background-color: #f8fafc; font-weight: 800; text-align: center; position: 
     table th:last-child, table td:last-child { display: none !important; }
 }
 
-/* Styling Tombol Simpan Masal Sticky di Kiri */
+/* Tombol Simpan Masal Menempel Sempurna (Sticky Kiri & Atas) */
 .container-simpan-masal {
     position: sticky;
     left: 0;
-    z-index: 30;
+    top: 0; /* Menempel di bagian atas saat di-scroll ke bawah */
+    z-index: 35; /* Nilai z-index dibuat paling tinggi agar di atas header tabel */
     margin-bottom: 12px;
     display: inline-block;
+    background-color: #f1f5f9; /* Warna latar belakang sesuai body agar tidak transparan */
+    padding: 6px 0;
+    width: 100%; /* Memastikan area sticky menutupi baris atas */
 }
+
 .btn-simpan-masal-sticky {
     background: linear-gradient(135deg, #16a34a, #15803d);
     color: white;
@@ -168,11 +173,12 @@ th { background-color: #f8fafc; font-weight: 800; text-align: center; position: 
     border-radius: 8px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     transition: transform 0.2s;
 }
+
 .btn-simpan-masal-sticky:hover {
     transform: scale(1.02);
     filter: brightness(1.1);
