@@ -2197,47 +2197,15 @@ function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
     if (!tbody) return;
     
-    // PENGAMAN: Jika masterProduk belum ada atau bukan array, inisialisasi sebagai array kosong
-    if (typeof masterProduk === 'undefined' || !Array.isArray(masterProduk)) {
+    // Pastikan masterProduk berbentuk array agar tidak error
+    if (typeof masterProduk === 'undefined' || !Array.isArray(window.masterProduk)) {
         window.masterProduk = [];
-    }
-
-    const tableEl = tbody.parentElement;
-    tableEl.classList.add('table-freeze'); 
-    
-    const oldContainer = document.getElementById('containerBtnSimpanMasal');
-    if (oldContainer) oldContainer.remove();
-
-    const theadEl = tableEl.querySelector('thead');
-    if (theadEl) {
-        theadEl.innerHTML = `
-            <tr style="font-size: 0.85rem;">
-                <th style="position: sticky; top: 0; left: 0; z-index: 30; background-color: #f8fafc; width: 40px; text-align: center; border-bottom: 2px solid #cbd5e1; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);">No</th>
-                <th style="position: sticky; top: 0; left: 40px; z-index: 30; background-color: #f8fafc; min-width: 160px; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); border-bottom: 2px solid #cbd5e1;">
-                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 4px 0;">
-                        <button onclick="simpanMutasiGudangMasal()" style="background: linear-gradient(135deg, #16a34a, #15803d); color: white; padding: 6px 12px; font-weight: 800; font-size: 0.75rem; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(22,163,74,0.3);">💾 Simpan Masal</button>
-                        <span>Nama Produk</span>
-                    </div>
-                </th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Kategori</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Modal</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Jual</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #dcfce7; color: #166534; border-bottom: 2px solid #cbd5e1;">Awal Gudang</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #22c55e; color: white; border-bottom: 2px solid #cbd5e1;">[+] Masuk Baru</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #fef2f2; color: #991b1b; border-bottom: 2px solid #cbd5e1;">Ke Etalase</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #fef2f2; color: #991b1b; border-bottom: 2px solid #cbd5e1;">Total Rusak</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #ef4444; color: white; border-bottom: 2px solid #cbd5e1;">[+] Rusak Baru</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #e0f2fe; color: #0369a1; border-bottom: 2px solid #cbd5e1;">Sisa Aktual</th>
-                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Aksi</th>
-            </tr>
-        `;
     }
 
     tbody.innerHTML = '';
     
-    // Jika data produk kosong, tampilkan baris informasi agar pengguna tahu
     if (masterProduk.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan klik tombol "+ Tambah Produk" di atas.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
         return;
     }
 
@@ -2245,33 +2213,27 @@ function renderTabelMasterProduk() {
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
         const keluarEtalase = parseFloat(p.keluarEtalase) || 0; 
         const rusakTotal = parseFloat(p.stokRusak) || 0;
-        
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
-        const cetakAwal = awalGudang;
-        const cetakKeluar = kelurEtalase || keluarEtalase;
-        const cetakRusakTotal = rusakTotal;
-        const cetakSisa = `<span id="sisaRealtime_${index}">${sisaGudangAsli}</span>`;
-
-        const inputMasuk = `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold; color:#166534;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
-        const inputRusakBaru = `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold; color:#991b1b;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
+        const inputMasuk = `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
+        const inputRusakBaru = `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
         
         tbody.innerHTML += `
             <tr>
-                <td style="color:#6d28d9; font-weight:bold; position: sticky; left: 0; background-color: #ffffff; z-index: 10; text-align:center; border-right: 1px solid #e2e8f0;">${index + 1}</td>
-                <td style="color:#6d28d9; font-weight:bold; position: sticky; left: 40px; background-color: #ffffff; z-index: 10; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);">${p.nama}</td>
+                <td style="text-align:center; font-weight:bold;">${index + 1}</td>
+                <td style="font-weight:bold;">${p.nama || '-'}</td>
                 <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori || '-'}</span></td>
-                <td style="color:#6d28d9; font-weight:bold;">${p.modal}</td>
-                <td style="color:#6d28d9; font-weight:bold;">${p.jual}</td>
-                <td style="color:#16a34a; font-weight:900; background:#f0fdf4; text-align:center;">${cetakAwal}</td>
-                <td style="background:#dcfce7; text-align:center;">${inputMasuk}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2; text-align:center;">${cetakKeluar}</td>
-                <td style="color:#dc2626; font-weight:900; background:#fef2f2; text-align:center;">${cetakRusakTotal}</td>
-                <td style="background:#fee2e2; text-align:center;">${inputRusakBaru}</td>
-                <td style="color:#0284c7; font-weight:900; font-size:1.1rem; background:#f0f9ff; text-align:center;">${cetakSisa}</td>
-                <td>
-                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit Detail">✏️</button>
-                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus Produk">🗑️</button>
+                <td style="text-align:right;">${p.modal || 0}</td>
+                <td style="text-align:right;">${p.jual || 0}</td>
+                <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold;">${awalGudang}</td>
+                <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold;">${keluarEtalase}</td>
+                <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold;">${rusakTotal}</td>
+                <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
+                <td style="text-align:center;">${p.minGudang || 0}</td>
+                <td style="text-align:center;">${p.minEtalase || 0}</td>
+                <td style="text-align:center;">
+                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit">✏️</button>
+                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus">🗑️</button>
                 </td>
             </tr>
         `;
