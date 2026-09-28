@@ -2191,7 +2191,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// 1. RENDER TABEL MASTER PRODUK (PERBAIKAN ANGKA HILANG & VARIABEL SALAH)
+// 1. RENDER TABEL MASTER PRODUK (DIJAMIN MUNCUL & TERKUNCI)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2211,7 +2211,7 @@ function renderTabelMasterProduk() {
         theadEl.innerHTML = `
             <tr style="font-size: 0.85rem;">
                 <!-- KUNCI 1: Kolom "No" Dikunci ke Atas dan Kiri -->
-                <th style="position: sticky; top: 0; left: 0; z-index: 30; background-color: #f8fafc; width: 40px; text-align: center; border-bottom: 2px solid #cbd5e1;">No</th>
+                <th style="position: sticky; top: 0; left: 0; z-index: 30; background-color: #f8fafc; width: 40px; text-align: center; border-bottom: 2px solid #cbd5e1; box-shadow: 2px 0 5px -2px rgba(0,0,0,0.1);">No</th>
                 
                 <!-- KUNCI 2: Kolom "Nama Produk" & Tombol Dikunci ke Atas dan Kiri -->
                 <th style="position: sticky; top: 0; left: 40px; z-index: 30; background-color: #f8fafc; min-width: 160px; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); border-bottom: 2px solid #cbd5e1;">
@@ -2237,12 +2237,12 @@ function renderTabelMasterProduk() {
     }
 
     tbody.innerHTML = '';
-    // ... (sisa kode fungsi renderTabelMasterProduk di bawahnya dibiarkan sama)
+    
     // C. Looping Data
     masterProduk.forEach((p, index) => {
-        // 👉 PERBAIKAN: Pastikan semua angka adalah float agar tidak error. Gunakan nama variabel yang BENAR
+        // 👉 Pastikan semua angka adalah float agar tidak error. Gunakan nama variabel yang BENAR
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
-        const keluarEtalase = parseFloat(p.keluarEtalase) || 0; // INI YANG BENAR
+        const keluarEtalase = parseFloat(p.keluarEtalase) || 0; 
         const rusakTotal = parseFloat(p.stokRusak) || 0;
         
         // Hitung sisa gudang dengan variabel yang benar
@@ -2260,8 +2260,11 @@ function renderTabelMasterProduk() {
         
         tbody.innerHTML += `
             <tr>
-                <td style="color:#6d28d9; font-weight:bold;">${index + 1}</td>
-                <td style="color:#6d28d9; font-weight:bold;">${p.nama}</td>
+                <!-- 👉 INI OBATNYA: Kita suntikkan sticky & background putih ke dalam isi tabel agar tidak sembunyi -->
+                <td style="color:#6d28d9; font-weight:bold; position: sticky; left: 0; background-color: #ffffff; z-index: 10; text-align:center; border-right: 1px solid #e2e8f0;">${index + 1}</td>
+                <td style="color:#6d28d9; font-weight:bold; position: sticky; left: 40px; background-color: #ffffff; z-index: 10; border-right: 1px solid #e2e8f0; box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);">${p.nama}</td>
+                
+                <!-- Sisa Kolom Bebas -->
                 <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori || '-'}</span></td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.modal}</td>
                 <td style="color:#6d28d9; font-weight:bold;">${p.jual}</td>
