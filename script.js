@@ -2197,28 +2197,27 @@ function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
     if (!tbody) return;
     
-    // Pastikan masterProduk berbentuk array agar tidak error
-    if (typeof masterProduk === 'undefined' || !Array.isArray(window.masterProduk)) {
+    // Pastikan window.masterProduk berbentuk array agar tidak error
+    if (typeof window.masterProduk === 'undefined' || !Array.isArray(window.masterProduk)) {
         window.masterProduk = [];
     }
 
     tbody.innerHTML = '';
     
-    if (masterProduk.length === 0) {
+    if (window.masterProduk.length === 0) {
         tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
         return;
     }
 
-    masterProduk.forEach((p, index) => {
+    let htmlContent = ''; // Gunakan variabel temporary untuk performa dan keamanan DOM
+
+    window.masterProduk.forEach((p, index) => {
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
         const keluarEtalase = parseFloat(p.keluarEtalase) || 0; 
         const rusakTotal = parseFloat(p.stokRusak) || 0;
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
-        const inputMasuk = `<input type="number" id="inputMasuk_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #22c55e; border-radius:6px; font-weight:bold;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
-        const inputRusakBaru = `<input type="number" id="inputRusak_${index}" style="width:60px; padding:4px; text-align:center; border:2px solid #ef4444; border-radius:6px; font-weight:bold;" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})">`;
-        
-        tbody.innerHTML += `
+        htmlContent += `
             <tr>
                 <td style="text-align:center; font-weight:bold;">${index + 1}</td>
                 <td style="font-weight:bold;">${p.nama || '-'}</td>
@@ -2238,6 +2237,8 @@ function renderTabelMasterProduk() {
             </tr>
         `;
     });
+
+    tbody.innerHTML = htmlContent;
 }
 // ==========================================
 // 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
