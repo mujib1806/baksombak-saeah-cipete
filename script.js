@@ -694,13 +694,27 @@ function pilihMenuNav(jenis) {
         if (typeof muatDataRiwayat === 'function') muatDataRiwayat();
         
     } else if (jenis === 'produk') {
-        // Sesuaikan target penarikan elemen dengan ID HTML 'viewProduk'
         const view = document.getElementById('viewProduk');
         if (view) view.style.display = 'block';
         
-        if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
-        else if (typeof renderMasterProduk === 'function') renderMasterProduk();
-        
+        // AMBIL DATA DULU DARI FIREBASE, BARU RENDER TABEL
+        if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').get()
+            .then((doc) => {
+                if (doc.exists && doc.data().list) {
+                    window.masterProduk = doc.data().list;
+                } else {
+                    window.masterProduk = [];
+                }
+                // Render tabel setelah data sukses ditarik
+                if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+            }).catch(err => {
+                console.error("Gagal load master produk:", err);
+                if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+            });
+        } else {
+            // Fallback jika mode lokal
+            if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
     } else if (jenis === 'laporanBerkala') {
         const view = document.getElementById('viewLaporanBerkala');
         if (view) view.style.display = 'block';
