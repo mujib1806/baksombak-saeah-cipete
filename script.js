@@ -2199,13 +2199,13 @@ function renderTabelMasterProduk() {
     
     const tableEl = tbody.parentElement;
     
-    // A. Buat Tombol Simpan Masal di atas tabel
+    // 👉 POSISI BARU: Tombol Simpan Masal di Pojok Kiri atas tabel (Sticky)
     let btnContainer = document.getElementById('containerBtnSimpanMasal');
     if (!btnContainer) {
         btnContainer = document.createElement('div');
         btnContainer.id = 'containerBtnSimpanMasal';
-        btnContainer.style.cssText = 'margin-bottom: 15px; display: flex; justify-content: flex-end;';
-        btnContainer.innerHTML = `<button onclick="simpanMutasiGudangMasal()" style="background:#16a34a; color:white; padding:10px 20px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">💾 Simpan Perubahan Stok Masal</button>`;
+        btnContainer.className = 'container-simpan-masal'; // Memakai kelas CSS baru
+        btnContainer.innerHTML = `<button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-sticky">💾 Simpan Perubahan Stok Masal</button>`;
         tableEl.parentNode.insertBefore(btnContainer, tableEl);
     } else {
         const btn = btnContainer.querySelector('button');
