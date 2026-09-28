@@ -199,37 +199,23 @@ th {
     th { background-color: #f1f5f9 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     table th:last-child, table td:last-child { display: none !important; }
 }
-
-/* Tombol Simpan Masal Menempel di Pojok Kiri Atas */
-.container-simpan-masal {
-    position: sticky;
-    left: 0;
-    top: 0;
-    z-index: 30; /* Lebih tinggi dari th (20) agar tombol mengapung di atas header */
-    margin-bottom: 12px;
-    display: inline-block;
-    background-color: #f1f5f9;
-    padding: 6px 0;
-    width: 100%;
-}
-
-.btn-simpan-masal-sticky {
+/* Tombol Simpan Masal yang Menyatu Sempurna di Header Tabel */
+.btn-simpan-masal-header {
     background: linear-gradient(135deg, #16a34a, #15803d);
     color: white;
-    padding: 10px 18px;
+    padding: 6px 12px;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+    box-shadow: 0 2px 5px rgba(22, 163, 74, 0.3);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: transform 0.2s;
+    gap: 4px;
+    white-space: nowrap;
 }
-
-.btn-simpan-masal-sticky:hover {
-    transform: scale(1.02);
+.btn-simpan-masal-header:hover {
     filter: brightness(1.1);
 }
+
