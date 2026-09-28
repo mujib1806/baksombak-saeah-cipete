@@ -128,7 +128,7 @@ th {
 .badge-bakso { background: #ffedd5; color: #ea580c; border: 1px solid #fdba74; }
 .badge-reseller { background: #e0f2fe; color: #0284c7; border: 1px solid #7dd3fc; }
 
-/* 1. KHUSUS ISI TABEL (TD) - Cuma dikunci ke kiri (left) */
+/* 1. KHUSUS ISI TABEL (TD) - Dikunci ke Kiri Saja */
 .table-freeze td:nth-child(1) { 
     position: sticky; left: 0; z-index: 15; width: 40px; min-width: 40px; max-width: 40px; text-align: center; background-color: #ffffff !important; 
 }
@@ -136,7 +136,7 @@ th {
     position: sticky; left: 40px; z-index: 15; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); background-color: #ffffff !important; 
 }
 
-/* 2. KHUSUS KEPALA TABEL (TH) - Dikunci ke Atas (top) DAN Kiri (left) SEKALIGUS! */
+/* 2. KHUSUS KEPALA TABEL (TH) - Dikunci ke Atas & Kiri (Z-INDEX HARUS LEBIH BESAR DARI TD) */
 .table-freeze th:nth-child(1) { 
     position: sticky; top: 0; left: 0; z-index: 30; width: 40px; min-width: 40px; max-width: 40px; text-align: center; background-color: #f8fafc !important; 
 }
