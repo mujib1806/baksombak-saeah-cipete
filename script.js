@@ -2199,39 +2199,45 @@ function renderTabelMasterProduk() {
     
     const tableEl = tbody.parentElement;
     
+    // Pastikan tabel memiliki class 'table-freeze' agar CSS isi baris (td) juga bekerja
+    tableEl.classList.add('table-freeze'); 
+    
     // Hapus kontainer tombol lama di luar tabel jika masih ada
     const oldContainer = document.getElementById('containerBtnSimpanMasal');
     if (oldContainer) oldContainer.remove();
 
     const theadEl = tableEl.querySelector('thead');
     if (theadEl) {
-        // PERHATIKAN: Tombol ditaruh di dalam kolom ke-2 (Nama Produk)
         theadEl.innerHTML = `
             <tr style="font-size: 0.85rem;">
-                <th>No</th>
-                <th style="min-width: 160px;">
-                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-                        <button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-header">💾 Simpan Masal</button>
+                <!-- KUNCI 1: Kolom "No" Dikunci ke Atas dan Kiri -->
+                <th style="position: sticky; top: 0; left: 0; z-index: 30; background-color: #f8fafc; width: 40px; text-align: center; border-bottom: 2px solid #cbd5e1;">No</th>
+                
+                <!-- KUNCI 2: Kolom "Nama Produk" & Tombol Dikunci ke Atas dan Kiri -->
+                <th style="position: sticky; top: 0; left: 40px; z-index: 30; background-color: #f8fafc; min-width: 160px; box-shadow: 4px 0 5px -2px rgba(0,0,0,0.1); border-bottom: 2px solid #cbd5e1;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 4px 0;">
+                        <button onclick="simpanMutasiGudangMasal()" style="background: linear-gradient(135deg, #16a34a, #15803d); color: white; padding: 6px 12px; font-weight: 800; font-size: 0.75rem; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 5px rgba(22,163,74,0.3);">💾 Simpan Masal</button>
                         <span>Nama Produk</span>
                     </div>
                 </th>
-                <th>Kategori</th>
-                <th>Modal</th>
-                <th>Jual</th>
-                <th style="background:#dcfce7; color:#166534;" title="Total Modal/Kulakan Awal">Awal Gudang</th>
-                <th style="background:#22c55e; color:white;" title="Isi jumlah barang yang baru dibeli hari ini">[+] Masuk Baru</th>
-                <th style="background:#fef2f2; color:#991b1b;" title="Total Barang Keluar ke Etalase Depan">Ke Etalase</th>
-                <th style="background:#fef2f2; color:#991b1b;" title="Total Barang Rusak/Expired">Total Rusak</th>
-                <th style="background:#ef4444; color:white;" title="Isi jumlah barang yang rusak hari ini">[+] Rusak Baru</th>
-                <th style="background:#e0f2fe; color:#0369a1;">Sisa Gudang Aktual</th>
-                <th>Aksi</th>
+                
+                <!-- KUNCI 3: Sisa Kolom Dikunci ke Atas Saja -->
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Kategori</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Modal</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Jual</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #dcfce7; color: #166534; border-bottom: 2px solid #cbd5e1;">Awal Gudang</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #22c55e; color: white; border-bottom: 2px solid #cbd5e1;">[+] Masuk Baru</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #fef2f2; color: #991b1b; border-bottom: 2px solid #cbd5e1;">Ke Etalase</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #fef2f2; color: #991b1b; border-bottom: 2px solid #cbd5e1;">Total Rusak</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #ef4444; color: white; border-bottom: 2px solid #cbd5e1;">[+] Rusak Baru</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #e0f2fe; color: #0369a1; border-bottom: 2px solid #cbd5e1;">Sisa Aktual</th>
+                <th style="position: sticky; top: 0; z-index: 20; background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;">Aksi</th>
             </tr>
         `;
     }
 
     tbody.innerHTML = '';
-    // ... (lanjutan looping data produk di bawahnya seperti biasa)
-
+    // ... (sisa kode fungsi renderTabelMasterProduk di bawahnya dibiarkan sama)
     // C. Looping Data
     masterProduk.forEach((p, index) => {
         // 👉 PERBAIKAN: Pastikan semua angka adalah float agar tidak error. Gunakan nama variabel yang BENAR
