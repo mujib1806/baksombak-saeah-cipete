@@ -619,15 +619,15 @@ function pilihMenuNav(jenis) {
     const isOwner = currentUser && currentUser.role === 'owner';
     const isDapur = currentUser && currentUser.role === 'dapur';
 
-    // 1. Kumpulkan semua ID halaman ke dalam satu wadah
+    // 1. Kumpulkan semua ID halaman ke dalam satu wadah (Ubah 'layar-produk' jadi 'viewProduk')
     const daftarView = [
         'viewHarian', 'viewSetoranBakso', 'viewRekapTransfer', 'viewMutasiKas', 
         'viewGajiBulanan', 'viewDashboard', 'viewOrderVendor', 'viewRiwayatAktivitas', 
-        'layar-produk', 'viewLaporanBerkala', 'viewPusatKontrol', 'viewDashboardGlobal',
+        'viewProduk', 'viewLaporanBerkala', 'viewPusatKontrol', 'viewDashboardGlobal',
         'cardAlokasiHarian'
     ];
 
-    // 2. Sembunyikan semuanya dengan AMAN (hanya disembunyikan jika ID-nya ditemukan di HTML)
+    // 2. Sembunyikan semuanya dengan AMAN
     daftarView.forEach(id => {
         const elemen = document.getElementById(id);
         if (elemen) {
@@ -694,7 +694,8 @@ function pilihMenuNav(jenis) {
         if (typeof muatDataRiwayat === 'function') muatDataRiwayat();
         
     } else if (jenis === 'produk') {
-        const view = document.getElementById('layar-produk');
+        // Sesuaikan target penarikan elemen dengan ID HTML 'viewProduk'
+        const view = document.getElementById('viewProduk');
         if (view) view.style.display = 'block';
         
         if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
@@ -713,10 +714,6 @@ function pilihMenuNav(jenis) {
         if (typeof renderDaftarAkun === 'function') renderDaftarAkun();
     }
 }
-
-
-
-// ==========================================
 // FUNGSI FORM ORDER VENDOR
 // ==========================================
 function renderFormOrderVendor() {
