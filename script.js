@@ -16,55 +16,31 @@ if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") {
 }
 const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
 
-// Variabel Global Penangkap Cabang Aktif
-let CABANG_AKTIF = localStorage.getItem('cabangAktif') || 'cipete_utara';
+// ==========================================
+// PENGATURAN CABANG AKTIF (LEBIH AMAN)
+// ==========================================
+let CABANG_AKTIF = localStorage.getItem('cabangAktif');
+
+// Cegah sistem diam-diam masuk ke cabang lain jika cache HP kosong
+if (!CABANG_AKTIF) {
+    alert("⚠️ PERHATIAN: Cabang belum dipilih!\n\nSistem tidak mendeteksi nama cabang di memori. Mohon kembali ke halaman 'Pilih Cabang' agar data tidak tumpang tindih.");
+    CABANG_AKTIF = 'cabang_belum_dipilih'; 
+}
 
 const configSistem = firebase.app().options; 
 const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
 
-const defaultMasterProduk = [
-    { nama: "Bakso Sapi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Tahu", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Siomay", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Bakso Goreng", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Bakwan Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Roll Isi", kategori: "Bakso Malang", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Kerupuk Kaleng Putih", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 20, batasMinimum: 10 },
-    { nama: "Kerupuk Kaleng Coklat", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 20, batasMinimum: 10 },
-    { nama: "Jeruk Peras", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 20, batasMinimum: 10 },
-    { nama: "Mineral Botol", kategori: "Reseller", modal: 2000, jual: 4000, margin: 2000, stokGudang: 24, batasMinimum: 12 },
-    { nama: "Tebs Botol", kategori: "Reseller", modal: 2200, jual: 5000, margin: 2800, stokGudang: 24, batasMinimum: 12 },
-    { nama: "Teh Botol", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 12 },
-    { nama: "Lontong", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Kacang", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Mie Goreng", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Mie Soto", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Mie Kari", kategori: "Reseller", modal: 3000, jual: 6000, margin: 3000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Fruit Tea Blackcurrent", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 10 },
-    { nama: "Fruit Tea Apel", kategori: "Reseller", modal: 2000, jual: 5000, margin: 3000, stokGudang: 24, batasMinimum: 10 },
-    { nama: "Papperbowl", kategori: "Reseller", modal: 1400, jual: 2000, margin: 600, stokGudang: 50, batasMinimum: 20 },
-    { nama: "Gelas 16 Oz", kategori: "Reseller", modal: 600, jual: 1000, margin: 400, stokGudang: 50, batasMinimum: 20 },
-    { nama: "Makroni", kategori: "Reseller", modal: 1500, jual: 2500, margin: 1000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Makroni Pedes", kategori: "Reseller", modal: 3000, jual: 4000, margin: 1000, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Lebihan Bakso", kategori: "Reseller", modal: 2000, jual: 2500, margin: 500, stokGudang: 0, batasMinimum: 0 },
-    { nama: "Teh Manis", kategori: "Reseller", modal: 1500, jual: 4000, margin: 2500, stokGudang: 0, batasMinimum: 0 }
-];
+// ==========================================
+// TEMPLATE KOSONG (AGAR TIDAK SALING MENIMPA)
+// ==========================================
+// Cabang baru akan benar-benar mulai dari 0. Admin wajib input dari web.
+const defaultMasterProduk = []; 
+
+// Kategori dasar pancingan
 const defaultKategori = ["Bakso Malang", "Reseller"];
 
-const defaultVendorCatalog = [
-    { nama: "Prima Mineral", kemasan: "Botol Pelastik", vol: "600 Ml", isi: "24", rasa: "Original", harga: 38000, qty: "" },
-    { nama: "Teh Botol Sosro", kemasan: "Botol Beling", vol: "220 Ml", isi: "24", rasa: "Original", harga: 48000, qty: "" },
-    { nama: "Teh Botol Sosro", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Original", harga: 60000, qty: "" },
-    { nama: "Teh Botol Sosro", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Less Sugar", harga: 60000, qty: "" },
-    { nama: "Fruit Tea", kemasan: "Botol Beling", vol: "235 Ml", isi: "24", rasa: "Blackcurrent", harga: 48000, qty: "" },
-    { nama: "Fruit Tea", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Lemon", harga: 60000, qty: "" },
-    { nama: "Fruit Tea", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Blackcurrent", harga: 60000, qty: "" },
-    { nama: "Fruit Tea", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Apel", harga: 60000, qty: "" },
-    { nama: "Country Choice", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Mangga", harga: 105000, qty: "" },
-    { nama: "Country Choice", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Jeruk", harga: 105000, qty: "" },
-    { nama: "Country Choice", kemasan: "Carton Pack", vol: "250 Ml", isi: "24", rasa: "Jambu", harga: 105000, qty: "" }
-];
-
+// Vendor juga dikosongkan agar cabang baru input sendiri
+const defaultVendorCatalog = [];
 let masterProduk = defaultMasterProduk;
 let daftarKategori = defaultKategori;
 let vendorCatalog = defaultVendorCatalog;
@@ -2215,7 +2191,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// 1. RENDER TABEL MASTER PRODUK (VERSI INLINE EDITING)
+// 1. RENDER TABEL MASTER PRODUK (PERBAIKAN ANGKA HILANG & VARIABEL SALAH)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2411,9 +2387,8 @@ function simpanMutasiGudangMasal() {
         }
     }
 }
-
 // ==========================================
-// FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL DENGAN RIWAYAT OTOMATIS
+// FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL (PERBAIKAN NAMA VARIABEL)
 // ==========================================
 function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
@@ -2447,11 +2422,11 @@ function bukaModalKoreksiStok(i) {
         db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
         .then(() => { 
             renderTabelMasterProduk(); 
-            showToast("✅ Stok Berhasil Dikoreksi!");
+            if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
         }); 
     } else { 
         renderTabelMasterProduk(); 
-        showToast("✅ Stok Berhasil Dikoreksi (Lokal)!"); 
+        if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi (Lokal)!"); 
     }
 
     // Catat otomatis ke Riwayat Pergerakan Stok
@@ -2466,6 +2441,7 @@ function bukaModalKoreksiStok(i) {
         catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
     }
 }
+
 // ==========================================
 // 5. FUNGSI RENDER RIWAYAT STOK (YANG SEMPAT HILANG)
 // ==========================================
@@ -2597,7 +2573,7 @@ async function hapusProdukMaster(i) {
             // Tunggu kepastian dari server Firebase
             await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             
-            // Jika berhasil sampai sini, berarti aman
+            // Jika berhasil sampai sini, berarti aman (database benar-benar terhapus)
             if (typeof catatAktivitas === 'function') {
                 catatAktivitas('Master Produk', `Menghapus produk "${namaProd}" dari daftar Master Produk`);
             }
@@ -2605,11 +2581,13 @@ async function hapusProdukMaster(i) {
             
         } catch (error) {
             console.error("Error menghapus produk:", error);
-            // 👉 JIKA GAGAL: Kembalikan produk hantu tadi karena server menolak/koneksi putus
-            alert("Gagal menghapus produk dari server (Koneksi bermasalah). Data akan dikembalikan.");
-            masterProduk = backupMasterProduk; // Kembalikan cadangan
+            // 👉 JIKA GAGAL (Koneksi putus/Firebase error): Kembalikan produk hantu tadi karena server menolak!
+            alert("Gagal menghapus produk dari server (Koneksi bermasalah). Data akan dikembalikan agar tidak error.");
+            masterProduk = backupMasterProduk; // Kembalikan cadangan ke variabel utama
             renderTabelMasterProduk(); // Munculkan lagi di layar
         }
+    } else {
+        renderTabelMasterProduk();
     }
 }
 function hapusProduk(i) { if(isDataLocked(document.getElementById('tglOps').value)) return; if(confirm("Sembunyikan produk ini dari daftar hari ini?")) { const tgl = document.getElementById('tglOps').value; dbStok[tgl].splice(i,1); if(db) db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({items: dbStok[tgl]}); renderTabelMatriks(); updateKalkulasi(); } }
