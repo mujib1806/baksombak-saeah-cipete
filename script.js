@@ -2199,17 +2199,21 @@ function renderTabelMasterProduk() {
     
     const tableEl = tbody.parentElement;
     
-    // Hapus kontainer tombol lama di luar tabel jika sempat terbuat
+    // Hapus kontainer tombol lama di luar tabel jika masih ada
     const oldContainer = document.getElementById('containerBtnSimpanMasal');
     if (oldContainer) oldContainer.remove();
 
     const theadEl = tableEl.querySelector('thead');
     if (theadEl) {
+        // PERHATIKAN: Tombol ditaruh di dalam kolom ke-2 (Nama Produk)
         theadEl.innerHTML = `
             <tr style="font-size: 0.85rem;">
-                <!-- Tombol Simpan Masal ditaruh langsung di pojok kiri atas (menyatu dengan header) -->
-                <th style="background:#f8fafc; text-align:center; min-width: 130px;" colspan="2">
-                    <button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-header">💾 Simpan Masal</button>
+                <th>No</th>
+                <th style="min-width: 160px;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                        <button onclick="simpanMutasiGudangMasal()" class="btn-simpan-masal-header">💾 Simpan Masal</button>
+                        <span>Nama Produk</span>
+                    </div>
                 </th>
                 <th>Kategori</th>
                 <th>Modal</th>
