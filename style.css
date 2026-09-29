@@ -208,4 +208,50 @@ th {
 .btn-simpan-masal-header:hover {
     filter: brightness(1.1);
 }
+/* ==========================================================
+   TAMBAHAN KHUSUS FREEZE MASTER PRODUK & TOMBOL STICKY
+   ========================================================== */
 
+/* Memastikan latar belakang kolom terbekukan tetap putih bersih & tidak transparan */
+.table-freeze td:nth-child(1),
+.table-freeze td:nth-child(2) {
+    background-color: #ffffff !important;
+}
+
+/* Memastikan header yang terbekukan berwarna abu-abu terang */
+.table-freeze th:nth-child(1),
+.table-freeze th:nth-child(2) {
+    background-color: #f8fafc !important;
+}
+
+/* Gaya khusus Tombol Simpan Masal Sticky di Atas Tabel */
+#containerBtnSimpanMasal {
+    position: sticky;
+    top: 6px;
+    left: 6px;
+    z-index: 50;
+    display: inline-block;
+    float: left;
+    margin-bottom: 8px;
+}
+
+#btnSimpanMasal {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+#btnSimpanMasal:hover {
+    background: #15803d;
+    transform: translateY(-1px);
+}
