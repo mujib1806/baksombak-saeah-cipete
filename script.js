@@ -2181,7 +2181,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// RENDER TABEL MASTER PRODUK (KOTAK INPUT DIBUAT KOSONG & LEBIH KECIL)
+// RENDER TABEL MASTER PRODUK (SINKRON DENGAN TABLE-FREEZE & RINGKAS)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2240,7 +2240,7 @@ function renderTabelMasterProduk() {
 
     tbody.innerHTML = htmlContent;
 
-    // Tampilkan tombol '💾 Simpan' di pojok kiri atas
+    // Munculkan tombol 💾 Simpan melayang di pojok kiri atas
     munculkanTombolSimpanMasal();
 }
 function munculkanTombolSimpanMasal() {
