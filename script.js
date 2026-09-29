@@ -2240,27 +2240,52 @@ function renderTabelMasterProduk() {
 
     tbody.innerHTML = htmlContent;
 
-    // Pastikan Tombol Simpan Masal Muncul di Atas Tabel
+    // Tampilkan tombol melayang di pojok kiri atas
     munculkanTombolSimpanMasal();
 }
-
-/**
- * Memastikan Tombol Simpan Masal Muncul Otomatis di Atas Tabel
- */
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
-    const tableEl = document.getElementById('tbodyMasterProduk') ? document.getElementById('tbodyMasterProduk').closest('table') : null;
+    const tbody = document.getElementById('tbodyMasterProduk');
+    const tableEl = tbody ? tbody.closest('table') : null;
 
-    if (tableEl && !containerBtn) {
+    if (!containerBtn) {
         containerBtn = document.createElement('div');
         containerBtn.id = 'containerBtnSimpanMasal';
-        containerBtn.style.cssText = 'margin-bottom: 12px; display: flex; justify-content: flex-end;';
+        
+        // CSS Sticky agar tetap melayang di pojok kiri atas saat scroll
+        containerBtn.style.cssText = `
+            position: sticky;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            margin-bottom: 15px;
+            display: inline-block;
+            float: left;
+        `;
+
         containerBtn.innerHTML = `
-            <button id="btnSimpanMasal" onclick="simpanMutasiGudangMasal()" style="background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 0.9rem;">
+            <button id="btnSimpanMasal" onclick="simpanMutasiGudangMasal()" style="
+                background: #16a34a; 
+                color: white; 
+                border: none; 
+                padding: 10px 18px; 
+                border-radius: 8px; 
+                font-weight: bold; 
+                cursor: pointer; 
+                box-shadow: 0 4px 10px rgba(0,0,0,0.25); 
+                font-size: 0.88rem;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: all 0.2s ease;
+            " onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
                 💾 Simpan Perubahan Stok Masal
             </button>
         `;
-        tableEl.parentNode.insertBefore(containerBtn, tableEl);
+
+        if (tableEl && tableEl.parentNode) {
+            tableEl.parentNode.insertBefore(containerBtn, tableEl);
+        }
     }
 }
 // ==========================================
