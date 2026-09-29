@@ -430,24 +430,31 @@ function inisiatisasiRealtimeListener() {
         applyLockUI(); 
     });
 
+    // LISTENER MASTER PRODUK (DIPERBAIKI)
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => {  
         if (doc.exists && doc.data().list) {  
             masterProduk = doc.data().list;  
+            window.masterProduk = doc.data().list;
         } else {  
             masterProduk = [...defaultMasterProduk];  
+            window.masterProduk = [...defaultMasterProduk];
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });  
         }  
         
-        // Cek apakah user sedang mengetik di input stok
         const activeEl = document.activeElement;
         const isTypingStok = activeEl && (activeEl.classList.contains('input-stok') || activeEl.tagName === 'INPUT');
         
-        // Hanya muat ulang jika user TIDAK sedang mengetik
         if (!isTypingStok) {
-            loadDataTanggalLocal();  
+            const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : '';
+            if (tgl) {
+                syncStokDenganMaster(tgl);
+            }
             renderTabelMasterProduk();  
+            renderTabelMatriks();
+            updateKalkulasi();
         }
     });
+
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { 
         if (doc.exists) daftarKategori = doc.data().list; 
         else db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').set({ list: defaultKategori }); 
@@ -459,11 +466,12 @@ function inisiatisasiRealtimeListener() {
         renderFormOrderVendor(); 
     });
 
+    // LISTENER STOK HARIAN (DIPERBAIKI AGAR TIDAK MENGHAPUS PRODUK BARU)
     db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
         snapshot.forEach(doc => { dbStok[doc.id] = doc.data().items; }); 
-        const tgl = document.getElementById('tglOps').value; 
-        if (!document.activeElement || !document.activeElement.classList.contains('input-stok')) { 
-            if(!dbStok[tgl]) syncStokDenganMaster(tgl);
+        const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : ''; 
+        if (tgl && (!document.activeElement || !document.activeElement.classList.contains('input-stok'))) { 
+            syncStokDenganMaster(tgl);
             cekDanTarikDataKemarin(tgl);
             renderTabelMatriks(); 
             updateKalkulasi(); 
@@ -498,7 +506,7 @@ function inisiatisasiRealtimeListener() {
         snapshot.forEach(doc => { dbSetoranDapur[doc.id] = doc.data(); }); 
         loadSetoranDapurUI(); renderViewSetoranBakso(); updateKalkulasi(); 
     });
-    // Listener untuk memuat data riwayat pergerakan stok secara real-time
+
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').onSnapshot(doc => {
         if (doc.exists && doc.data().list) {
             riwayatStok = doc.data().list;
@@ -508,22 +516,20 @@ function inisiatisasiRealtimeListener() {
             renderTabelRiwayatStok();
         }
     });
+
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('pengaturanFinansial').onSnapshot(doc => {
         if (doc.exists) {
             pengaturanCabangAktif = doc.data();
-            
-            // Perbarui form di layar jika ada
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-          if(document.getElementById('cfgGajiHarian')) {
-            setVal('cfgGajiHarian', (pengaturanCabangAktif.gajiHarian || 50000).toLocaleString('id-ID'));
-            setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur || 2);
-            setVal('cfgGajiBulanan', (pengaturanCabangAktif.gajiBulanan || 1500000).toLocaleString('id-ID'));
-              
+            if(document.getElementById('cfgGajiHarian')) {
+                setVal('cfgGajiHarian', (pengaturanCabangAktif.gajiHarian || 50000).toLocaleString('id-ID'));
+                setVal('cfgToleransiLibur', pengaturanCabangAktif.toleransiLibur || 2);
+                setVal('cfgGajiBulanan', (pengaturanCabangAktif.gajiBulanan || 1500000).toLocaleString('id-ID'));
+                
                 if (pengaturanCabangAktif.pos1) { setVal('cfgLabelPos1', pengaturanCabangAktif.pos1.nama); setVal('cfgPersenPos1', pengaturanCabangAktif.pos1.persen); }
                 if (pengaturanCabangAktif.pos2) { setVal('cfgLabelPos2', pengaturanCabangAktif.pos2.nama); setVal('cfgPersenPos2', pengaturanCabangAktif.pos2.persen); }
                 if (pengaturanCabangAktif.pos3) { setVal('cfgLabelPos3', pengaturanCabangAktif.pos3.nama); setVal('cfgPersenPos3', pengaturanCabangAktif.pos3.persen); }
             }
-            
             updateKalkulasi();
             if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan();
         }
@@ -920,7 +926,7 @@ function syncStokDenganMaster(tgl) {
             if (found) { 
                 newStokList.push({ 
                     ...found,
-                    // Selalu perbarui acuan kategori dan harga dari Master Produk terbaru
+                    nama: mp.nama, // Pastikan nama ter-update jika diedit
                     kategori: mp.kategori,
                     modal: mp.modal || 0,
                     jual: mp.jual || 0,
@@ -931,7 +937,6 @@ function syncStokDenganMaster(tgl) {
                     sisa: found.sisa !== undefined ? found.sisa : "" 
                 }); 
             } else { 
-                // Jika ada produk baru di Master Produk yang belum ada di stok harian
                 newStokList.push({ 
                     nama: mp.nama,
                     kategori: mp.kategori,
@@ -947,8 +952,14 @@ function syncStokDenganMaster(tgl) {
         }); 
         dbStok[tgl] = newStokList; 
     } 
-}
 
+    // Otomatis simpan struktur baru ke Firebase agar tidak hilang saat snapshot terpicu ulang
+    if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined' && tgl) {
+        db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({
+            items: dbStok[tgl]
+        }, { merge: true });
+    }
+}
 function simpanStokKeFirebase() { 
     const tgl = document.getElementById('tglOps').value; 
     if(isDataLocked(tgl)) return; 
@@ -2072,7 +2083,6 @@ function hitungTotalStokKeluar(namaProduk) {
 function simpanProdukBaru(e) { 
     e.preventDefault(); 
     
-    // Fungsi bantu pengaman agar tidak error jika input tidak ada di HTML
     const getVal = (id) => document.getElementById(id) ? document.getElementById(id).value : "";
     const getNum = (id) => {
         const el = document.getElementById(id);
@@ -2086,18 +2096,27 @@ function simpanProdukBaru(e) {
         jual: getNum('inputJualProduk'), 
         margin: 0,
         stokAwalGudang: getNum('inputStokGudang'),
-        keluarEtalase: 0, // <--- TAMBAHKAN BARIS INI
+        keluarEtalase: 0,
         stokRusak: getNum('inputStokRusak'),
         minGudang: getNum('inputMinGudang'),
         minEtalase: getNum('inputMinEtalase')
     };
     p.margin = p.jual - p.modal; 
 
+    if (!p.nama) {
+        alert("Nama produk wajib diisi!");
+        return;
+    }
+
     const elEdit = document.getElementById('editIndexProduk');
-    const idx = elEdit && elEdit.value ? parseInt(elEdit.value) : -1; 
+    const idx = elEdit && elEdit.value !== "" ? parseInt(elEdit.value) : -1; 
     const aksiTeks = idx >= 0 ? `Mengubah/Edit produk "${p.nama}"` : `Menambahkan produk baru "${p.nama}"`;
 
-    if(idx >= 0) {
+    if (idx >= 0) {
+        // Jika edit, pertahankan nilai keluarEtalase lama agar stok gudang tidak reset
+        if (masterProduk[idx]) {
+            p.keluarEtalase = masterProduk[idx].keluarEtalase || 0;
+        }
         masterProduk[idx] = p; 
     } else {
         masterProduk.push(p);
@@ -2106,22 +2125,32 @@ function simpanProdukBaru(e) {
         }
     } 
     
-    if(typeof catatAktivitas === 'function') catatAktivitas('Master Produk', aksiTeks);
+    // Samakan acuan global
+    window.masterProduk = masterProduk;
 
-    if(typeof db !== 'undefined' && db !== null) {
+    if (typeof catatAktivitas === 'function') catatAktivitas('Master Produk', aksiTeks);
+
+    // Langsung update UI lokal agar respon instan tanpa perlu refresh
+    renderTabelMasterProduk();
+    const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : '';
+    if (tgl) {
+        syncStokDenganMaster(tgl);
+        renderTabelMatriks();
+    }
+
+    if (typeof db !== 'undefined' && db !== null) {
         db.collection('cabang').doc(typeof CABANG_AKTIF !== 'undefined' ? CABANG_AKTIF : 'cipeteutara')
           .collection('appData').doc('masterProduk').set({ list: masterProduk })
         .then(() => { 
-            if(typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
-            if(typeof showToast === 'function') showToast("✅ Produk Berhasil Disimpan!"); 
-            renderTabelMasterProduk();
+            if (typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
+            if (typeof showToast === 'function') showToast("✅ Produk Berhasil Disimpan!"); 
         }).catch(err => {
-            console.error("Gagal simpan:", err);
+            console.error("Gagal simpan ke Firebase:", err);
+            alert("Gagal menyimpan ke server: " + err.message);
         }); 
     } else { 
-        if(typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
-        if(typeof showToast === 'function') showToast("✅ Lokal OK"); 
-        renderTabelMasterProduk();
+        if (typeof tutupModalKelolaProduk === 'function') tutupModalKelolaProduk(); 
+        if (typeof showToast === 'function') showToast("✅ Tersimpan Lokal"); 
     } 
 }
 // ==========================================
