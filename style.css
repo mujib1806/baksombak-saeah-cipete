@@ -293,3 +293,38 @@ table#tabelMasterProduk th:nth-child(3) {
     width: 55px !important;
     min-width: 55px !important;
 }
+/* ==========================================================
+   FIX UTAMA: TABEL JUAL BAKSO MALANG (PRESISI & SERAGAM)
+   ========================================================== */
+
+/* Kunci lebar kolom 3 (Awal) sampai kolom 8 (Sisa) secara mutlak */
+#tbodyBaksoSetoran td:nth-child(3),
+#tbodyBaksoSetoran td:nth-child(4),
+#tbodyBaksoSetoran td:nth-child(5),
+#tbodyBaksoSetoran td:nth-child(6),
+#tbodyBaksoSetoran td:nth-child(7),
+#tbodyBaksoSetoran td:nth-child(8) {
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+    text-align: center !important;
+}
+
+/* Memperlebar kolom Varian Produk sedikit agar TOTAL QTY tidak mendorong kolom Awal */
+.table-freeze td:nth-child(2),
+.table-freeze th:nth-child(2) {
+    width: 170px !important;
+    min-width: 170px !important;
+}
+
+/* Penyeragaman Warna Total QTY sampai ke kolom sticky */
+#tbodyBaksoSetoran tr.row-total td {
+    background-color: #ffedd5 !important;
+    color: #9a3412 !important;
+    font-weight: 800 !important;
+}
+
+#tbodyBaksoSetoran tr.row-total td:nth-child(1),
+#tbodyBaksoSetoran tr.row-total td:nth-child(2) {
+    background-color: #ffedd5 !important; /* Timpa latar putih sticky khusus di baris Total QTY */
+}
