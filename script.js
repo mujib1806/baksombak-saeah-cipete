@@ -1591,37 +1591,37 @@ function renderViewSetoranBakso() {
         sectionLaporan.style.display = isOwnerOrDapur ? 'block' : 'none';
     }
 
-    // Sesuaikan Header Tabel secara dinamis agar bersih untuk Kasir
-    const thead = tbody.parentElement.querySelector('thead');
-    if (thead) {
-        if (isOwnerOrDapur) {
-            thead.innerHTML = `<tr>
-                <th style="text-align:center;">No</th>
-                <th>Varian Produk</th>
-                <th style="text-align:center;">Awal</th>
-                <th style="text-align:center;">Tambah</th>
-                <th style="text-align:center;">Kurang</th>
-                <th style="text-align:center;">Total</th>
-                <th style="text-align:center;">Laku</th>
-                <th style="text-align:center;">Sisa</th>
-                <th style="text-align:right;">Modal</th>
-                <th style="text-align:right;">Jual</th>
-                <th style="text-align:right;">Omset</th>
-                <th style="text-align:right;">Profit</th>
-            </tr>`;
-        } else {
-            // Tampilan khusus Kasir (Tanpa kolom Modal, Jual, Omset, Profit)
-            thead.innerHTML = `<tr>
-                <th style="text-align:center;">No</th>
-                <th>Varian Produk</th>
-                <th style="text-align:center;">Awal</th>
-                <th style="text-align:center;">Tambah</th>
-                <th style="text-align:center;">Kurang</th>
-                <th style="text-align:center;">Total</th>
-                <th style="text-align:center;">Laku</th>
-                <th style="text-align:center;">Sisa</th>
-            </tr>`;
-        }
+   // Gantikan bagian render baris data (di dalam loop items.filter) dengan ini:
+
+const styleColSama = "text-align:center; width:55px; min-width:55px; max-width:55px;";
+
+if (isOwnerOrDapur) {
+    tr.innerHTML = `
+        <td style="text-align:center;">${no++}</td>
+        <td style="font-weight:700;">${p.nama}</td>
+        <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
+        <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
+        <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
+        <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
+        <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
+        <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
+        <td style="text-align:right;">${formatRupiah(p.modal)}</td>
+        <td style="text-align:right;">${formatRupiah(p.jual)}</td>
+        <td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td>
+        <td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>
+    `;
+} else {
+    tr.innerHTML = `
+        <td style="text-align:center;">${no++}</td>
+        <td style="font-weight:700;">${p.nama}</td>
+        <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
+        <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
+        <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
+        <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
+        <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
+        <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
+    `;
+}
     }
 
     let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; 
