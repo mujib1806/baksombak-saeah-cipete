@@ -2243,6 +2243,9 @@ function renderTabelMasterProduk() {
     // Tampilkan tombol melayang di pojok kiri atas
     munculkanTombolSimpanMasal();
 }
+/**
+ * Membuat Tombol Simpan Masal Ringkas & Sticky di Pojok Kiri Atas
+ */
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2252,13 +2255,13 @@ function munculkanTombolSimpanMasal() {
         containerBtn = document.createElement('div');
         containerBtn.id = 'containerBtnSimpanMasal';
         
-        // CSS Sticky agar tetap melayang di pojok kiri atas saat scroll
+        // CSS Sticky agar tetap melayang di pojok kiri atas saat di-scroll
         containerBtn.style.cssText = `
             position: sticky;
             top: 10px;
             left: 10px;
             z-index: 1000;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: inline-block;
             float: left;
         `;
@@ -2268,18 +2271,18 @@ function munculkanTombolSimpanMasal() {
                 background: #16a34a; 
                 color: white; 
                 border: none; 
-                padding: 10px 18px; 
-                border-radius: 8px; 
+                padding: 6px 14px; 
+                border-radius: 6px; 
                 font-weight: bold; 
                 cursor: pointer; 
-                box-shadow: 0 4px 10px rgba(0,0,0,0.25); 
-                font-size: 0.88rem;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.2); 
+                font-size: 0.82rem;
                 display: flex;
                 align-items: center;
-                gap: 6px;
+                gap: 5px;
                 transition: all 0.2s ease;
-            " onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                💾 Simpan Perubahan Stok Masal
+            " onmouseover="this.style.transform='scale(1.03)'; this.style.backgroundColor='#15803d';" onmouseout="this.style.transform='scale(1)'; this.style.backgroundColor='#16a34a';">
+                💾 Simpan
             </button>
         `;
 
