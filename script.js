@@ -1591,41 +1591,44 @@ function renderViewSetoranBakso() {
         sectionLaporan.style.display = isOwnerOrDapur ? 'block' : 'none';
     }
 
-   // Gantikan bagian render baris data (di dalam loop items.filter) dengan ini:
-
-const styleColSama = "text-align:center; width:55px; min-width:55px; max-width:55px;";
-
-if (isOwnerOrDapur) {
-    tr.innerHTML = `
-        <td style="text-align:center;">${no++}</td>
-        <td style="font-weight:700;">${p.nama}</td>
-        <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
-        <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
-        <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
-        <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
-        <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
-        <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
-        <td style="text-align:right;">${formatRupiah(p.modal)}</td>
-        <td style="text-align:right;">${formatRupiah(p.jual)}</td>
-        <td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td>
-        <td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>
-    `;
-} else {
-    tr.innerHTML = `
-        <td style="text-align:center;">${no++}</td>
-        <td style="font-weight:700;">${p.nama}</td>
-        <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
-        <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
-        <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
-        <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
-        <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
-        <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
-    `;
-}
+    // Sesuaikan Header Tabel secara dinamis agar bersih untuk Kasir
+    const thead = tbody.parentElement.querySelector('thead');
+    if (thead) {
+        if (isOwnerOrDapur) {
+            thead.innerHTML = `<tr>
+                <th style="text-align:center;">No</th>
+                <th>Varian Produk</th>
+                <th style="text-align:center; width:55px;">Awal</th>
+                <th style="text-align:center; width:55px;">Tambah</th>
+                <th style="text-align:center; width:55px;">Kurang</th>
+                <th style="text-align:center; width:55px;">Total</th>
+                <th style="text-align:center; width:55px;">Laku</th>
+                <th style="text-align:center; width:55px;">Sisa</th>
+                <th style="text-align:right;">Modal</th>
+                <th style="text-align:right;">Jual</th>
+                <th style="text-align:right;">Omset</th>
+                <th style="text-align:right;">Profit</th>
+            </tr>`;
+        } else {
+            // Tampilan khusus Kasir (Tanpa kolom Modal, Jual, Omset, Profit)
+            thead.innerHTML = `<tr>
+                <th style="text-align:center;">No</th>
+                <th>Varian Produk</th>
+                <th style="text-align:center; width:55px;">Awal</th>
+                <th style="text-align:center; width:55px;">Tambah</th>
+                <th style="text-align:center; width:55px;">Kurang</th>
+                <th style="text-align:center; width:55px;">Total</th>
+                <th style="text-align:center; width:55px;">Laku</th>
+                <th style="text-align:center; width:55px;">Sisa</th>
+            </tr>`;
+        }
     }
 
     let no = 1, totalPorsi = 0, totalOmset = 0, totalModal = 0, totalKeuntungan = 0; 
     let sumAwal = 0, sumTambah = 0, sumKurang = 0, sumTotalStok = 0, sumSisa = 0; 
+
+    // Variable kunci lebar seragam 55px
+    const styleColSama = "text-align:center; width:55px; min-width:55px; max-width:55px;";
 
     items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { 
         const awal = parseFloat(p.awal) || 0; 
@@ -1651,11 +1654,33 @@ if (isOwnerOrDapur) {
 
         const tr = document.createElement('tr'); 
         
-        // Render baris data
+        // Render baris data dengan ukuran sel seragam 55px
         if (isOwnerOrDapur) {
-            tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right;">${formatRupiah(p.jual)}</td><td style="font-weight:600; text-align:right;">${formatRupiah(omset)}</td><td style="color:#16a34a; font-weight:800; text-align:right;">${formatRupiah(profit)}</td>`;
+            tr.innerHTML = `
+                <td style="text-align:center;">${no++}</td>
+                <td style="font-weight:700;">${p.nama}</td>
+                <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
+                <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
+                <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
+                <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
+                <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
+                <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
+                <td style="text-align:right;">${typeof formatRupiah === 'function' ? formatRupiah(p.modal) : p.modal}</td>
+                <td style="text-align:right;">${typeof formatRupiah === 'function' ? formatRupiah(p.jual) : p.jual}</td>
+                <td style="font-weight:600; text-align:right;">${typeof formatRupiah === 'function' ? formatRupiah(omset) : omset}</td>
+                <td style="color:#16a34a; font-weight:800; text-align:right;">${typeof formatRupiah === 'function' ? formatRupiah(profit) : profit}</td>
+            `;
         } else {
-            tr.innerHTML = `<td style="text-align:center;">${no++}</td><td style="font-weight:700;">${p.nama}</td><td style="text-align:center; background:#fff7ed;">${awal}</td><td style="text-align:center; background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td><td style="text-align:center; font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td><td style="text-align:center; color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>`;
+            tr.innerHTML = `
+                <td style="text-align:center;">${no++}</td>
+                <td style="font-weight:700;">${p.nama}</td>
+                <td style="${styleColSama} background:#fff7ed; font-weight:600;">${awal}</td>
+                <td style="${styleColSama} background:#dcfce7; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
+                <td style="${styleColSama} background:#fee2e2; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
+                <td style="${styleColSama} background:#f1f5f9; font-weight:800; color:#0f172a;">${totalStok}</td>
+                <td style="${styleColSama} font-weight:800; color:#0f172a; background:#eef2ff;">${sisa !== null ? terjual : 0}</td>
+                <td style="${styleColSama} color:#dc2626; font-weight:800; background:#fef2f2;">${sisa !== null ? valSisa : '-'}</td>
+            `;
         }
         tbody.appendChild(tr); 
     });
@@ -1665,48 +1690,49 @@ if (isOwnerOrDapur) {
         const trTotal = document.createElement('tr'); 
         trTotal.className = "row-total";
         
-        // Warna Oranye Pudar Seragam (#ffedd5) disuntikkan langsung ke tiap sel (td)
+        // Warna Oranye Pudar Seragam (#ffedd5)
         const bgTotal = "background-color: #ffedd5 !important; font-weight: 800; color: #9a3412;";
         
         if (isOwnerOrDapur) {
             trTotal.innerHTML = `
                 <td colspan="2" style="text-align:center; ${bgTotal}">TOTAL QTY</td>
-                <td style="text-align:center; ${bgTotal}">${sumAwal}</td>
-                <td style="text-align:center; ${bgTotal}">${sumTambah}</td>
-                <td style="text-align:center; ${bgTotal}">${sumKurang}</td>
-                <td style="text-align:center; ${bgTotal}">${sumTotalStok}</td>
-                <td style="text-align:center; ${bgTotal}">${totalPorsi}</td>
-                <td style="text-align:center; ${bgTotal}">${sumSisa}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumAwal}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumTambah}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumKurang}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumTotalStok}</td>
+                <td style="${styleColSama} ${bgTotal}">${totalPorsi}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumSisa}</td>
                 <td colspan="4" style="${bgTotal}"></td>
             `;
         } else {
             trTotal.innerHTML = `
                 <td colspan="2" style="text-align:center; ${bgTotal}">TOTAL QTY</td>
-                <td style="text-align:center; ${bgTotal}">${sumAwal}</td>
-                <td style="text-align:center; ${bgTotal}">${sumTambah}</td>
-                <td style="text-align:center; ${bgTotal}">${sumKurang}</td>
-                <td style="text-align:center; ${bgTotal}">${sumTotalStok}</td>
-                <td style="text-align:center; ${bgTotal}">${totalPorsi}</td>
-                <td style="text-align:center; ${bgTotal}">${sumSisa}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumAwal}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumTambah}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumKurang}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumTotalStok}</td>
+                <td style="${styleColSama} ${bgTotal}">${totalPorsi}</td>
+                <td style="${styleColSama} ${bgTotal}">${sumSisa}</td>
             `;
         }
         tbody.appendChild(trTotal); 
     }
     
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-    setTxt('bmModalAwal', formatRupiah(totalModal)); 
-    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '', pengeluaran: 0 }; 
-    setTxt('bmCashDisplay', formatRupiah(dataSetoran.cash)); 
-    setTxt('bmKetPengeluaranDisplay', dataSetoran.ket || '-'); 
-    setTxt('bmPengeluaranDisplay', formatRupiah(dataSetoran.pengeluaran)); 
-    const hitungTF = Math.max(0, totalModal - dataSetoran.cash - dataSetoran.pengeluaran); 
-    setTxt('bmTFDisplay', formatRupiah(hitungTF)); 
-    setTxt('bmSetoranFiks', formatRupiah(Math.max(0, totalModal - dataSetoran.pengeluaran))); 
-    setTxt('bmPorsiTerjual', `${totalPorsi} pcs`); 
-    setTxt('bmTotalOmset', formatRupiah(totalOmset)); 
-    setTxt('bmTotalUntung', formatRupiah(totalKeuntungan));
+    if (typeof formatRupiah === 'function') {
+        setTxt('bmModalAwal', formatRupiah(totalModal)); 
+        const dataSetoran = (typeof dbSetoranDapur !== 'undefined' && dbSetoranDapur[tgl]) ? dbSetoranDapur[tgl] : { cash: 0, ket: '', pengeluaran: 0 }; 
+        setTxt('bmCashDisplay', formatRupiah(dataSetoran.cash)); 
+        setTxt('bmKetPengeluaranDisplay', dataSetoran.ket || '-'); 
+        setTxt('bmPengeluaranDisplay', formatRupiah(dataSetoran.pengeluaran)); 
+        const hitungTF = Math.max(0, totalModal - dataSetoran.cash - dataSetoran.pengeluaran); 
+        setTxt('bmTFDisplay', formatRupiah(hitungTF)); 
+        setTxt('bmSetoranFiks', formatRupiah(Math.max(0, totalModal - dataSetoran.pengeluaran))); 
+        setTxt('bmPorsiTerjual', `${totalPorsi} pcs`); 
+        setTxt('bmTotalOmset', formatRupiah(totalOmset)); 
+        setTxt('bmTotalUntung', formatRupiah(totalKeuntungan));
+    }
 }
-
 function renderViewRekapTransfer() {
     try {
         const tglEl = document.getElementById('tglOps');
