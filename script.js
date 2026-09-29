@@ -2181,7 +2181,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// 1. RENDER TABEL MASTER PRODUK (DIJAMIN MUNCUL & TERKUNCI)
+// 1. RENDER TABEL MASTER PRODUK (DIJAMIN MUNCUL, LENGKAP INPUT MASAL & TOMBOL KOREKSI)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2195,7 +2195,7 @@ function renderTabelMasterProduk() {
     tbody.innerHTML = '';
     
     if (window.masterProduk.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
         return;
     }
 
@@ -2211,18 +2211,26 @@ function renderTabelMasterProduk() {
             <tr>
                 <td style="text-align:center; font-weight:bold;">${index + 1}</td>
                 <td style="font-weight:bold;">${p.nama || '-'}</td>
-                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:bold;">${p.kategori || '-'}</span></td>
-                <td style="text-align:right;">${p.modal || 0}</td>
-                <td style="text-align:right;">${p.jual || 0}</td>
+                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${p.kategori || '-'}</span></td>
+                <td style="text-align:right;">Rp ${(p.modal || 0).toLocaleString('id-ID')}</td>
+                <td style="text-align:right;">Rp ${(p.jual || 0).toLocaleString('id-ID')}</td>
                 <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold;">${awalGudang}</td>
                 <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold;">${keluarEtalase}</td>
                 <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold;">${rusakTotal}</td>
-                <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
-                <td style="text-align:center;">${p.minGudang || 0}</td>
-                <td style="text-align:center;">${p.minEtalase || 0}</td>
+                <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold; font-size: 1.05rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
+                
+                <!-- INPUT MASAL STOK MASUK & STOK RUSAK -->
                 <td style="text-align:center;">
-                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit">✏️</button>
-                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus">🗑️</button>
+                    <input type="number" id="inputMasuk_${index}" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})" style="width:60px; padding:4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold;">
+                </td>
+                <td style="text-align:center;">
+                    <input type="number" id="inputRusak_${index}" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})" style="width:60px; padding:4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold;">
+                </td>
+
+                <td style="text-align:center; white-space:nowrap;">
+                    <button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>
+                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit Produk">✏️</button>
+                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus Produk">🗑️</button>
                 </td>
             </tr>
         `;
@@ -2230,12 +2238,13 @@ function renderTabelMasterProduk() {
 
     tbody.innerHTML = htmlContent;
 }
+
 // ==========================================
 // 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
 // ==========================================
 function hitungSisaGudangRealtime(index) {
+    if (!masterProduk || !masterProduk[index]) return;
     const p = masterProduk[index];
-    if (p.kategori.toLowerCase().includes('bakso malang')) return;
 
     const awalGudang = parseFloat(p.stokAwalGudang) || 0;
     const keluarEtalase = parseFloat(p.keluarEtalase) || 0;
@@ -2244,8 +2253,8 @@ function hitungSisaGudangRealtime(index) {
     const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
     const inputRusakEl = document.getElementById(`inputRusak_${index}`);
     
-    const masukBaru = parseFloat(inputMasukEl.value) || 0;
-    const rusakBaru = parseFloat(inputRusakEl.value) || 0;
+    const masukBaru = inputMasukEl ? (parseFloat(inputMasukEl.value) || 0) : 0;
+    const rusakBaru = inputRusakEl ? (parseFloat(inputRusakEl.value) || 0) : 0;
 
     // Sisa Aktual = (Awal + Masuk Baru) - Keluar - (Rusak Lama + Rusak Baru)
     const sisaBaru = (awalGudang + masukBaru) - keluarEtalase - (rusakTotal + rusakBaru);
@@ -2253,14 +2262,15 @@ function hitungSisaGudangRealtime(index) {
     const elSisa = document.getElementById(`sisaRealtime_${index}`);
     if (elSisa) {
         elSisa.innerText = sisaBaru;
-        // Beri warna hijau jika ada perubahan, biru jika kosong
+        // Beri warna hijau jika ada perubahan, biru jika kosong/standar
         if (masukBaru > 0 || rusakBaru > 0) {
             elSisa.style.color = "#16a34a"; 
         } else {
-            elSisa.style.color = "#0369a1";
+            elSisa.style.color = "#0284c7";
         }
     }
 }
+
 // ==========================================
 // 3. EKSEKUSI SIMPAN MUTASI MASAL KE FIREBASE
 // ==========================================
@@ -2284,9 +2294,9 @@ function simpanMutasiGudangMasal() {
                 p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
                 daftarRiwayatBaru.push({ 
                     nama: p.nama, 
-                    aksi: 'In', 
+                    aksi: 'In (Gudang)', 
                     jumlah: masukBaru, 
-                    sisaAkhir: (p.stokAwalGudang - (p.keluarEtalase || 0) - (p.stokRusak || 0)) 
+                    sisaAkhir: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0)) 
                 });
             }
             
@@ -2295,9 +2305,9 @@ function simpanMutasiGudangMasal() {
                 p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
                 daftarRiwayatBaru.push({ 
                     nama: p.nama, 
-                    aksi: 'Out', // Tercatat sebagai barang keluar/hilang
+                    aksi: 'Rusak (Gudang)', 
                     jumlah: rusakBaru, 
-                    sisaAkhir: (p.stokAwalGudang - (p.keluarEtalase || 0) - p.stokRusak) 
+                    sisaAkhir: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - p.stokRusak) 
                 });
             }
         }
@@ -2309,8 +2319,10 @@ function simpanMutasiGudangMasal() {
     }
 
     if (confirm("Simpan semua perubahan stok ke database?")) {
-        const btn = document.querySelector('#containerBtnSimpanMasal button');
+        const btn = document.querySelector('#containerBtnSimpanMasal button') || document.getElementById('btnSimpanMasal');
         if(btn) { btn.innerText = "⏳ Sedang Menyimpan..."; btn.disabled = true; }
+
+        window.masterProduk = masterProduk;
 
         if (typeof db !== 'undefined' && db !== null) {
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
@@ -2324,8 +2336,8 @@ function simpanMutasiGudangMasal() {
                 if (typeof catatAktivitas === 'function') {
                     catatAktivitas("Master Produk", `Mutasi masal sukses: ${daftarRiwayatBaru.length} pergerakan barang dicatat.`);
                 }
-                if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Masuk!");
-                renderTabelMasterProduk(); // Kosongkan form kembali setelah sukses
+                if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Disimpan!");
+                renderTabelMasterProduk(); // Refresh & kosongkan form kembali setelah sukses
             })
             .catch(err => {
                 alert("Gagal menyimpan ke server: " + err);
@@ -2337,14 +2349,14 @@ function simpanMutasiGudangMasal() {
         }
     }
 }
+
 // ==========================================
-// FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL (PERBAIKAN NAMA VARIABEL)
+// 4. FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL
 // ==========================================
 function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
     if (!p) return;
 
-    // 👉 PERBAIKAN: Gunakan p.keluarEtalase BUKAN p.stokKeluar
     let stokLama = (parseFloat(p.stokAwalGudang) || 0) - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0);
 
     let inputBaru = prompt(`⚙️ KOREKSI STOK FISIK: ${p.nama}\n\nMasukkan jumlah SISA STOK GUDANG yang aktual/riil saat ini di gudang:`, stokLama);
@@ -2364,11 +2376,10 @@ function bukaModalKoreksiStok(i) {
         return;
     }
 
-    // Penyesuaian: Kita sesuaikan "Stok Awal Gudang" agar hasil akhirnya pas dengan fisik aktual
     p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + selisih;
+    window.masterProduk = masterProduk;
 
-    // Simpan ke database
-    if(db) {
+    if(typeof db !== 'undefined' && db !== null) {
         db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
         .then(() => { 
             renderTabelMasterProduk(); 
@@ -2379,12 +2390,9 @@ function bukaModalKoreksiStok(i) {
         if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi (Lokal)!"); 
     }
 
-    // Catat otomatis ke Riwayat Pergerakan Stok
     const jenisAksi = selisih > 0 ? 'In' : 'Out';
-    const teksPerubahan = `${selisih > 0 ? '+' : ''}${selisih} Pcs (Koreksi Opname Fisik)`;
-    
     if (typeof catatRiwayatStok === 'function') {
-        catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), stokFisikAktual);
+        catatRiwayatStok(p.nama, `Koreksi Fisik (${jenisAksi})`, Math.abs(selisih), stokFisikAktual);
     }
     
     if (typeof catatAktivitas === 'function') {
@@ -2393,13 +2401,12 @@ function bukaModalKoreksiStok(i) {
 }
 
 // ==========================================
-// 5. FUNGSI RENDER RIWAYAT STOK (YANG SEMPAT HILANG)
+// 5. FUNGSI RENDER RIWAYAT STOK
 // ==========================================
 function renderTabelRiwayatStok() {
     const tbody = document.getElementById('tbodyRiwayatStok');
     if (!tbody) return;
     
-    // 1. Munculkan Kotak Filter di atas Tabel secara otomatis
     let filterContainer = document.getElementById('containerFilterRiwayat');
     if (!filterContainer) {
         const tableEl = tbody.parentElement;
@@ -2407,7 +2414,6 @@ function renderTabelRiwayatStok() {
         filterContainer.id = 'containerFilterRiwayat';
         filterContainer.style.cssText = 'display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; align-items:center; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0;';
         
-        // PERBAIKAN: Menghapus auto-trigger dan menambahkan Tombol Cari warna biru
         filterContainer.innerHTML = `
             <strong style="color:#475569; font-size:0.85rem;">Filter:</strong>
             <input type="text" id="filterRiwayatNama" placeholder="🔍 Cari Nama Produk..." style="padding:8px; border-radius:6px; border:1px solid #cbd5e1; flex:1; min-width:150px;">
@@ -2418,11 +2424,14 @@ function renderTabelRiwayatStok() {
             <button onclick="terapkanFilterRiwayat()" style="background:#0284c7; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">🔍 Cari</button>
             <button onclick="resetFilterRiwayat()" style="background:#ef4444; color:white; padding:8px 15px; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Reset</button>
         `;
-        tableEl.parentNode.insertBefore(filterContainer, tableEl);
+        if (tableEl && tableEl.parentNode) {
+            tableEl.parentNode.insertBefore(filterContainer, tableEl);
+        }
     }
 
-    // 2. Lempar ke fungsi filter untuk menggambar isi tabelnya
-    terapkanFilterRiwayat(); 
+    if (typeof terapkanFilterRiwayat === 'function') {
+        terapkanFilterRiwayat(); 
+    }
 }
 
 function terapkanFilterRiwayat() {
