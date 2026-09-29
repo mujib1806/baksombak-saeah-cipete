@@ -189,11 +189,7 @@ th {
     th { background-color: #f1f5f9 !important; font-weight: bold !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     table th:last-child, table td:last-child { display: none !important; }
 }
-/* ==========================================================
-   FREEZE 3 KOLOM KHUSUS MASTER PRODUK: (1. NO, 2. NAMA PRODUK, 3. SISA)
-   ========================================================== */
 
-/* 1. Header (th) Seluruhnya Beku Vertikal */
 .table-freeze thead th {
     position: sticky !important;
     top: 0 !important;
@@ -202,7 +198,7 @@ th {
     border-bottom: 2px solid #cbd5e1 !important;
 }
 
-/* 2. KOLOM 1: NO (Lebar: 40px, Left: 0px) */
+/* Kolom 1 (No) Standar */
 .table-freeze td:nth-child(1) {
     position: sticky !important;
     left: 0 !important;
@@ -221,12 +217,13 @@ th {
     width: 40px !important;
 }
 
-/* 3. KOLOM 2: NAMA PRODUK (Lebar: ~150px, Left: 40px) */
+/* Kolom 2 (Nama Produk/Varian) Standar */
 .table-freeze td:nth-child(2) {
     position: sticky !important;
     left: 40px !important;
     z-index: 10 !important;
     background-color: #ffffff !important;
+    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.1) !important;
     min-width: 150px !important;
 }
 .table-freeze th:nth-child(2) {
@@ -235,19 +232,25 @@ th {
     left: 40px !important;
     z-index: 30 !important;
     background-color: #f8fafc !important;
+    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.1) !important;
     min-width: 150px !important;
 }
 
-/* 4. KOLOM 3: SISA STOK (Lebar: ~60px, Left: 190px [40+150]) */
-.table-freeze td:nth-child(3) {
+table#tabelMasterProduk td:nth-child(2),
+table#tabelMasterProduk th:nth-child(2) {
+    box-shadow: none !important; /* Hapus bayangan di kolom ke-2 khusus Master Produk */
+}
+
+table#tabelMasterProduk td:nth-child(3) {
     position: sticky !important;
     left: 190px !important;
     z-index: 10 !important;
-    background-color: #f0f9ff !important; /* Warna biru muda lembut khas kolom Sisa */
-    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15) !important; /* Bayangan pemisah di batas kolom Sisa */
+    background-color: #f0f9ff !important; /* Biru muda khusus Sisa Gudang */
+    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15) !important;
     min-width: 60px !important;
 }
-.table-freeze th:nth-child(3) {
+
+table#tabelMasterProduk th:nth-child(3) {
     position: sticky !important;
     top: 0 !important;
     left: 190px !important;
