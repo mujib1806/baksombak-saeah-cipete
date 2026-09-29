@@ -2181,7 +2181,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// RENDER TABEL MASTER PRODUK (SINKRON DENGAN TABLE-FREEZE & RINGKAS)
+// RENDER TABEL MASTER PRODUK (SISA DIPINDAH KE KOLOM 3 & BEKU)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2204,31 +2204,50 @@ function renderTabelMasterProduk() {
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
         const keluarEtalase = parseFloat(p.keluarEtalase) || 0; 
         const rusakTotal = parseFloat(p.stokRusak) || 0;
+        
+        // RUMUS TETAP SAMA & PRESISI: Sisa = Awal - Keluar - Rusak
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
         
         htmlContent += `
             <tr>
+                <!-- 1. NO (BEKU) -->
                 <td style="text-align:center; font-weight:bold; font-size:0.85rem;">${index + 1}</td>
-                <td style="font-weight:bold; font-size:0.88rem;">${p.nama || '-'}</td>
-                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 6px; border-radius:10px; font-size:0.72rem; font-weight:bold;">${p.kategori || '-'}</span></td>
-                <td style="text-align:right; font-size:0.85rem;">Rp ${(p.modal || 0).toLocaleString('id-ID')}</td>
-                <td style="text-align:right; font-size:0.85rem;">Rp ${(p.jual || 0).toLocaleString('id-ID')}</td>
-                <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold; font-size:0.88rem;">${awalGudang}</td>
-                <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold; font-size:0.88rem;">${keluarEtalase}</td>
-                <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${rusakTotal}</td>
-                <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold; font-size:0.95rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
                 
-                <!-- KOTAK INPUT +GUDANG (KOSONG & KECIL) -->
+                <!-- 2. NAMA PRODUK (BEKU) -->
+                <td style="font-weight:bold; font-size:0.88rem;">${p.nama || '-'}</td>
+                
+                <!-- 3. SISA GUDANG (BEKU & PINDAH KE SINI) -->
+                <td style="text-align:center; color:#0284c7; font-weight:bold; font-size:0.95rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
+                
+                <!-- 4. KATEGORI -->
+                <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 6px; border-radius:10px; font-size:0.72rem; font-weight:bold;">${p.kategori || '-'}</span></td>
+                
+                <!-- 5. HARGA MODAL -->
+                <td style="text-align:right; font-size:0.85rem;">Rp ${(p.modal || 0).toLocaleString('id-ID')}</td>
+                
+                <!-- 6. HARGA JUAL -->
+                <td style="text-align:right; font-size:0.85rem;">Rp ${(p.jual || 0).toLocaleString('id-ID')}</td>
+                
+                <!-- 7. AWAL GUDANG -->
+                <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold; font-size:0.88rem;">${awalGudang}</td>
+                
+                <!-- 8. KELUAR ETALASE -->
+                <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold; font-size:0.88rem;">${keluarEtalase}</td>
+                
+                <!-- 9. STOK RUSAK -->
+                <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${rusakTotal}</td>
+                
+                <!-- 10. INPUT MASAL +GUDANG -->
                 <td style="text-align:center;">
                     <input type="number" id="inputMasuk_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold; color:#15803d; font-size:0.82rem;">
                 </td>
 
-                <!-- KOTAK INPUT +RUSAK (KOSONG & KECIL) -->
+                <!-- 11. INPUT MASAL +RUSAK -->
                 <td style="text-align:center;">
                     <input type="number" id="inputRusak_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold; color:#b91c1c; font-size:0.82rem;">
                 </td>
 
-                <!-- AKSI -->
+                <!-- 12. AKSI -->
                 <td style="text-align:center; white-space:nowrap;">
                     <button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:4px 7px; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>
                     <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer; font-size:0.95rem;" title="Edit Produk">✏️</button>
@@ -2237,12 +2256,9 @@ function renderTabelMasterProduk() {
             </tr>
         `;
     });
-
     tbody.innerHTML = htmlContent;
+    munculkanTombolSimpanMasal();}
 
-    // Munculkan tombol 💾 Simpan melayang di pojok kiri atas
-    munculkanTombolSimpanMasal();
-}
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
     const tbody = document.getElementById('tbodyMasterProduk');
