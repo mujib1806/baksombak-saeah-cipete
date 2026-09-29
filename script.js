@@ -2181,13 +2181,12 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// 1. RENDER TABEL MASTER PRODUK (DIJAMIN MUNCUL, LENGKAP INPUT MASAL & TOMBOL KOREKSI)
+// 1. RENDER TABEL MASTER PRODUK (PRESISI SESUAI HEADER HTML)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
     if (!tbody) return;
     
-    // Pastikan window.masterProduk berbentuk array agar tidak error
     if (typeof window.masterProduk === 'undefined' || !Array.isArray(window.masterProduk)) {
         window.masterProduk = [];
     }
@@ -2195,11 +2194,11 @@ function renderTabelMasterProduk() {
     tbody.innerHTML = '';
     
     if (window.masterProduk.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: #94a3b8; font-style: italic;">Belum ada data produk. Silakan tambahkan produk baru.</td></tr>`;
         return;
     }
 
-    let htmlContent = ''; // Gunakan variabel temporary untuk performa dan keamanan DOM
+    let htmlContent = '';
 
     window.masterProduk.forEach((p, index) => {
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
@@ -2219,26 +2218,51 @@ function renderTabelMasterProduk() {
                 <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold;">${rusakTotal}</td>
                 <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold; font-size: 1.05rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
                 
-                <!-- INPUT MASAL STOK MASUK & STOK RUSAK -->
+                <!-- INPUT MASAL BARANG MASUK GUDANG -->
                 <td style="text-align:center;">
-                    <input type="number" id="inputMasuk_${index}" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})" style="width:60px; padding:4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold;">
-                </td>
-                <td style="text-align:center;">
-                    <input type="number" id="inputRusak_${index}" min="0" placeholder="0" oninput="hitungSisaGudangRealtime(${index})" style="width:60px; padding:4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold;">
+                    <input type="number" id="inputMasuk_${index}" min="0" placeholder="+Masuk" oninput="hitungSisaGudangRealtime(${index})" style="width:70px; padding:4px; text-align:center; border:1px solid #22c55e; border-radius:6px; background:#f0fdf4; font-weight:bold; color:#15803d;">
                 </td>
 
+                <!-- INPUT MASAL BARANG RUSAK -->
+                <td style="text-align:center;">
+                    <input type="number" id="inputRusak_${index}" min="0" placeholder="+Rusak" oninput="hitungSisaGudangRealtime(${index})" style="width:70px; padding:4px; text-align:center; border:1px solid #ef4444; border-radius:6px; background:#fef2f2; font-weight:bold; color:#b91c1c;">
+                </td>
+
+                <!-- AKSI -->
                 <td style="text-align:center; white-space:nowrap;">
-                    <button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>
-                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Edit Produk">✏️</button>
-                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer;" title="Hapus Produk">🗑️</button>
+                    <button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>
+                    <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer; font-size:1rem;" title="Edit Produk">✏️</button>
+                    <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer; font-size:1rem;" title="Hapus Produk">🗑️</button>
                 </td>
             </tr>
         `;
     });
 
     tbody.innerHTML = htmlContent;
+
+    // Pastikan Tombol Simpan Masal Muncul di Atas Tabel
+    munculkanTombolSimpanMasal();
 }
 
+/**
+ * Memastikan Tombol Simpan Masal Muncul Otomatis di Atas Tabel
+ */
+function munculkanTombolSimpanMasal() {
+    let containerBtn = document.getElementById('containerBtnSimpanMasal');
+    const tableEl = document.getElementById('tbodyMasterProduk') ? document.getElementById('tbodyMasterProduk').closest('table') : null;
+
+    if (tableEl && !containerBtn) {
+        containerBtn = document.createElement('div');
+        containerBtn.id = 'containerBtnSimpanMasal';
+        containerBtn.style.cssText = 'margin-bottom: 12px; display: flex; justify-content: flex-end;';
+        containerBtn.innerHTML = `
+            <button id="btnSimpanMasal" onclick="simpanMutasiGudangMasal()" style="background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 0.9rem;">
+                💾 Simpan Perubahan Stok Masal
+            </button>
+        `;
+        tableEl.parentNode.insertBefore(containerBtn, tableEl);
+    }
+}
 // ==========================================
 // 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
 // ==========================================
