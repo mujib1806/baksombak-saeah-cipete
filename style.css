@@ -247,11 +247,15 @@ th {
 }
 
 /* Kolom 3 (Awal pada Tabel Jual Bakso Malang): Buat Ramping Rata dengan Kolom Samping */
-.table-freeze td:nth-child(3),
-.table-freeze th:nth-child(3) {
+#tbodyBaksoSetoran td:nth-child(3),
+#tbodyBaksoSetoran td:nth-child(4),
+#tbodyBaksoSetoran td:nth-child(5),
+#tbodyBaksoSetoran td:nth-child(6),
+#tbodyBaksoSetoran td:nth-child(7),
+#tbodyBaksoSetoran td:nth-child(8) {
     width: 55px !important;
     min-width: 55px !important;
-    max-width: 65px !important;
+    max-width: 55px !important;
     text-align: center !important;
 }
 
