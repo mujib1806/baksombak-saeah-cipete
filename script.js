@@ -1585,7 +1585,7 @@ function renderViewSetoranBakso() {
         el.style.display = isOwnerOrDapur ? '' : 'none';
     });
 
-    // 👉 2. KODE BARU: Menyembunyikan kotak "Laporan Setoran Ke Dapur" khusus Kasir
+    // 👉 2. Menyembunyikan kotak "Laporan Setoran Ke Dapur" khusus Kasir
     const sectionLaporan = document.getElementById('sectionLaporanSetoran');
     if (sectionLaporan) {
         sectionLaporan.style.display = isOwnerOrDapur ? 'block' : 'none';
@@ -1660,14 +1660,35 @@ function renderViewSetoranBakso() {
         tbody.appendChild(tr); 
     });
 
+    // 👉 PENYERAGAMAN WARNA & STRUKTUR BARIS TOTAL QTY
     if (sumTotalStok > 0 || totalPorsi > 0) { 
         const trTotal = document.createElement('tr'); 
-        trTotal.style.cssText = "background:#fed7aa; font-weight:800; font-size:0.85rem; border-top: 2px solid #ea580c;"; 
+        trTotal.className = "row-total";
+        
+        // Warna Oranye Pudar Seragam (#ffedd5) disuntikkan langsung ke tiap sel (td)
+        const bgTotal = "background-color: #ffedd5 !important; font-weight: 800; color: #9a3412;";
         
         if (isOwnerOrDapur) {
-            trTotal.innerHTML = `<td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${totalPorsi}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td colspan="4" style="background:#f8fafc;"></td>`;
+            trTotal.innerHTML = `
+                <td colspan="2" style="text-align:center; ${bgTotal}">TOTAL QTY</td>
+                <td style="text-align:center; ${bgTotal}">${sumAwal}</td>
+                <td style="text-align:center; ${bgTotal}">${sumTambah}</td>
+                <td style="text-align:center; ${bgTotal}">${sumKurang}</td>
+                <td style="text-align:center; ${bgTotal}">${sumTotalStok}</td>
+                <td style="text-align:center; ${bgTotal}">${totalPorsi}</td>
+                <td style="text-align:center; ${bgTotal}">${sumSisa}</td>
+                <td colspan="4" style="${bgTotal}"></td>
+            `;
         } else {
-            trTotal.innerHTML = `<td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${totalPorsi}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td>`;
+            trTotal.innerHTML = `
+                <td colspan="2" style="text-align:center; ${bgTotal}">TOTAL QTY</td>
+                <td style="text-align:center; ${bgTotal}">${sumAwal}</td>
+                <td style="text-align:center; ${bgTotal}">${sumTambah}</td>
+                <td style="text-align:center; ${bgTotal}">${sumKurang}</td>
+                <td style="text-align:center; ${bgTotal}">${sumTotalStok}</td>
+                <td style="text-align:center; ${bgTotal}">${totalPorsi}</td>
+                <td style="text-align:center; ${bgTotal}">${sumSisa}</td>
+            `;
         }
         tbody.appendChild(trTotal); 
     }
