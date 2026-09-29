@@ -3203,7 +3203,16 @@ function generatePDFBaksoHarian() {
     if(!tbody) return;
     tbody.innerHTML = ''; 
 
-    items.filter(p => p.kategori === 'Bakso Malang').forEach(p => { 
+    // 👉 1. Filter kategori dibuat lebih aman (mengabaikan spasi & huruf besar/kecil)
+    const listBakso = items.filter(p => p.kategori && p.kategori.toString().trim().toLowerCase() === 'bakso malang');
+
+    if (listBakso.length === 0) {
+        alert("Tidak ada data produk Bakso Malang untuk tanggal ini.");
+        return;
+    }
+
+    // 👉 2. CETAK SEMUA BARIS PRODUK (Tanpa menyaring totalStok > 0 agar semua varian ikut tercetak)
+    listBakso.forEach(p => { 
         const awal = parseFloat(p.awal) || 0; 
         const tambah = parseFloat(p.tambah) || 0; 
         const kurang = parseFloat(p.kurang) || 0; 
@@ -3212,23 +3221,39 @@ function generatePDFBaksoHarian() {
         const terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
         const valSisa = sisa !== null ? sisa : 0; 
 
-        if (totalStok > 0 || terjual > 0) { 
-            const modalTotalItem = terjual * p.modal; 
-            const profitTotalItem = terjual * p.margin; 
-            sumAwal += awal; sumTambah += tambah; sumKurang += kurang; sumTotalStok += totalStok; sumLaku += terjual; sumSisa += valSisa; sumSetoran += modalTotalItem; sumProfit += profitTotalItem; 
+        const modalTotalItem = terjual * (parseFloat(p.modal) || 0); 
+        const profitTotalItem = terjual * (parseFloat(p.margin) || 0); 
+        
+        sumAwal += awal; 
+        sumTambah += tambah; 
+        sumKurang += kurang; 
+        sumTotalStok += totalStok; 
+        sumLaku += terjual; 
+        sumSisa += valSisa; 
+        sumSetoran += modalTotalItem; 
+        sumProfit += profitTotalItem; 
 
-            tbody.innerHTML += `<tr><td style="text-align:center;">${no++}</td><td><strong>${p.nama}</strong></td><td style="text-align:center;">${awal}</td><td style="text-align:center; color:#166534;">${tambah > 0 ? tambah : '-'}</td><td style="text-align:center; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td><td style="text-align:center; font-weight:bold;">${totalStok}</td><td style="text-align:center; font-weight:bold; color:#0f172a;">${terjual}</td><td style="text-align:center; color:#dc2626; font-weight:bold;">${valSisa}</td><td style="text-align:right;">${formatRupiah(p.modal)}</td><td style="text-align:right; font-weight:bold; color:#d97706;">${formatRupiah(modalTotalItem)}</td><td style="text-align:right; font-weight:bold; color:#16a34a;">${formatRupiah(profitTotalItem)}</td></tr>`; 
-        } 
+        tbody.innerHTML += `
+            <tr>
+                <td style="text-align:center;">${no++}</td>
+                <td><strong>${p.nama || '-'}</strong></td>
+                <td style="text-align:center;">${awal}</td>
+                <td style="text-align:center; color:#166534;">${tambah > 0 ? tambah : '-'}</td>
+                <td style="text-align:center; color:#991b1b;">${kurang > 0 ? kurang : '-'}</td>
+                <td style="text-align:center; font-weight:bold;">${totalStok}</td>
+                <td style="text-align:center; font-weight:bold; color:#0f172a;">${terjual}</td>
+                <td style="text-align:center; color:#dc2626; font-weight:bold;">${valSisa}</td>
+                <td style="text-align:right;">${formatRupiah(p.modal || 0)}</td>
+                <td style="text-align:right; font-weight:bold; color:#d97706;">${formatRupiah(modalTotalItem)}</td>
+                <td style="text-align:right; font-weight:bold; color:#16a34a;">${formatRupiah(profitTotalItem)}</td>
+            </tr>
+        `; 
     }); 
 
-    if (sumTotalStok === 0 && sumLaku === 0) { 
-        alert("Belum ada data stok awal atau terjual untuk dicetak."); 
-        return; 
-    } 
-
+    // Ringkasan Footer PDF
     tbody.innerHTML += `<tr style="background:#fed7aa; font-weight:800; font-size:0.9rem; border-top: 2px solid #ea580c;"><td colspan="2" style="text-align:center;">TOTAL QTY</td><td style="text-align:center;">${sumAwal}</td><td style="text-align:center; color:#166534;">${sumTambah}</td><td style="text-align:center; color:#991b1b;">${sumKurang}</td><td style="text-align:center; color:#0f172a;">${sumTotalStok}</td><td style="text-align:center; color:#0f172a;">${sumLaku}</td><td style="text-align:center; color:#b91c1c;">${sumSisa}</td><td></td><td style="text-align:right; color:#b45309;">${formatRupiah(sumSetoran)}</td><td style="text-align:right; color:#15803d;">${formatRupiah(sumProfit)}</td></tr>`; 
 
-    const dataSetoran = dbSetoranDapur[tgl] || { cash: 0, ket: '-', pengeluaran: 0 }; 
+    const dataSetoran = (typeof dbSetoranDapur !== 'undefined' && dbSetoranDapur[tgl]) ? dbSetoranDapur[tgl] : { cash: 0, ket: '-', pengeluaran: 0 }; 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('pdfBaksoTgl', `Tanggal Setoran: ${tgl}`); 
     setTxt('pdfBaksoModal', formatRupiah(sumSetoran)); 
