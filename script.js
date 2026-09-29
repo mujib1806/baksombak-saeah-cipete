@@ -15,13 +15,7 @@ if (firebaseConfig.apiKey !== "AIzaSyYOUR_API_KEY_HERE") {
     firebase.initializeApp(firebaseConfig); 
 }
 const db = (firebase.apps && firebase.apps.length > 0) ? firebase.firestore() : null;
-
-// ==========================================
-// PENGATURAN CABANG AKTIF (LEBIH AMAN)
-// ==========================================
 let CABANG_AKTIF = localStorage.getItem('cabangAktif');
-
-// Cegah sistem diam-diam masuk ke cabang lain jika cache HP kosong
 if (!CABANG_AKTIF) {
     alert("⚠️ PERHATIAN: Cabang belum dipilih!\n\nSistem tidak mendeteksi nama cabang di memori. Mohon kembali ke halaman 'Pilih Cabang' agar data tidak tumpang tindih.");
     CABANG_AKTIF = 'cabang_belum_dipilih'; 
@@ -29,65 +23,40 @@ if (!CABANG_AKTIF) {
 
 const configSistem = firebase.app().options; 
 const aplikasiPendaftaran = firebase.initializeApp(configSistem, "JalurDaftar");
-
-// ==========================================
-// TEMPLATE KOSONG (AGAR TIDAK SALING MENIMPA)
-// ==========================================
-// Cabang baru akan benar-benar mulai dari 0. Admin wajib input dari web.
 const defaultMasterProduk = []; 
-
-// Kategori dasar pancingan
 const defaultKategori = ["Bakso Malang", "Reseller"];
-
-// Vendor juga dikosongkan agar cabang baru input sendiri
 const defaultVendorCatalog = [];
 let masterProduk = defaultMasterProduk;
 let daftarKategori = defaultKategori;
 let vendorCatalog = defaultVendorCatalog;
-
 let dbStok = {}, dbPengeluaranHarian = [], dbKasMasuk = {}, dbLogKas = [], dbSetoranDapur = {}, dbGajiHarian = {}, dbStatusKunci = {};
 let activeKasTab = 'Reseller';
 let currentUser = null;
-// Array penampung riwayat pergerakan stok
 let riwayatStok = [];
-
-// Fungsi untuk mencatat mutasi stok
 function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir) {
     const now = new Date();
     const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
     const waktuStr = `${tglFormat}, ${jamFormat}`;
-    
-    // FORMAT BARU: Untuk kebutuhan filter rentang tanggal
     const tglIso = now.toISOString().split('T')[0]; 
-
     let namaUser = "Admin";
     if (typeof currentUser !== 'undefined' && currentUser && currentUser.role) {
-        namaUser = currentUser.role;
-    }
-
+        namaUser = currentUser.role;}
     const itemBaru = {
         waktu: waktuStr,
-        tanggalIso: tglIso, // <--- Data baru disisipkan disini
+        tanggalIso: tglIso,
         produk: namaProduk,
-        aksi: jenisAksi, // 'In' atau 'Out'
+        aksi: jenisAksi, 
         perubahan: jenisAksi === 'In' ? `+${jumlahPerubahan}` : `-${jumlahPerubahan}`,
         sisa: sisaStokAkhir,
-        oleh: namaUser
-    };
-
+        oleh: namaUser};
     riwayatStok.unshift(itemBaru);
-    
-    // PERBAIKAN: Perbesar daya tampung riwayat dari 50 menjadi 500 aktivitas terakhir
     if (riwayatStok.length > 500) riwayatStok.pop(); 
-
     if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').set({ list: riwayatStok });
-    }
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').set({ list: riwayatStok }); }
 
     renderTabelRiwayatStok();
 }
-// Variabel Global Pengaturan Finansial
 let pengaturanCabangAktif = {
     gajiHarian: 50000,
     toleransiLibur: 2,
@@ -102,10 +71,6 @@ let hasAlertedTgl = "";
 let autoSaveTimeout = null; 
 let vendorSaveTimeout = null;
 let chartTren = null, chartTopBakso = null, chartTopReseller = null;
-
-// ==========================================
-// DETEKSI KONEKSI INTERNET
-// ==========================================
 window.addEventListener('offline', () => {
     const banner = document.getElementById('offlineBanner');
     banner.style.background = '#dc2626'; banner.innerText = '⚠️ Koneksi Terputus! Perubahan akan disimpan sementara di perangkat.'; banner.style.display = 'block';
@@ -147,13 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-// Fungsi menyimpan pengaturan dari Form HTML
 function simpanPengaturanFinansialCabang(e) {
     e.preventDefault();
     if (!db) return;
-
-    // Menghilangkan titik ribuan sebelum disimpan
     const bersihkanAngka = (id) => parseFloat(document.getElementById(id).value.replace(/\./g, '')) || 0;
 
     const dataBaru = {
@@ -188,10 +149,6 @@ function showToast(message) {
     toast.innerHTML = message || '✅ Tersimpan!'; toast.classList.add('show');
     setTimeout(() => { toast.classList.remove('show'); }, 2000);
 }
-
-// ==========================================
-// FUNGSI AKUN & LOGIN
-// ==========================================
 function cekDanBuatAkunMaster() { console.log("Sistem akun kini diamankan oleh Firebase Auth."); }
 
 function prosesLogin(e) { 
@@ -225,10 +182,6 @@ function prosesLogin(e) {
         let dataAkun;
         if (doc.exists) {
             dataAkun = doc.data();
-            
-            // ===============================================
-            // KODE BARU: PENGECEKAN CABANG TUGAS (Tembok Pengaman)
-            // ===============================================
             const cabangTugasKaryawan = dataAkun.cabang_tugas || 'cipete_utara'; 
             
             if (dataAkun.role !== 'owner' && dataAkun.role !== 'dapur' && cabangTugasKaryawan !== cabangPilihan) {
@@ -244,16 +197,11 @@ function prosesLogin(e) {
         } else {
             currentUser = { nama: "Pengguna " + noHp, role: 'kasir', hp: noHp, email: emailPalsu, cabang_tugas: 'cipete_utara' };
         }
-        
-        // --- JIKA LOLOS PENGECEKAN, LANJUT MASUK APLIKASI ---
         localStorage.setItem('baksoUser', JSON.stringify(currentUser));
         localStorage.setItem('cabangAktif', cabangPilihan);
         localStorage.setItem('namaCabangAktif', cabangNamaText);
         
         CABANG_AKTIF = cabangPilihan;
-
-        // 👉 KODE BARU DITAMBAHKAN DI SINI:
-
         const headerCabang = document.getElementById('headerNamaCabang');
         if (headerCabang) {
             headerCabang.innerText = cabangNamaText.replace('Cabang ', ''); 
@@ -291,21 +239,11 @@ function bukaLayarAplikasi() {
     const isOwner = currentUser.role === 'owner'; 
     const isDapur = currentUser.role === 'dapur';        
     document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
-
-  // ===============================================
-    // KODE BARU: LAMPU LALULINTAS & BANNER CABANG
-    // ===============================================
     const savedNamaCabang = localStorage.getItem('namaCabangAktif') || 'Cabang Cipete Utara';
-    
-    // Sinkronisasi Banner Oranye
     const bannerLabel = document.getElementById('labelCabangBanner');
     if (bannerLabel) bannerLabel.innerText = savedNamaCabang.replace('Cabang ', '');
-
-   // Sinkronisasi Header Lama (Teks di sebelah Logo)
     const headerLama = document.getElementById('headerNamaCabang');
     if (headerLama) headerLama.innerText = savedNamaCabang.replace('Cabang ', '');
-
-    // KODE BARU: Sinkronisasi Semua Kop Surat PDF
     document.querySelectorAll('.teks-cabang-pdf').forEach(el => {
         el.innerText = savedNamaCabang;
     });
@@ -325,12 +263,10 @@ function bukaLayarAplikasi() {
     } else if (dropdownPindah) {
         dropdownPindah.style.display = 'none'; 
     }
-    // ===============================================
     document.getElementById('menuSetoran').style.display = 'block';        
     document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
     document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';      
-    // KODE BARU: Memunculkan menu Dashboard Global khusus Owner
     const menuGlobal = document.getElementById('menuDashboardGlobal');
     if (menuGlobal) menuGlobal.style.display = isOwner ? 'block' : 'none';
     document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
@@ -385,8 +321,6 @@ function tutupModalKelolaAkun() { document.getElementById('modalKelolaAkun').cla
 
 function muatDaftarAkun() { 
     if(!db) return; 
-    
-    // 1. Memuat daftar akun (Kode lama Anda)
     db.collection('users').get().then(snap => { 
         listAkunKasir = []; 
         const tbody = document.getElementById('tbodyDaftarAkun'); 
@@ -400,14 +334,10 @@ function muatDaftarAkun() {
             tbody.innerHTML += `<tr><td><strong>${data.nama}</strong><br><small style="color:var(--text-muted);">Pass: ${data.password}</small></td><td>${data.hp}</td><td>${roleBadge}</td><td style="text-align:center;">${aksiBtn}</td></tr>`; 
         }); 
     }); 
-
-    // 2. Memuat daftar cabang (KODE BARU YANG DISISIPKAN)
     if (typeof muatDaftarCabangKontrol === 'function') {
         muatDaftarCabangKontrol();
     }
 }
-
-// Fungsi baru untuk otomatis menyembunyikan pilihan cabang jika jabatannya Owner
 function cekRoleAkunBaru() {
     const role = document.getElementById('inAkunRole').value;
     const bungkusCabang = document.getElementById('bungkusCabangTugas');
@@ -421,17 +351,12 @@ function cekRoleAkunBaru() {
         selectCabang.setAttribute('required', 'true');
     }
 }
-
-// Fungsi Simpan Akun yang sudah di-update
 function simpanAkunBaru(e) { 
     e.preventDefault(); 
-    // PERBAIKAN: Menggunakan ID HTML yang sesuai (reg...)
     const nama = document.getElementById('regNama').value.trim(); 
     const hp = document.getElementById('regHp').value.trim(); 
     const password = document.getElementById('regPass').value.trim(); 
     const role = document.getElementById('regRole').value; 
-    
-    // PERBAIKAN: Mengambil nilai dari regCabangTugas dengan aman
     let cabangTugas = 'semua';
     if (role === 'kasir') {
         const elCabangTugas = document.getElementById('regCabangTugas');
@@ -467,7 +392,6 @@ function simpanAkunBaru(e) {
     })
     .then(() => { 
         alert(`✅ Akun Karyawan Berhasil Dibuat!\n\nNama: ${nama}\nRole: ${role.toUpperCase()}\nPenugasan: ${cabangTugas === 'semua' ? 'Semua Cabang' : cabangTugas}`); 
-        // PERBAIKAN: Mengosongkan form menggunakan ID HTML yang benar
         document.getElementById('regNama').value = ''; 
         document.getElementById('regHp').value = ''; 
         document.getElementById('regPass').value = ''; 
@@ -973,23 +897,52 @@ function cekDanTarikDataKemarin(tgl) {
 }
 
 function syncStokDenganMaster(tgl) { 
+    if (!masterProduk || !Array.isArray(masterProduk)) return;
+
     if (!dbStok[tgl]) { 
-        dbStok[tgl] = masterProduk.map(p => ({ ...p, awal: "", tambah: "", kurang: "", sisa: "" })); 
+        dbStok[tgl] = masterProduk.map(mp => ({
+            nama: mp.nama,
+            kategori: mp.kategori,
+            modal: mp.modal || 0,
+            jual: mp.jual || 0,
+            margin: mp.margin || 0,
+            awal: "",
+            tambah: "",
+            kurang: "",
+            sisa: ""
+        })); 
     } else { 
         let currentStok = dbStok[tgl]; 
         let newStokList = []; 
+        
         masterProduk.forEach(mp => { 
             let found = currentStok.find(item => item.nama === mp.nama); 
             if (found) { 
                 newStokList.push({ 
-                    ...mp, 
+                    ...found,
+                    // Selalu perbarui acuan kategori dan harga dari Master Produk terbaru
+                    kategori: mp.kategori,
+                    modal: mp.modal || 0,
+                    jual: mp.jual || 0,
+                    margin: mp.margin || 0,
                     awal: found.awal !== undefined ? found.awal : "", 
                     tambah: found.tambah !== undefined ? found.tambah : "", 
                     kurang: found.kurang !== undefined ? found.kurang : "", 
                     sisa: found.sisa !== undefined ? found.sisa : "" 
                 }); 
             } else { 
-                newStokList.push({ ...mp, awal: "", tambah: "", kurang: "", sisa: "" }); 
+                // Jika ada produk baru di Master Produk yang belum ada di stok harian
+                newStokList.push({ 
+                    nama: mp.nama,
+                    kategori: mp.kategori,
+                    modal: mp.modal || 0,
+                    jual: mp.jual || 0,
+                    margin: mp.margin || 0,
+                    awal: "", 
+                    tambah: "", 
+                    kurang: "", 
+                    sisa: "" 
+                }); 
             } 
         }); 
         dbStok[tgl] = newStokList; 
@@ -1015,15 +968,15 @@ function simpanStokKeFirebase() {
         showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
     }); 
 }
-function updateNilaiStokLokal(idx, tipe, val) {  
+function updateNilaiStokLokal(idx, tipe, val) {   
     const activeElementId = document.activeElement ? document.activeElement.id : null;
-    const tgl = document.getElementById('tglOps').value;  
-    if (!dbStok[tgl]) syncStokDenganMaster(tgl);  
+    const tgl = document.getElementById('tglOps').value;   
+    if (!dbStok[tgl]) syncStokDenganMaster(tgl);   
     
     const p = dbStok[tgl][idx];
     if (!p) return;
 
-   if (tipe === 'tambah') {
+    if (tipe === 'tambah') {
         const valBaru = parseFloat(val) || 0;
         const valLama = parseFloat(p.tambah) || 0;
         const selisih = valBaru - valLama;  
@@ -1031,57 +984,55 @@ function updateNilaiStokLokal(idx, tipe, val) {
         if (selisih !== 0) {
             const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
             if (masterIdx !== -1) {
-                // Ambil data lama, jika belum ada set jadi 0
                 let keluarSekarang = parseFloat(masterProduk[masterIdx].keluarEtalase) || 0;
                 let awalGudang = parseFloat(masterProduk[masterIdx].stokAwalGudang) || 0;
                 
-                // Tambahkan yang keluar ke etalase
                 let keluarBaru = keluarSekarang + selisih;
-                if (keluarBaru < 0) keluarBaru = 0; // Cegah minus
+                if (keluarBaru < 0) keluarBaru = 0;
                 
                 let sisaGudangBaru = awalGudang - keluarBaru - (parseFloat(masterProduk[masterIdx].stokRusak) || 0);
                 let jenisAksi = selisih > 0 ? 'Out' : 'In';
 
-                // PERBAIKAN UTAMA: Yang diupdate adalah keluarEtalase! AwalGudang tetap utuh.
                 masterProduk[masterIdx].keluarEtalase = keluarBaru;
                 
-                if(db) db.collection('cabang').doc(typeof CABANG_AKTIF !== 'undefined' ? CABANG_AKTIF : 'cipeteutara').collection('appData').doc('masterProduk').set({ list: masterProduk });
+                if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+                    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+                }
                 
-                if(typeof catatRiwayatStok === 'function') {
+                if (typeof catatRiwayatStok === 'function') {
                     catatRiwayatStok(p.nama, jenisAksi, Math.abs(selisih), sisaGudangBaru);
                 }
             }
         }
         dbStok[tgl][idx].tambah = val;  
-    }
-    else {
-        if (tipe === 'awal') dbStok[tgl][idx].awal = val;  
-        if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;  
-        if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;  
+    } else {
+        if (tipe === 'awal') dbStok[tgl][idx].awal = val;   
+        if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;   
+        if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;   
     }
 
-    const awal = parseFloat(p.awal) || 0;  
-    const tambah = parseFloat(p.tambah) || 0;  
-    const kurang = parseFloat(p.kurang) || 0;  
-    const totalStok = awal + tambah - kurang;  
-    const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;  
-    let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;  
+    const awal = parseFloat(p.awal) || 0;   
+    const tambah = parseFloat(p.tambah) || 0;   
+    const kurang = parseFloat(p.kurang) || 0;   
+    const totalStok = awal + tambah - kurang;   
+    const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;   
+    let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;   
 
-    const elTotal = document.getElementById('td_total_' + idx);  
-    if(elTotal) elTotal.innerText = totalStok;  
-    const elTerjual = document.getElementById('td_terjual_' + idx);  
-    if(elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';  
+    const elTotal = document.getElementById('td_total_' + idx);   
+    if (elTotal) elTotal.innerText = totalStok;   
+    const elTerjual = document.getElementById('td_terjual_' + idx);   
+    if (elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';   
     const elTambah = document.getElementById('tambah_' + idx);
-    if(elTambah && document.activeElement !== elTambah) {
+    if (elTambah && document.activeElement !== elTambah) {
         elTambah.value = tambah > 0 ? tambah : '';
     }
 
-    if(typeof updateKalkulasi === 'function') updateKalkulasi();  
+    if (typeof updateKalkulasi === 'function') updateKalkulasi();   
     
-    if(typeof autoSaveTimeout !== 'undefined') clearTimeout(autoSaveTimeout); 
-    autoSaveTimeout = setTimeout(() => {  
-        if(typeof simpanStokKeFirebase === 'function') simpanStokKeFirebase();  
-    }, 1500);  
+    if (typeof autoSaveTimeout !== 'undefined') clearTimeout(autoSaveTimeout); 
+    autoSaveTimeout = setTimeout(() => {   
+        if (typeof simpanStokKeFirebase === 'function') simpanStokKeFirebase();   
+    }, 1500);   
 
     if (activeElementId) {
         requestAnimationFrame(() => {
@@ -4266,11 +4217,6 @@ async function prosesSimpanMutasiStok() {
         alert('❌ Terjadi kesalahan saat sinkronisasi: ' + error.message);
     }
 }
-// ==========================================
-// SISTEM PELAPORAN BUG & MASUKAN
-// ==========================================
-
-// 1. Fungsi untuk Mengirim Laporan (Dipanggil saat tombol 'Kirim Laporan' ditekan)
 async function kirimLaporanBug() {
     // Sesuaikan ID ini dengan ID yang ada di form Modal HTML Anda
     const jenisEl = document.getElementById('inputJenisLaporan'); 
@@ -4411,9 +4357,6 @@ async function tandaiLaporanSelesai(idLaporan) {
         alert('Gagal memperbarui status. Periksa koneksi internet.');
     }
 }
-// ==========================================
-// FUNGSI RESET TOTAL (JALANKAN SEKALI SAJA)
-// ==========================================
 function bersihkanGudangTotal() {
     if(!confirm("⚠️ PERINGATAN KERAS! Anda yakin ingin MENGHAPUS SEMUA RIWAYAT STOK dan MENG-NOL-KAN semua angka stok di Master Produk untuk cabang ini?")) return;
 
@@ -4446,9 +4389,6 @@ function bersihkanGudangTotal() {
         });
     }
 }
-// ==========================================
-// FUNGSI IMPORT MASTER PRODUK DARI CSV (DISESUAIKAN DENGAN EXPORT)
-// ==========================================
 function importMasterProdukCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -4457,30 +4397,23 @@ function importMasterProdukCSV(event) {
     reader.onload = function(e) {
         const text = e.target.result;
         
-        // Tangani pemisah baris \n atau \r\n
-        const rows = text.split(/\r\n|\n/);
+          const rows = text.split(/\r\n|\n/);
         let jumlahBerhasil = 0;
 
-        // Mulai looping dari baris 1 (lewati baris 0 / Header: No;Nama Produk;Kategori;Harga Modal;dll)
-        for (let i = 1; i < rows.length; i++) {
+         for (let i = 1; i < rows.length; i++) {
             let row = rows[i].trim();
             if (!row) continue;
 
-            // PENTING: Karena export menggunakan pemisah titik koma (;), maka split pakai ';'
-            let cols = row.split(';').map(val => val.trim().replace(/^"|"$/g, ''));
+                      let cols = row.split(';').map(val => val.trim().replace(/^"|"$/g, ''));
             
-            // Urutan kolom dari fungsi Export Anda:
-            // [0]: No, [1]: Nama Produk, [2]: Kategori, [3]: Harga Modal, [4]: Harga Jual, [5]: Margin, [6]: Stok Gudang
-            if (cols.length >= 5) {
+                  if (cols.length >= 5) {
                 const namaProduk = cols[1]; // Kolom ke-2 (index 1) adalah Nama Produk
                 if (!namaProduk || namaProduk === '-') continue;
 
                 const kategoriProduk = cols[2] || 'Umum';
                 const modalProduk = parseFloat(cols[3]) || 0;
                 const jualProduk = parseFloat(cols[4]) || 0;
-                const stokGudangVal = parseFloat(cols[6]) || 0; // Kolom ke-7 adalah Stok Gudang
-
-                // Cek apakah produk dengan nama yang sama sudah ada (case-insensitive)
+                const stokGudangVal = parseFloat(cols[6]) || 0; 
                 let existingIndex = masterProduk.findIndex(p => p.nama.toLowerCase() === namaProduk.toLowerCase());
 
                 const produkBaru = {
@@ -4489,11 +4422,11 @@ function importMasterProdukCSV(event) {
                     modal: modalProduk,
                     jual: jualProduk,
                     margin: jualProduk - modalProduk,
-                    stokAwalGudang: stokGudangVal, // Diselaraskan dengan data stok gudang saat di-export
+                    stokAwalGudang: stokGudangVal, 
                     keluarEtalase: 0,
                     stokRusak: 0,
-                    minGudang: 10,   // Nilai default aman
-                    minEtalase: 5    // Nilai default aman
+                    minGudang: 10,  
+                    minEtalase: 5   
                 };
 
                 if (existingIndex >= 0) {
@@ -4509,8 +4442,6 @@ function importMasterProdukCSV(event) {
                 jumlahBerhasil++;
             }
         }
-
-        // Simpan ke Firebase secara massal
         if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
             .then(() => {
