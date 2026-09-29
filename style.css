@@ -190,6 +190,10 @@ th {
     table th:last-child, table td:last-child { display: none !important; }
 }
 
+/* ==========================================================
+   PERBAIKAN CSS: KERAMPINGAN KOLOM AWAL & PENYERAGAMAN TOTAL QTY
+   ========================================================== */
+
 /* 1. Aturan Freeze Umum untuk Semua Tabel (.table-freeze) */
 .table-freeze thead th {
     position: sticky !important;
@@ -221,15 +225,15 @@ th {
     max-width: 35px !important;
 }
 
-/* Kolom 2: Nama Produk / Varian Produk (Disesuaikan lebarnya) */
+/* Kolom 2: Varian Produk */
 .table-freeze td:nth-child(2) {
     position: sticky !important;
     left: 35px !important;
     z-index: 10 !important;
     background-color: #ffffff !important;
     box-shadow: 2px 0 4px -1px rgba(0,0,0,0.1) !important;
-    width: 130px !important;
-    min-width: 130px !important;
+    width: 140px !important;
+    min-width: 140px !important;
 }
 .table-freeze th:nth-child(2) {
     position: sticky !important;
@@ -238,22 +242,38 @@ th {
     z-index: 30 !important;
     background-color: #f8fafc !important;
     box-shadow: 2px 0 4px -1px rgba(0,0,0,0.1) !important;
-    width: 130px !important;
-    min-width: 130px !important;
+    width: 140px !important;
+    min-width: 140px !important;
 }
 
+/* Kolom 3 (Awal pada Tabel Jual Bakso Malang): Buat Ramping Rata dengan Kolom Samping */
+.table-freeze td:nth-child(3),
+.table-freeze th:nth-child(3) {
+    width: 55px !important;
+    min-width: 55px !important;
+    max-width: 65px !important;
+    text-align: center !important;
+}
+
+/* Penyeragaman Latar Belakang Baris TOTAL QTY */
+.table-freeze tfoot tr td,
+.table-freeze tr.row-total td {
+    background-color: #ffedd5 !important; /* Warna oranye pudar yang seragam */
+    color: #9a3412 !important;
+    font-weight: 800 !important;
+}
 
 /* 2. Khusus Tabel Master Produk Sahaja (3 Kolom Freeze) */
 table#tabelMasterProduk td:nth-child(2),
 table#tabelMasterProduk th:nth-child(2) {
-    box-shadow: none !important; /* Hilangkan bayangan di kolom 2 agar menyatu ke kolom 3 */
+    box-shadow: none !important;
 }
 
 table#tabelMasterProduk td:nth-child(3) {
     position: sticky !important;
-    left: 165px !important; /* 35px + 130px = 165px */
+    left: 175px !important; /* 35px + 140px = 175px */
     z-index: 10 !important;
-    background-color: #f0f9ff !important; /* Biru muda khusus Sisa Master Produk */
+    background-color: #f0f9ff !important;
     box-shadow: 2px 0 4px -1px rgba(0,0,0,0.1) !important;
     width: 55px !important;
     min-width: 55px !important;
@@ -262,7 +282,7 @@ table#tabelMasterProduk td:nth-child(3) {
 table#tabelMasterProduk th:nth-child(3) {
     position: sticky !important;
     top: 0 !important;
-    left: 165px !important;
+    left: 175px !important;
     z-index: 30 !important;
     background-color: #f8fafc !important;
     box-shadow: 2px 0 4px -1px rgba(0,0,0,0.1) !important;
