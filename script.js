@@ -2181,7 +2181,7 @@ function editProdukMaster(i) {
     document.getElementById('modalKelolaProduk').classList.add('active');
 }
 // ==========================================
-// RENDER TABEL MASTER PRODUK (RINGKAS & SIMPEL)
+// RENDER TABEL MASTER PRODUK (KOTAK INPUT DIBUAT KOSONG & LEBIH KECIL)
 // ==========================================
 function renderTabelMasterProduk() {
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2218,14 +2218,14 @@ function renderTabelMasterProduk() {
                 <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${rusakTotal}</td>
                 <td style="text-align:center; background:#f0f9ff; color:#0284c7; font-weight:bold; font-size:0.95rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
                 
-                <!-- INPUT MASAL +GUDANG -->
+                <!-- KOTAK INPUT +GUDANG (KOSONG & KECIL) -->
                 <td style="text-align:center;">
-                    <input type="number" id="inputMasuk_${index}" min="0" placeholder="+Gudang" oninput="hitungSisaGudangRealtime(${index})" style="width:62px; padding:3px; text-align:center; border:1px solid #22c55e; border-radius:5px; background:#f0fdf4; font-weight:bold; color:#15803d; font-size:0.82rem;">
+                    <input type="number" id="inputMasuk_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold; color:#15803d; font-size:0.82rem;">
                 </td>
 
-                <!-- INPUT MASAL +RUSAK -->
+                <!-- KOTAK INPUT +RUSAK (KOSONG & KECIL) -->
                 <td style="text-align:center;">
-                    <input type="number" id="inputRusak_${index}" min="0" placeholder="+Rusak" oninput="hitungSisaGudangRealtime(${index})" style="width:62px; padding:3px; text-align:center; border:1px solid #ef4444; border-radius:5px; background:#fef2f2; font-weight:bold; color:#b91c1c; font-size:0.82rem;">
+                    <input type="number" id="inputRusak_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold; color:#b91c1c; font-size:0.82rem;">
                 </td>
 
                 <!-- AKSI -->
@@ -2243,9 +2243,6 @@ function renderTabelMasterProduk() {
     // Tampilkan tombol '💾 Simpan' di pojok kiri atas
     munculkanTombolSimpanMasal();
 }
-/**
- * Membuat Tombol Simpan Masal Ringkas & Sticky di Pojok Kiri Atas
- */
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
     const tbody = document.getElementById('tbodyMasterProduk');
