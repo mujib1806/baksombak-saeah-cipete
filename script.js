@@ -905,6 +905,7 @@ function cekDanTarikDataKemarin(tgl) {
 function syncStokDenganMaster(tgl) { 
     if (!masterProduk || !Array.isArray(masterProduk)) return;
 
+    // Jika data stok tanggal ini belum ada di memori lokal, buat baru berdasarkan Master Produk
     if (!dbStok[tgl]) { 
         dbStok[tgl] = masterProduk.map(mp => ({
             nama: mp.nama,
@@ -918,25 +919,28 @@ function syncStokDenganMaster(tgl) {
             sisa: ""
         })); 
     } else { 
+        // Jika sudah ada data stok harian, selaraskan dengan Master Produk TANPA menghapus data isian
         let currentStok = dbStok[tgl]; 
         let newStokList = []; 
         
         masterProduk.forEach(mp => { 
             let found = currentStok.find(item => item.nama === mp.nama); 
             if (found) { 
+                // Pertahankan seluruh nilai isian stok yang sudah diinput oleh user
                 newStokList.push({ 
                     ...found,
-                    nama: mp.nama, // Pastikan nama ter-update jika diedit
+                    nama: mp.nama,
                     kategori: mp.kategori,
                     modal: mp.modal || 0,
                     jual: mp.jual || 0,
                     margin: mp.margin || 0,
-                    awal: found.awal !== undefined ? found.awal : "", 
-                    tambah: found.tambah !== undefined ? found.tambah : "", 
-                    kurang: found.kurang !== undefined ? found.kurang : "", 
-                    sisa: found.sisa !== undefined ? found.sisa : "" 
+                    awal: (found.awal !== undefined && found.awal !== null) ? found.awal : "", 
+                    tambah: (found.tambah !== undefined && found.tambah !== null) ? found.tambah : "", 
+                    kurang: (found.kurang !== undefined && found.kurang !== null) ? found.kurang : "", 
+                    sisa: (found.sisa !== undefined && found.sisa !== null) ? found.sisa : "" 
                 }); 
             } else { 
+                // Jika ada item baru di Master Produk, tambahkan dengan isian kosong
                 newStokList.push({ 
                     nama: mp.nama,
                     kategori: mp.kategori,
@@ -951,14 +955,9 @@ function syncStokDenganMaster(tgl) {
             } 
         }); 
         dbStok[tgl] = newStokList; 
-    } 
-
-    // Otomatis simpan struktur baru ke Firebase agar tidak hilang saat snapshot terpicu ulang
-    if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined' && tgl) {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl).set({
-            items: dbStok[tgl]
-        }, { merge: true });
     }
+    // Catatan: Penulisan otomatis ke Firebase secara paksa dihilangkan dari sini 
+    // agar tidak menimpa data input harian kasir yang sedang berjalan.
 }
 function simpanStokKeFirebase() { 
     const tgl = document.getElementById('tglOps').value; 
