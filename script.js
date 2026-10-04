@@ -2974,7 +2974,7 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
- if(chartTren) chartTren.destroy(); 
+if(chartTren) chartTren.destroy(); 
     const trenEl = document.getElementById('chartTren');
     if (trenEl) {
         const ctxTren = trenEl.getContext('2d'); 
@@ -3029,7 +3029,7 @@ function renderDashboardGrafik() {
                         datalabels: { 
                             color: '#ffffff', 
                             font: { weight: 'bold', size: 8 }, 
-                            formatter: formatSingkatan // Angka Omset Reseller saja di dalam balok biru
+                            formatter: formatSingkatan 
                         } 
                     }, 
                     // 4. BALOK OMSET BAKSO (ORANYE - ATAS)
@@ -3041,16 +3041,13 @@ function renderDashboardGrafik() {
                         datalabels: { 
                             align: 'top',
                             anchor: 'end',
-                            color: '#0f172a', // Warna teks gelap agar jelas terlihat di atas balok
+                            color: '#0f172a', 
                             font: { weight: 'bold', size: 10 }, 
-                            // 👉 HITUNG DAN TAMPILKAN TOTAL OMSET GABUNGAN (BAKSO + RESELLER)
                             formatter: function(val, ctx) {
                                 const idx = ctx.dataIndex;
                                 const omsetBakso = dataBakso[idx] || 0;
                                 const omsetReseller = dataReseller[idx] || 0;
-                                const totalOmsetGabungan = omsetBakso + omsetReseller;
-                                
-                                return formatSingkatan(totalOmsetGabungan);
+                                return formatSingkatan(omsetBakso + omsetReseller);
                             }
                         } 
                     } 
@@ -3062,7 +3059,34 @@ function renderDashboardGrafik() {
                 layout: { padding: { top: 25 } }, 
                 plugins: { 
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
-                    datalabels: { display: true } 
+                    datalabels: { display: true },
+                    // 👉 FITUR ANGKA REAL SAAT DI-KLIK / DI-TOUCH
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            // Menampilkan nilai asli per dataset dalam format Rupiah lengkap
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) {
+                                    label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                }
+                                return label;
+                            },
+                            // Menampilkan Total Omset Harian Gabungan di bagian bawah tooltip
+                            footer: function(tooltipItems) {
+                                let totalOmsetHarian = 0;
+                                tooltipItems.forEach(function(item) {
+                                    if (item.dataset.type === 'bar') {
+                                        totalOmsetHarian += item.parsed.y || 0;
+                                    }
+                                });
+                                return '------------------------\nTotal Omset: Rp ' + totalOmsetHarian.toLocaleString('id-ID');
+                            }
+                        }
+                    }
                 }, 
                 scales: { 
                     x: { stacked: true, grid: { display: false } }, 
@@ -3071,7 +3095,6 @@ function renderDashboardGrafik() {
             } 
         });
     }
-
     const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
     const topBakso = sortSliceTop5(produkBakso); 
 
