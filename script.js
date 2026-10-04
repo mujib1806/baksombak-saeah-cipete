@@ -2367,6 +2367,9 @@ function renderTabelMasterProduk() {
     munculkanTombolSimpanMasal();
 }
 
+// ==========================================
+// 1. MUNCULKAN / RESET STATUS TOMBOL SIMPAN MASAL
+// ==========================================
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
     const tbody = document.getElementById('tbodyMasterProduk');
@@ -2411,7 +2414,17 @@ function munculkanTombolSimpanMasal() {
             tableEl.parentNode.insertBefore(containerBtn, tableEl);
         }
     }
+
+    // 👉 PERBARUAN UTAMA: Reset tombol ke kondisi aktif/hijau setiap kali fungsi ini dipanggil
+    const btn = document.getElementById('btnSimpanMasal');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '💾 Simpan';
+        btn.style.backgroundColor = '#16a34a';
+        btn.style.cursor = 'pointer';
+    }
 }
+
 // ==========================================
 // 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
 // ==========================================
@@ -2510,11 +2523,17 @@ function simpanMutasiGudangMasal() {
                     catatAktivitas("Master Produk", `Mutasi masal sukses: ${daftarRiwayatBaru.length} pergerakan barang dicatat.`);
                 }
                 if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Disimpan!");
-                renderTabelMasterProduk(); // Refresh & kosongkan form kembali setelah sukses
+                
+                // 👉 PERBARUAN: Refresh tabel & reset tombol simpan otomatis
+                renderTabelMasterProduk(); 
             })
             .catch(err => {
                 alert("Gagal menyimpan ke server: " + err);
-                if(btn) { btn.innerText = "💾 Simpan Perubahan Stok Masal"; btn.disabled = false; }
+                if(btn) { 
+                    btn.innerText = "💾 Simpan"; 
+                    btn.disabled = false; 
+                    btn.style.backgroundColor = '#16a34a';
+                }
             });
         } else {
             renderTabelMasterProduk();
