@@ -2274,12 +2274,40 @@ function renderTabelMasterProduk() {
     let htmlContent = '';
 
     window.masterProduk.forEach((p, index) => {
+        // 👉 Cek apakah produk berkategori Bakso Malang
+        const isBakso = p.kategori && p.kategori.toString().trim().toLowerCase() === 'bakso malang';
+
         const awalGudang = parseFloat(p.stokAwalGudang) || 0;
         const keluarEtalase = parseFloat(p.keluarEtalase) || 0; 
         const rusakTotal = parseFloat(p.stokRusak) || 0;
         
         // RUMUS TETAP SAMA & PRESISI: Sisa = Awal - Keluar - Rusak
         const sisaGudangAsli = awalGudang - keluarEtalase - rusakTotal;
+
+        // 👉 Variabel kondisi tampilan khusus Bakso Malang vs Non-Bakso
+        const displaySisa = isBakso 
+            ? `<span style="background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:4px; font-size:0.75rem; font-weight:bold;">Fresh</span>` 
+            : sisaGudangAsli;
+
+        const displayAwal = isBakso 
+            ? `<span style="color:#cbd5e1;">-</span>` 
+            : awalGudang;
+
+        const displayRusak = isBakso 
+            ? `<span style="color:#cbd5e1;">-</span>` 
+            : rusakTotal;
+
+        const inputMasukHTML = isBakso 
+            ? `<span style="color:#cbd5e1; font-weight:bold;">-</span>` 
+            : `<input type="number" id="inputMasuk_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold; color:#15803d; font-size:0.82rem;">`;
+
+        const inputRusakHTML = isBakso 
+            ? `<span style="color:#cbd5e1; font-weight:bold;">-</span>` 
+            : `<input type="number" id="inputRusak_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold; color:#b91c1c; font-size:0.82rem;">`;
+
+        const btnFisikHTML = isBakso 
+            ? '' 
+            : `<button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:4px 7px; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>`;
         
         htmlContent += `
             <tr>
@@ -2290,7 +2318,7 @@ function renderTabelMasterProduk() {
                 <td style="font-weight:bold; font-size:0.88rem;">${p.nama || '-'}</td>
                 
                 <!-- 3. SISA GUDANG (BEKU & PINDAH KE SINI) -->
-                <td style="text-align:center; color:#0284c7; font-weight:bold; font-size:0.95rem;" id="sisaRealtime_${index}">${sisaGudangAsli}</td>
+                <td style="text-align:center; color:#0284c7; font-weight:bold; font-size:0.95rem;" id="sisaRealtime_${index}">${displaySisa}</td>
                 
                 <!-- 4. KATEGORI -->
                 <td><span style="background:#e0e7ff; color:#4f46e5; padding:2px 6px; border-radius:10px; font-size:0.72rem; font-weight:bold;">${p.kategori || '-'}</span></td>
@@ -2302,35 +2330,37 @@ function renderTabelMasterProduk() {
                 <td style="text-align:right; font-size:0.85rem;">Rp ${(p.jual || 0).toLocaleString('id-ID')}</td>
                 
                 <!-- 7. AWAL GUDANG -->
-                <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold; font-size:0.88rem;">${awalGudang}</td>
+                <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold; font-size:0.88rem;">${displayAwal}</td>
                 
                 <!-- 8. KELUAR ETALASE -->
                 <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold; font-size:0.88rem;">${keluarEtalase}</td>
                 
                 <!-- 9. STOK RUSAK -->
-                <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${rusakTotal}</td>
+                <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${displayRusak}</td>
                 
                 <!-- 10. INPUT MASAL +GUDANG -->
                 <td style="text-align:center;">
-                    <input type="number" id="inputMasuk_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #22c55e; border-radius:4px; background:#f0fdf4; font-weight:bold; color:#15803d; font-size:0.82rem;">
+                    ${inputMasukHTML}
                 </td>
 
                 <!-- 11. INPUT MASAL +RUSAK -->
                 <td style="text-align:center;">
-                    <input type="number" id="inputRusak_${index}" min="0" oninput="hitungSisaGudangRealtime(${index})" style="width:48px; padding:2px 4px; text-align:center; border:1px solid #ef4444; border-radius:4px; background:#fef2f2; font-weight:bold; color:#b91c1c; font-size:0.82rem;">
+                    ${inputRusakHTML}
                 </td>
 
                 <!-- 12. AKSI -->
                 <td style="text-align:center; white-space:nowrap;">
-                    <button onclick="bukaModalKoreksiStok(${index})" style="background:#f59e0b; color:white; border:none; padding:4px 7px; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-right:2px;" title="Koreksi Opname Fisik">⚙️ Fisik</button>
+                    ${btnFisikHTML}
                     <button onclick="editProdukMaster(${index})" style="background:none; border:none; cursor:pointer; font-size:0.95rem;" title="Edit Produk">✏️</button>
                     <button onclick="hapusProdukMaster(${index})" style="background:none; border:none; cursor:pointer; font-size:0.95rem;" title="Hapus Produk">🗑️</button>
                 </td>
             </tr>
         `;
     });
+
     tbody.innerHTML = htmlContent;
-    munculkanTombolSimpanMasal();}
+    munculkanTombolSimpanMasal();
+}
 
 function munculkanTombolSimpanMasal() {
     let containerBtn = document.getElementById('containerBtnSimpanMasal');
