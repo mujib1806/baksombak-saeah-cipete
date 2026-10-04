@@ -2920,6 +2920,11 @@ function renderDashboardGrafik() {
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
+    // Cek Nama Pos Dana Darurat Dinamis dari Cabang Aktif
+    const namaDarurat = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos1?.nama) 
+        ? pengaturanCabangAktif.pos1.nama 
+        : "Dana Darurat";
+
     targetDates.forEach(tgl => { 
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
@@ -2949,22 +2954,23 @@ function renderDashboardGrafik() {
             } 
         }); 
         
-        // --- AMBIL BEBAN BEBAN OPERASIONAL ---
-        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 0) || 0; 
-        const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+        // --- 1. AMBIL BEBAN GAJI HARIAN ---
+        const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
+        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
         
-        // 👉 HITUNG PENGELUARAN DANA DARURAT PADA TANGGAL TERSEBUT
-        // (Sesuaikan variabel dbDanaDarurat dengan struktur array/object Anda)
+        // --- 2. AMBIL BEBAN LACI KASIR ---
+        const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
+        
+        // --- 3. 👉 AMBIL PENGELUARAN DANA DARURAT DARI dbLogKas ---
         let dDarurat = 0;
-        if (typeof dbDanaDarurat !== 'undefined' && dbDanaDarurat[tgl]) {
-            if (Array.isArray(dbDanaDarurat[tgl])) {
-                dDarurat = dbDanaDarurat[tgl].reduce((acc, curr) => acc + (parseFloat(curr.keluar || curr.nominal) || 0), 0);
-            } else if (typeof dbDanaDarurat[tgl] === 'object') {
-                dDarurat = parseFloat(dbDanaDarurat[tgl].keluar || dbDanaDarurat[tgl].nominal) || 0;
-            }
+        if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
+            dDarurat = dbLogKas
+                .filter(l => l.tgl === tgl && (l.jenis === namaDarurat || l.jenis === 'Dana Darurat') && l.tipe === 'keluar')
+                .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-        // Profit Bersih = Profit Kotor - Total Beban (Gaji + Laci Kasir + Dana Darurat)
+        // --- 4. RUMUS PROFIT BERSIH RIIL ---
+        // Profit Kotor - (Gaji Harian + Belanja Laci + Uang Keluar Dana Darurat)
         const totalBebanHarian = dGaji + dLaci + dDarurat;
         const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
 
@@ -2991,8 +2997,8 @@ function renderDashboardGrafik() {
     setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
-    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // 👉 ID Baru
-
+    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // Menampilkan total Pengeluaran Dana Darurat
+    
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
     const formatSingkatan = function(value) { 
         if (value === 0 || !value) return ''; 
