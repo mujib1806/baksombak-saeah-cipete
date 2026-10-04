@@ -2870,6 +2870,7 @@ function renderDashboardGrafik() {
     const periode = periodeEl ? periodeEl.value : '7';
     let targetDates = [];
 
+    // KODE BARU (DENGAN SUPPORT CUSTOM TANGGAL):
     if (periode === '7') { targetDates = allDates.slice(-7); } 
     else if (periode === '30') { targetDates = allDates.slice(-30); } 
     else if (periode === 'bulan_ini') {
@@ -2884,6 +2885,17 @@ function renderDashboardGrafik() {
         if (m === 0) { y--; m = 12; }
         targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
     } 
+    // 👉 TAMBAHAN LOGIKA FILTER TANGGAL KUSTOM
+    else if (periode === 'custom') {
+        const tglAwal = document.getElementById('dashTglAwal')?.value;
+        const tglAkhir = document.getElementById('dashTglAkhir')?.value;
+        
+        if (tglAwal && tglAkhir) {
+            targetDates = allDates.filter(d => d >= tglAwal && d <= tglAkhir);
+        } else {
+            targetDates = allDates.slice(-7); // Default jika tanggal belum dipilih
+        }
+    }
     else { targetDates = allDates; }
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
@@ -3158,6 +3170,31 @@ if(chartTren) chartTren.destroy();
             data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, 
             options: optHorizontalBar 
         }); 
+    }
+}
+// ==========================================
+// FUNGSI TOGGLE INPUT TANGGAL KUSTOM DASHBOARD
+// ==========================================
+function toggleCustomDateDashboard() {
+    const periodeEl = document.getElementById('filterDashboardPeriode');
+    const containerCustom = document.getElementById('containerCustomDateDash');
+    if (!periodeEl || !containerCustom) return;
+
+    if (periodeEl.value === 'custom') {
+        containerCustom.style.display = 'flex';
+        // Set tanggal default jika masih kosong (7 hari terakhir)
+        const elAwal = document.getElementById('dashTglAwal');
+        const elAkhir = document.getElementById('dashTglAkhir');
+        if (elAwal && !elAwal.value) {
+            let d = new Date();
+            d.setDate(d.getDate() - 6);
+            elAwal.value = d.toISOString().split('T')[0];
+        }
+        if (elAkhir && !elAkhir.value) {
+            elAkhir.value = new Date().toISOString().split('T')[0];
+        }
+    } else {
+        containerCustom.style.display = 'none';
     }
 }
 // ==========================================
