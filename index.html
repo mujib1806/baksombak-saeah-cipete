@@ -402,19 +402,31 @@
         <!-- DASHBOARD CABANG -->
         <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #8b5cf6;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-                    <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
-                    <select id="filterDashboardPeriode" onchange="renderDashboardGrafik()" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
-                        <option value="7">7 Hari Terakhir</option>
-                        <option value="30">30 Hari Terakhir</option>
-                        <option value="bulan_ini">Bulan Ini</option>
-                        <option value="bulan_lalu">Bulan Lalu</option>
-                        <option value="semua">Semua Waktu</option>
-                    </select>
-                </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
+    <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
+    
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <!-- DROPDOWN PILIHAN PERIODE -->
+        <select id="filterDashboardPeriode" onchange="toggleCustomDateDashboard(); renderDashboardGrafik();" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+            <option value="7">7 Hari Terakhir</option>
+            <option value="30">30 Hari Terakhir</option>
+            <option value="bulan_ini">Bulan Ini</option>
+            <option value="bulan_lalu">Bulan Lalu</option>
+            <option value="custom">📅 Custom Tanggal...</option>
+            <option value="semua">Semua Waktu</option>
+        </select>
+
+        <!-- CONTAINER INPUT RENTANG TANGGAL (SEMBUNYI SCR DEFAULT) -->
+        <div id="containerCustomDateDash" style="display:none; align-items:center; gap:5px; background:#f1f5f9; padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1;">
+            <input type="date" id="dashTglAwal" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
+            <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
+            <input type="date" id="dashTglAkhir" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
+        </div>
+    </div>
+</div>
                 
-             <div class="grid-mobile" style="margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
-    <!-- 1. KARTU TOTAL OMSET -->
+         <!-- 1. KARTU TOTAL OMSET -->        
+<div class="grid-mobile" style="margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
     <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
         <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
         <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
