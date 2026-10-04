@@ -2974,7 +2974,7 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
-   if(chartTren) chartTren.destroy(); 
+ if(chartTren) chartTren.destroy(); 
     const trenEl = document.getElementById('chartTren');
     if (trenEl) {
         const ctxTren = trenEl.getContext('2d'); 
@@ -3001,13 +3001,13 @@ function renderDashboardGrafik() {
                             formatter: formatSingkatan 
                         } 
                     },
-                    // 2. GARIS SETORAN DAPUR (DIUBAH JADI UNGU AGAR TIDAK NABRAK)
+                    // 2. GARIS SETORAN DAPUR (UNGU PUTUS-PUTUS)
                     { 
                         type: 'line', 
                         label: 'Setoran Dapur (Bakso)', 
                         data: dataSetoranBaksoLine, 
-                        borderColor: '#8b5cf6', // Warna Ungu
-                        borderDash: [4, 4], // Garis putus-putus
+                        borderColor: '#8b5cf6', 
+                        borderDash: [4, 4], 
                         backgroundColor: '#8b5cf6', 
                         borderWidth: 2, 
                         tension: 0.2, 
@@ -3028,26 +3028,29 @@ function renderDashboardGrafik() {
                         backgroundColor: '#3b82f6', 
                         datalabels: { 
                             color: '#ffffff', 
-                            font: { weight: 'bold', size: 9 }, 
-                            formatter: formatSingkatan 
+                            font: { weight: 'bold', size: 8 }, 
+                            formatter: formatSingkatan // Angka Omset Reseller saja di dalam balok biru
                         } 
                     }, 
-                    // 4. BALOK OMSET BAKSO (ORANYE - ATAS + TOTAL OMSET GABUNGAN)
+                    // 4. BALOK OMSET BAKSO (ORANYE - ATAS)
                     { 
                         type: 'bar', 
                         label: 'Omset Bakso', 
                         data: dataBakso, 
                         backgroundColor: '#ea580c', 
                         datalabels: { 
-                            color: '#ffffff', 
-                            font: { weight: 'bold', size: 9 }, 
-                            align: 'center',
-                            // 👉 FORMATTER KHUSUS: Menampilkan Omset Bakso & Total Gabungan saat di-hover / label
+                            align: 'top',
+                            anchor: 'end',
+                            color: '#0f172a', // Warna teks gelap agar jelas terlihat di atas balok
+                            font: { weight: 'bold', size: 10 }, 
+                            // 👉 HITUNG DAN TAMPILKAN TOTAL OMSET GABUNGAN (BAKSO + RESELLER)
                             formatter: function(val, ctx) {
-                                if (!val && val !== 0) return '';
                                 const idx = ctx.dataIndex;
-                                const totalOmsetHarian = (dataBakso[idx] || 0) + (dataReseller[idx] || 0);
-                                return formatSingkatan(val); 
+                                const omsetBakso = dataBakso[idx] || 0;
+                                const omsetReseller = dataReseller[idx] || 0;
+                                const totalOmsetGabungan = omsetBakso + omsetReseller;
+                                
+                                return formatSingkatan(totalOmsetGabungan);
                             }
                         } 
                     } 
@@ -3059,21 +3062,7 @@ function renderDashboardGrafik() {
                 layout: { padding: { top: 25 } }, 
                 plugins: { 
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
-                    datalabels: { display: true },
-                    // 👉 TAMBAHAN TOOLTIP: Menampilkan Rincian Lengkap + Total Omset Gabungan saat grafik disentuh/di-hover
-                    tooltip: {
-                        callbacks: {
-                            footer: function(tooltipItems) {
-                                let totalHarian = 0;
-                                tooltipItems.forEach(function(tooltipItem) {
-                                    if (tooltipItem.dataset.type === 'bar') {
-                                        totalHarian += tooltipItem.raw || 0;
-                                    }
-                                });
-                                return '------------------------\nTotal Omset: Rp ' + totalHarian.toLocaleString('id-ID');
-                            }
-                        }
-                    }
+                    datalabels: { display: true } 
                 }, 
                 scales: { 
                     x: { stacked: true, grid: { display: false } }, 
