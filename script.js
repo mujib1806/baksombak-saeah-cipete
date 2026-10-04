@@ -2850,7 +2850,7 @@ function terapkanFilterReseller() {
 }
 
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS
+// FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN INFO SETORAN DAPUR & MODAL)
 // ==========================================
 function renderDashboardGrafik() {
     const isDapur = currentUser && currentUser.role === 'dapur';
@@ -2892,6 +2892,7 @@ function renderDashboardGrafik() {
         setTxt('dashOmsetBakso', "Rp 0");
         setTxt('dashOmsetReseller', "Rp 0");
         setTxt('dashTotalProfit', "Rp 0");
+        setTxt('dashTotalSetoranDapur', "Rp 0"); // New ID
         setTxt('dashTotalBeban', "Rp 0");
         setTxt('dashBebanGaji', "Rp 0");
         setTxt('dashBebanDapur', "Rp 0");
@@ -2902,14 +2903,14 @@ function renderDashboardGrafik() {
         return;
     }
 
-    let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0; 
+    let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
     let totalGaji = 0, totalDapur = 0, totalLaci = 0; 
-    let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = []; 
+    let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
     targetDates.forEach(tgl => { 
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
-        let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0; 
+        let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
         let items = dbStok[tgl] || []; 
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
@@ -2920,10 +2921,13 @@ function renderDashboardGrafik() {
             if(sisa !== null && sisa <= totalStok) { 
                 const laku = totalStok - sisa; 
                 const omset = laku * p.jual; 
+                const modalItem = laku * p.modal;
                 const profit = laku * p.margin; 
                 harianProfitKotor += profit; 
+                
                 if(p.kategori === 'Bakso Malang') { 
                     harianOmsetBakso += omset; 
+                    harianSetoranBakso += modalItem; // Modal Bakso Malang = Setoran Dapur
                     if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; 
                 } else { 
                     harianOmsetReseller += omset; 
@@ -2931,20 +2935,31 @@ function renderDashboardGrafik() {
                 } 
             } 
         }); 
-        const dGaji = (dbGajiHarian[tgl] || {nominal:0}).nominal; 
-        const dLaci = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-        const dDapur = (dbSetoranDapur[tgl] || {pengeluaran:0}).pengeluaran || 0; 
+        
+        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 0) || 0; 
+        const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
+        const dDapur = (dbSetoranDapur && dbSetoranDapur[tgl] ? dbSetoranDapur[tgl].pengeluaran : 0) || 0; 
         const profitBersih = Math.max(0, harianProfitKotor - dGaji - dLaci); 
 
-        totalOmsetBakso += harianOmsetBakso; totalOmsetReseller += harianOmsetReseller; 
-        totalProfit += profitBersih; totalGaji += dGaji; totalDapur += dDapur; totalLaci += dLaci; 
+        totalOmsetBakso += harianOmsetBakso; 
+        totalOmsetReseller += harianOmsetReseller; 
+        totalSetoranDapurAkumulatif += harianSetoranBakso;
+        totalProfit += profitBersih; 
+        totalGaji += dGaji; 
+        totalDapur += dDapur; 
+        totalLaci += dLaci; 
 
-        dataBakso.push(harianOmsetBakso); dataReseller.push(harianOmsetReseller); dataProfitLine.push(profitBersih); 
+        dataBakso.push(harianOmsetBakso); 
+        dataReseller.push(harianOmsetReseller); 
+        dataProfitLine.push(profitBersih); 
+        dataSetoranBaksoLine.push(harianSetoranBakso);
     });
 
+    // Update Text Ringkasan Dashboard
     setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
     setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
     setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
+    setTxt('dashTotalSetoranDapur', formatRupiah(totalSetoranDapurAkumulatif)); // Menampilkan Total Setoran Dapur
     setTxt('dashTotalProfit', formatRupiah(totalProfit)); 
     setTxt('dashTotalBeban', formatRupiah(totalGaji + totalDapur + totalLaci)); 
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
@@ -2965,12 +2980,65 @@ function renderDashboardGrafik() {
         const ctxTren = trenEl.getContext('2d'); 
         chartTren = new Chart(ctxTren, { 
             type: 'bar', 
-            data: { labels: labelsTren, datasets: [ { type: 'line', label: 'Profit Bersih', data: dataProfitLine, borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } }, { type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } } ] }, 
-            options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, datalabels: { display: true } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, display: false } } } 
+            data: { 
+                labels: labelsTren, 
+                datasets: [ 
+                    { 
+                        type: 'line', 
+                        label: 'Profit Bersih', 
+                        data: dataProfitLine, 
+                        borderColor: '#16a34a', 
+                        backgroundColor: '#16a34a', 
+                        borderWidth: 2.5, 
+                        tension: 0.3, 
+                        pointRadius: 4, 
+                        datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } 
+                    },
+                    { 
+                        type: 'line', 
+                        label: 'Setoran Dapur (Bakso)', 
+                        data: dataSetoranBaksoLine, 
+                        borderColor: '#d97706', 
+                        borderDash: [4, 4], // Garis putus-putus
+                        backgroundColor: '#d97706', 
+                        borderWidth: 2, 
+                        tension: 0.2, 
+                        pointRadius: 3, 
+                        datalabels: { align: 'bottom', anchor: 'start', color: '#b45309', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
+                    },
+                    { 
+                        type: 'bar', 
+                        label: 'Omset Reseller', 
+                        data: dataReseller, 
+                        backgroundColor: '#3b82f6', 
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } 
+                    }, 
+                    { 
+                        type: 'bar', 
+                        label: 'Omset Bakso', 
+                        data: dataBakso, 
+                        backgroundColor: '#ea580c', 
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } 
+                    } 
+                ] 
+            }, 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                layout: { padding: { top: 25 } }, 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
+                    datalabels: { display: true } 
+                }, 
+                scales: { 
+                    x: { stacked: true, grid: { display: false } }, 
+                    y: { stacked: true, beginAtZero: true, display: false } 
+                } 
+            } 
         });
     }
 
-   const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
+    const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
     const topBakso = sortSliceTop5(produkBakso); 
 
     window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
@@ -2978,13 +3046,13 @@ function renderDashboardGrafik() {
         .filter(nama => !(window.produkResellerDisembunyikan || []).includes(nama))
         .map(nama => ({nama: nama, qty: produkReseller[nama]}))
         .sort((a,b) => b.qty - a.qty)
-        .slice(0, 10); // KODE BARU: Membatasi maksimal TOP 10 Reseller
+        .slice(0, 10);
 
     const optHorizontalBar = { 
         indexAxis: 'y', 
         responsive: true, 
         maintainAspectRatio: false, 
-        layout: { padding: { right: 45 } }, // KODE BARU: Jarak kanan dilebarkan agar teks tidak terpotong
+        layout: { padding: { right: 45 } }, 
         plugins: { 
             legend: { display: false }, 
             datalabels: { 
@@ -2999,7 +3067,7 @@ function renderDashboardGrafik() {
             x: { 
                 beginAtZero: true, 
                 display: false,
-                grace: '15%' // KODE BARU: Memberi ruang napas di ujung grafik
+                grace: '15%' 
             }, 
             y: { 
                 grid: { display: false }, 
@@ -3035,7 +3103,6 @@ function renderDashboardGrafik() {
         }); 
     }
 }
-
 // ==========================================
 // FUNGSI CETAK PDF
 // ==========================================
