@@ -2916,7 +2916,7 @@ function renderDashboardGrafik() {
     }
 
     let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
-    let totalGaji = 0, totalDapur = 0, totalLaci = 0; 
+    let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
@@ -2924,6 +2924,7 @@ function renderDashboardGrafik() {
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
         let items = dbStok[tgl] || []; 
+        
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
             const tambah = parseFloat(p.tambah) || 0; 
@@ -2939,7 +2940,7 @@ function renderDashboardGrafik() {
                 
                 if(p.kategori === 'Bakso Malang') { 
                     harianOmsetBakso += omset; 
-                    harianSetoranBakso += modalItem; // Modal Bakso Malang = Setoran Dapur
+                    harianSetoranBakso += modalItem; 
                     if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; 
                 } else { 
                     harianOmsetReseller += omset; 
@@ -2948,18 +2949,32 @@ function renderDashboardGrafik() {
             } 
         }); 
         
+        // --- AMBIL BEBAN BEBAN OPERASIONAL ---
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : 0) || 0; 
         const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0); 
-        const dDapur = (dbSetoranDapur && dbSetoranDapur[tgl] ? dbSetoranDapur[tgl].pengeluaran : 0) || 0; 
-        const profitBersih = Math.max(0, harianProfitKotor - dGaji - dLaci); 
+        
+        // 👉 HITUNG PENGELUARAN DANA DARURAT PADA TANGGAL TERSEBUT
+        // (Sesuaikan variabel dbDanaDarurat dengan struktur array/object Anda)
+        let dDarurat = 0;
+        if (typeof dbDanaDarurat !== 'undefined' && dbDanaDarurat[tgl]) {
+            if (Array.isArray(dbDanaDarurat[tgl])) {
+                dDarurat = dbDanaDarurat[tgl].reduce((acc, curr) => acc + (parseFloat(curr.keluar || curr.nominal) || 0), 0);
+            } else if (typeof dbDanaDarurat[tgl] === 'object') {
+                dDarurat = parseFloat(dbDanaDarurat[tgl].keluar || dbDanaDarurat[tgl].nominal) || 0;
+            }
+        }
+
+        // Profit Bersih = Profit Kotor - Total Beban (Gaji + Laci Kasir + Dana Darurat)
+        const totalBebanHarian = dGaji + dLaci + dDarurat;
+        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
 
         totalOmsetBakso += harianOmsetBakso; 
         totalOmsetReseller += harianOmsetReseller; 
         totalSetoranDapurAkumulatif += harianSetoranBakso;
         totalProfit += profitBersih; 
         totalGaji += dGaji; 
-        totalDapur += dDapur; 
         totalLaci += dLaci; 
+        totalDarurat += dDarurat;
 
         dataBakso.push(harianOmsetBakso); 
         dataReseller.push(harianOmsetReseller); 
@@ -2971,12 +2986,12 @@ function renderDashboardGrafik() {
     setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
     setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
     setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
-    setTxt('dashTotalSetoranDapur', formatRupiah(totalSetoranDapurAkumulatif)); // Menampilkan Total Setoran Dapur
+    setTxt('dashTotalSetoranDapur', formatRupiah(totalSetoranDapurAkumulatif)); 
     setTxt('dashTotalProfit', formatRupiah(totalProfit)); 
-    setTxt('dashTotalBeban', formatRupiah(totalGaji + totalDapur + totalLaci)); 
+    setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
-    setTxt('dashBebanDapur', formatRupiah(totalDapur)); 
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
+    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // 👉 ID Baru
 
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
     const formatSingkatan = function(value) { 
