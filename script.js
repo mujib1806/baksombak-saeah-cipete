@@ -863,26 +863,36 @@ function kirimWhatsAppOrder() {
 }
 
 // ==========================================
-// FUNGSI INTI STOK & KALKULASI
+// FUNGSI INTI STOK & KALKULASI (ENTRY HARIAN)
 // ==========================================
 function cekDanTarikDataKemarin(tgl) {
     if (isDataLocked(tgl)) return;
-    let dateObj = new Date(tgl); dateObj.setDate(dateObj.getDate() - 1);
-    let y = dateObj.getFullYear(); let m = String(dateObj.getMonth() + 1).padStart(2, '0'); let d = String(dateObj.getDate()).padStart(2, '0');
+    
+    let dateObj = new Date(tgl); 
+    dateObj.setDate(dateObj.getDate() - 1);
+    let y = dateObj.getFullYear(); 
+    let m = String(dateObj.getMonth() + 1).padStart(2, '0'); 
+    let d = String(dateObj.getDate()).padStart(2, '0');
     let tglKemarin = `${y}-${m}-${d}`;
+    
     let isKemarinLocked = dbStatusKunci[tglKemarin] === true;
     let needsUpdateUI = false;
 
     if (dbStok[tgl]) {
         let isNeedsPullStok = dbStok[tgl].some(p => p.awal === "" || p.awal === null);
+        
         if (isNeedsPullStok && dbStok[tglKemarin] && dbStok[tglKemarin].length > 0) {
             if (isKemarinLocked) {
                 dbStok[tgl].forEach((p, idx) => {
                     if (p.awal === "" || p.awal === null) {
                         let pKemarin = dbStok[tglKemarin].find(x => x.nama === p.nama);
                         if (pKemarin) {
-                            if (p.kategori === 'Reseller' && pKemarin.sisa !== "" && pKemarin.sisa !== null) { dbStok[tgl][idx].awal = pKemarin.sisa; needsUpdateUI = true; } 
-                            else if (p.kategori === 'Bakso Malang' && pKemarin.awal !== "" && pKemarin.awal !== null) { dbStok[tgl][idx].awal = pKemarin.awal; needsUpdateUI = true; }
+                            // 👉 PERBARUAN: Baik Reseller maupun Bakso Malang, 
+                            // Stok Awal Hari Ini = Stok Sisa Hari Kemarin
+                            if ((p.kategori === 'Reseller' || p.kategori === 'Bakso Malang') && pKemarin.sisa !== "" && pKemarin.sisa !== null) { 
+                                dbStok[tgl][idx].awal = pKemarin.sisa; 
+                                needsUpdateUI = true; 
+                            }
                         }
                     }
                 });
@@ -894,14 +904,29 @@ function cekDanTarikDataKemarin(tgl) {
             }
         }
     }
+
+    // Penarikan Modal Laci / Petty Cash dari modalBesok kemarin
     if (isKemarinLocked && dbKasMasuk[tglKemarin]) {
         let kasHariIni = dbKasMasuk[tgl] || { cash: 0, qris: 0, gojek: 0, grab: 0, shopee: 0, petty: 0, modalBesok: 0 };
         let pettyKemarin = dbKasMasuk[tglKemarin].modalBesok || 0;
-        if (kasHariIni.petty !== pettyKemarin) { kasHariIni.petty = pettyKemarin; dbKasMasuk[tgl] = kasHariIni; if (db) { db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').doc(tgl).set(kasHariIni); } needsUpdateUI = true; }
+        
+        if (kasHariIni.petty !== pettyKemarin) { 
+            kasHariIni.petty = pettyKemarin; 
+            dbKasMasuk[tgl] = kasHariIni; 
+            if (db) { 
+                db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').doc(tgl).set(kasHariIni); 
+            } 
+            needsUpdateUI = true; 
+        }
     }
-    if (needsUpdateUI && document.activeElement && document.activeElement.tagName !== 'INPUT') { renderTabelMatriks(); loadKasMasukUI(); updateKalkulasi(); }
-}
 
+    // Auto-update UI jika tidak ada input yang sedang diketik oleh user
+    if (needsUpdateUI && document.activeElement && document.activeElement.tagName !== 'INPUT') { 
+        renderTabelMatriks(); 
+        loadKasMasukUI(); 
+        updateKalkulasi(); 
+    }
+}
 function syncStokDenganMaster(tgl) { 
     if (!masterProduk || !Array.isArray(masterProduk)) return;
 
