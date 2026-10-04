@@ -2293,6 +2293,11 @@ function renderTabelMasterProduk() {
             ? `<span style="color:#cbd5e1;">-</span>` 
             : awalGudang;
 
+        // PERBARUAN: Keluar Etalase disembunyikan untuk Bakso Malang
+        const displayKeluar = isBakso 
+            ? `<span style="color:#cbd5e1;">-</span>` 
+            : keluarEtalase;
+
         const displayRusak = isBakso 
             ? `<span style="color:#cbd5e1;">-</span>` 
             : rusakTotal;
@@ -2333,7 +2338,7 @@ function renderTabelMasterProduk() {
                 <td style="text-align:center; background:#f0fdf4; color:#16a34a; font-weight:bold; font-size:0.88rem;">${displayAwal}</td>
                 
                 <!-- 8. KELUAR ETALASE -->
-                <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold; font-size:0.88rem;">${keluarEtalase}</td>
+                <td style="text-align:center; background:#fff1f2; color:#e11d48; font-weight:bold; font-size:0.88rem;">${displayKeluar}</td>
                 
                 <!-- 9. STOK RUSAK -->
                 <td style="text-align:center; background:#fff1f2; color:#9f1239; font-weight:bold; font-size:0.88rem;">${displayRusak}</td>
