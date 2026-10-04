@@ -2974,7 +2974,7 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
-    if(chartTren) chartTren.destroy(); 
+   if(chartTren) chartTren.destroy(); 
     const trenEl = document.getElementById('chartTren');
     if (trenEl) {
         const ctxTren = trenEl.getContext('2d'); 
@@ -2983,6 +2983,7 @@ function renderDashboardGrafik() {
             data: { 
                 labels: labelsTren, 
                 datasets: [ 
+                    // 1. GARIS PROFIT BERSIH (HIJAU)
                     { 
                         type: 'line', 
                         label: 'Profit Bersih', 
@@ -2992,33 +2993,63 @@ function renderDashboardGrafik() {
                         borderWidth: 2.5, 
                         tension: 0.3, 
                         pointRadius: 4, 
-                        datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } 
+                        datalabels: { 
+                            align: 'top', 
+                            anchor: 'end', 
+                            color: '#15803d', 
+                            font: { weight: 'bold', size: 10 }, 
+                            formatter: formatSingkatan 
+                        } 
                     },
+                    // 2. GARIS SETORAN DAPUR (DIUBAH JADI UNGU AGAR TIDAK NABRAK)
                     { 
                         type: 'line', 
                         label: 'Setoran Dapur (Bakso)', 
                         data: dataSetoranBaksoLine, 
-                        borderColor: '#d97706', 
+                        borderColor: '#8b5cf6', // Warna Ungu
                         borderDash: [4, 4], // Garis putus-putus
-                        backgroundColor: '#d97706', 
+                        backgroundColor: '#8b5cf6', 
                         borderWidth: 2, 
                         tension: 0.2, 
                         pointRadius: 3, 
-                        datalabels: { align: 'bottom', anchor: 'start', color: '#b45309', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
+                        datalabels: { 
+                            align: 'bottom', 
+                            anchor: 'start', 
+                            color: '#6d28d9', 
+                            font: { weight: 'bold', size: 8 }, 
+                            formatter: formatSingkatan 
+                        } 
                     },
+                    // 3. BALOK OMSET RESELLER (BIRU - BAWAH)
                     { 
                         type: 'bar', 
                         label: 'Omset Reseller', 
                         data: dataReseller, 
                         backgroundColor: '#3b82f6', 
-                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } 
+                        datalabels: { 
+                            color: '#ffffff', 
+                            font: { weight: 'bold', size: 9 }, 
+                            formatter: formatSingkatan 
+                        } 
                     }, 
+                    // 4. BALOK OMSET BAKSO (ORANYE - ATAS + TOTAL OMSET GABUNGAN)
                     { 
                         type: 'bar', 
                         label: 'Omset Bakso', 
                         data: dataBakso, 
                         backgroundColor: '#ea580c', 
-                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 9 }, formatter: formatSingkatan } 
+                        datalabels: { 
+                            color: '#ffffff', 
+                            font: { weight: 'bold', size: 9 }, 
+                            align: 'center',
+                            // 👉 FORMATTER KHUSUS: Menampilkan Omset Bakso & Total Gabungan saat di-hover / label
+                            formatter: function(val, ctx) {
+                                if (!val && val !== 0) return '';
+                                const idx = ctx.dataIndex;
+                                const totalOmsetHarian = (dataBakso[idx] || 0) + (dataReseller[idx] || 0);
+                                return formatSingkatan(val); 
+                            }
+                        } 
                     } 
                 ] 
             }, 
@@ -3028,7 +3059,21 @@ function renderDashboardGrafik() {
                 layout: { padding: { top: 25 } }, 
                 plugins: { 
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
-                    datalabels: { display: true } 
+                    datalabels: { display: true },
+                    // 👉 TAMBAHAN TOOLTIP: Menampilkan Rincian Lengkap + Total Omset Gabungan saat grafik disentuh/di-hover
+                    tooltip: {
+                        callbacks: {
+                            footer: function(tooltipItems) {
+                                let totalHarian = 0;
+                                tooltipItems.forEach(function(tooltipItem) {
+                                    if (tooltipItem.dataset.type === 'bar') {
+                                        totalHarian += tooltipItem.raw || 0;
+                                    }
+                                });
+                                return '------------------------\nTotal Omset: Rp ' + totalHarian.toLocaleString('id-ID');
+                            }
+                        }
+                    }
                 }, 
                 scales: { 
                     x: { stacked: true, grid: { display: false } }, 
