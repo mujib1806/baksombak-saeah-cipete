@@ -1039,7 +1039,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
     if (typeof updateKalkulasi === 'function') updateKalkulasi();   
 }
 // ==========================================
-// 3. EKSKUSI SIMPAN HARIAN MASAL (AKUMULASI REFILL & POTONG GUDANG)
+// EKSKUSI SIMPAN HARIAN MASAL (TANPA FREEZE UI)
 // ==========================================
 async function simpanStokHarianMasal() {
     const tgl = document.getElementById('tglOps').value;
@@ -1057,6 +1057,9 @@ async function simpanStokHarianMasal() {
         btn.style.backgroundColor = "#eab308";
     }
 
+    // 👉 BERI JEDA MIKRO (50ms) agar UI Sempat Render Tombol Loading Tanpa Freeze
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     try {
         let janjiRiwayat = [];
         let adaPenambahanStok = false;
@@ -1067,12 +1070,12 @@ async function simpanStokHarianMasal() {
                 
                 if (tambahInputVal > 0) {
                     adaPenambahanStok = true;
-                    // 1. Akumulasi nilai Refill ke 'tambah'
+                    // Akumulasi nilai Refill ke 'tambah'
                     p.tambah = (parseFloat(p.tambah) || 0) + tambahInputVal;
                     // Reset kolom input baru
                     p.tambahInput = '';
 
-                    // 2. Potong Stok Gudang di Master Produk
+                    // Potong Stok Gudang di Master Produk
                     const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
                     if (masterIdx !== -1) {
                         let keluarSekarang = parseFloat(masterProduk[masterIdx].keluarEtalase) || 0;
@@ -1090,22 +1093,23 @@ async function simpanStokHarianMasal() {
         }
 
         if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
-            // Simpan Master Produk jika ada penambahan stok gudang
+            // 1. Simpan Master Produk sekaligus
             if (adaPenambahanStok) {
                 await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             }
             
-            // Simpan Data Stok Harian
+            // 2. Simpan Data Stok Harian
             if (typeof simpanStokKeFirebase === 'function') {
                 await simpanStokKeFirebase();
             }
         }
 
+        // 3. Jalankan pencatatan riwayat secara paralel di background
         if (janjiRiwayat.length > 0) {
             await Promise.all(janjiRiwayat);
         }
 
-        // Re-render tabel agar kolom 'Total Refill' ter-update dan input 'Refill Baru' kembali bersih/kosong
+        // Re-render tabel agar kolom 'Total Refill' ter-update & input 'Refill Baru' bersih
         renderTabelMatriks();
 
         if (btn) {
