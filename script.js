@@ -3072,6 +3072,14 @@ function renderDashboardGrafik() {
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
     setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // Menampilkan total Pengeluaran Dana Darurat
+    // 👉 KODE BARU: UPDATE TEKS KETERANGAN PROFIT BERSIH DENGAN NAMA POS DINAMIS (POS 2 & POS 3)
+    const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) 
+        ? pengaturanCabangAktif.pos2.nama 
+        : "Tabungan Anak";
+    const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) 
+        ? pengaturanCabangAktif.pos3.nama 
+        : "Laba Bersih";
+    setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
     
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
     const formatSingkatan = function(value) { 
