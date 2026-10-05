@@ -399,88 +399,106 @@
             </div>
         </div>
 
-        <!-- DASHBOARD CABANG -->
-        <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #8b5cf6;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
-    <h2 style="color: #6d28d9; margin: 0;">📈 Dashboard Analisa Bisnis</h2>
-    
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <!-- DROPDOWN PILIHAN PERIODE -->
-        <select id="filterDashboardPeriode" onchange="toggleCustomDateDashboard(); renderDashboardGrafik();" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
-            <option value="7">7 Hari Terakhir</option>
-            <option value="30">30 Hari Terakhir</option>
-            <option value="bulan_ini">Bulan Ini</option>
-            <option value="bulan_lalu">Bulan Lalu</option>
-            <option value="custom">📅 Custom Tanggal...</option>
-            <option value="semua">Semua Waktu</option>
-        </select>
+       <!-- DASHBOARD CABANG -->
+<div id="viewDashboard" style="display:none; margin-bottom: 40px;">
+    <div class="card" style="border-top: 4px solid #8b5cf6;">
+        
+        <!-- HEADER & FILTER PERIODE -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:8px;">
+            <h2 style="color: #6d28d9; margin: 0; font-size: 1.2rem;">📈 Dashboard Analisa Bisnis</h2>
+            
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <select id="filterDashboardPeriode" onchange="toggleCustomDateDashboard(); renderDashboardGrafik();" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                    <option value="7">7 Hari Terakhir</option>
+                    <option value="30">30 Hari Terakhir</option>
+                    <option value="bulan_ini">Bulan Ini</option>
+                    <option value="bulan_lalu">Bulan Lalu</option>
+                    <option value="custom">📅 Custom Tanggal...</option>
+                    <option value="semua">Semua Waktu</option>
+                </select>
 
-        <!-- CONTAINER INPUT RENTANG TANGGAL (SEMBUNYI SCR DEFAULT) -->
-        <div id="containerCustomDateDash" style="display:none; align-items:center; gap:5px; background:#f1f5f9; padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1;">
-            <input type="date" id="dashTglAwal" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
-            <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
-            <input type="date" id="dashTglAkhir" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
-        </div>
-    </div>
-</div>
-                
-         <!-- 1. KARTU TOTAL OMSET -->        
-<div class="grid-mobile" style="margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
-    <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center;">
-        <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
-        <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
-        <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
-    </div>
-
-    <!-- 2. KARTU SETORAN DAPUR (BARU) -->
-    <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; text-align:center;">
-        <span style="font-size:0.75rem; font-weight:800; color:#c2410c; text-transform:uppercase;">🍲 SETORAN DAPUR (BAKSO)</span>
-        <div id="dashTotalSetoranDapur" style="font-size:1.5rem; font-weight:900; color:#ea580c; margin:4px 0;">Rp 0</div>
-        <div style="font-size:0.72rem; color:#9a3412;">*Modal porsi bakso disetor ke Dapur</div>
-    </div>
-
-   <!-- 3. KARTU TOTAL PROFIT BERSIH -->
-<div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center;">
-    <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
-    <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
-    
-    <!-- 👉 TAMBAHKAN ID DISINI (Hapus kata 'Darurat' dari teks default) -->
-    <div id="lblKetProfitBersih" style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan</div>
-</div>
-                
-                <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; margin-bottom: 15px;">
-    <div style="text-align:center; margin-bottom: 8px;">
-        <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
-        <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
-        <div style="font-size:0.7rem; color:#e11d48;">*(Memotong Profit Kotor untuk menghasilkan Profit Bersih Riil)*</div>
-    </div>
-    <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
-        <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan Harian:</span><strong id="dashBebanGaji">Rp 0</strong></div>
-        <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Belanja Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
-        <div style="display:flex; justify-content:space-between;"><span>▪️ 🛡️ Pengeluaran Dana Darurat:</span><strong id="dashBebanDarurat">Rp 0</strong></div>
-    </div>
-</div>
-
-                <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
-                    <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">TREN OMSET & PROFIT BERSIH</h4>
-                    <div class="chart-container"><canvas id="chartTren"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding:10px;">
-                    <h4 style="font-size:0.75rem; color:#ea580c; margin:0 0 8px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
-                    <div style="position: relative; height: 160px; background: #fff; border-radius: 6px; padding: 5px;"><canvas id="chartTopBakso"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-                        <h4 style="font-size:0.75rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
-                        <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 8px; border-radius:4px; font-size:0.65rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
-                    </div>
-                    <div style="position: relative; max-height: 220px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 6px; padding: 5px;"><canvas id="chartTopReseller"></canvas></div>
+                <div id="containerCustomDateDash" style="display:none; align-items:center; gap:5px; background:#f1f5f9; padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1;">
+                    <input type="date" id="dashTglAwal" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
+                    <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
+                    <input type="date" id="dashTglAkhir" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
                 </div>
             </div>
         </div>
+        
+        <!-- ========================================== -->
+        <!-- BARIS 1: TOTAL OMSET & SETORAN DAPUR (2 KOLOM SEIMBANG) -->
+        <!-- ========================================== -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <!-- 1. TOTAL OMSET -->
+            <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center; padding: 12px;">
+                <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
+                <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
+            </div>
+
+            <!-- 2. SETORAN DAPUR -->
+            <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; text-align:center; padding: 12px;">
+                <span style="font-size:0.75rem; font-weight:800; color:#c2410c; text-transform:uppercase;">🍲 SETORAN DAPUR (BAKSO)</span>
+                <div id="dashTotalSetoranDapur" style="font-size:1.5rem; font-weight:900; color:#ea580c; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.72rem; color:#9a3412;">*Modal porsi bakso disetor ke Dapur</div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 2: PROFIT BERSIH & BEBAN PENGELUARAN (2 KOLOM SEIMBANG) -->
+        <!-- ========================================== -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <!-- 3. TOTAL PROFIT BERSIH -->
+            <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center; padding: 12px; display:flex; flex-direction:column; justify-content:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
+                <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
+                <div id="lblKetProfitBersih" style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan</div>
+            </div>
+
+            <!-- 4. TOTAL BEBAN & PENGELUARAN -->
+            <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; padding: 12px;">
+                <div style="text-align:center; margin-bottom: 8px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
+                    <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
+                    <div style="font-size:0.7rem; color:#e11d48;">*(Memotong Profit Kotor untuk menghasilkan Profit Bersih Riil)*</div>
+                </div>
+                <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan Harian:</span><strong id="dashBebanGaji">Rp 0</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Belanja Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🛡️ Pengeluaran Dana Darurat:</span><strong id="dashBebanDarurat">Rp 0</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 3: TREN OMSET & PROFIT BERSIH (FULL WIDTH / PLONG) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 16px; padding: 14px;">
+            <h4 style="font-size:0.85rem; color:#334155; margin: 0 0 12px 0; text-align:center; font-weight:800;">📈 TREN OMSET & PROFIT BERSIH</h4>
+            <div class="chart-container" style="position: relative; height: 320px; width: 100%;"><canvas id="chartTren"></canvas></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 4: TOP 5 BAKSO MALANG (FULL WIDTH) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding: 14px; margin-bottom: 16px;">
+            <h4 style="font-size:0.85rem; color:#ea580c; margin:0 0 10px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
+            <div style="position: relative; height: 180px; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #ffedd5;"><canvas id="chartTopBakso"></canvas></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 5: RANKING RESELLER (FULL WIDTH) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding: 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="font-size:0.85rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
+                <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
+            </div>
+            <div style="position: relative; max-height: 260px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #dbeafe;"><canvas id="chartTopReseller"></canvas></div>
+        </div>
+
+    </div>
+</div>
 
         <!-- PUSAT KONTROL OWNER -->
         <div id="viewPusatKontrol" style="display: none; padding: 15px;">
