@@ -1910,7 +1910,23 @@ function renderRekapGajiBulanan() {
     setTxt('gbTotalHarianLaci', formatRupiah(totalGajiUtamaDiambil + totalGajiTambahanDiambil));
     setTxt('lblGajiPokokBulanan', formatRupiah(gajiPokok));
 }
+// ==========================================
+// FUNGSI HITUNG AKUMULASI KAS TOTAL (TEROPTIMASI DEBOUNCE)
+// ==========================================
+let timerDebounceKasTotal = null;
+
 function hitungAkumulasiKasTotal() {  
+    // 1. Batalkan eksekusi sebelumnya jika user masih mengetik (mencegah lag CPU)
+    clearTimeout(timerDebounceKasTotal);
+
+    // 2. Tunda perhitungan berat selama 300 milidetik setelah ketikan terakhir
+    timerDebounceKasTotal = setTimeout(() => {
+        eksekusiHitungKasTotalSebenarnya();
+    }, 300);
+}
+
+// Fungsi internal yang menjalankan kalkulasi berat
+function eksekusiHitungKasTotalSebenarnya() {
     let kasReseller = 0, kasPlastik = 0, kasDarurat = 0, kasLaba = 0, kasAnak = 0;  
     const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort();  
 
@@ -1924,7 +1940,7 @@ function hitungAkumulasiKasTotal() {
 
     validDates.forEach(tgl => {  
         let pKotor = 0, omsetLebihan = 0, modalReseller = 0;  
-        dbStok[tgl].forEach(p => {  
+        (dbStok[tgl] || []).forEach(p => {  
             const awal = parseFloat(p.awal) || 0;  
             const tambah = parseFloat(p.tambah) || 0;  
             const kurang = parseFloat(p.kurang) || 0;  
@@ -1944,9 +1960,9 @@ function hitungAkumulasiKasTotal() {
             }  
         });  
 
-        const pengeluaranHarianBulan = dbPengeluaranHarian.filter(p => p.tgl === tgl).reduce((acc, curr) => acc + curr.nominal, 0);  
+        const pengeluaranHarianBulan = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);  
         const nominalGaji = pengaturanCabangAktif.gajiHarian || 50000; 
-        const gajiHarian = dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
+        const gajiHarian = dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGaji;
         const pBersih = pKotor - gajiHarian - pengeluaranHarianBulan;  
         const basis = Math.max(0, pBersih);  
 
@@ -1957,14 +1973,16 @@ function hitungAkumulasiKasTotal() {
         kasAnak += (basis * p2);      
     });  
 
-    dbLogKas.forEach(l => {  
-        const n = l.tipe === 'masuk' ? l.nominal : -l.nominal;  
-        if (l.jenis === 'Reseller') kasReseller += n;  
-        else if (l.jenis === 'Plastik') kasPlastik += n;  
-        else if (l.jenis === n1 || l.jenis === 'Dana Darurat') kasDarurat += n;  
-        else if (l.jenis === n3 || l.jenis === 'Laba Bersih') kasLaba += n;  
-        else if (l.jenis === n2 || l.jenis === 'Tabungan Anak') kasAnak += n;  
-    });  
+    if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
+        dbLogKas.forEach(l => {  
+            const n = l.tipe === 'masuk' ? parseFloat(l.nominal) || 0 : -(parseFloat(l.nominal) || 0);  
+            if (l.jenis === 'Reseller') kasReseller += n;  
+            else if (l.jenis === 'Plastik') kasPlastik += n;  
+            else if (l.jenis === n1 || l.jenis === 'Dana Darurat') kasDarurat += n;  
+            else if (l.jenis === n3 || l.jenis === 'Laba Bersih') kasLaba += n;  
+            else if (l.jenis === n2 || l.jenis === 'Tabungan Anak') kasAnak += n;  
+        });  
+    }
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     setTxt('sbKasReseller', formatRupiah(kasReseller));  
@@ -1973,17 +1991,17 @@ function hitungAkumulasiKasTotal() {
     setTxt('sbKasLaba', formatRupiah(kasLaba));  
     setTxt('sbKasAnak', formatRupiah(kasAnak));  
 
-    // Update Label Judul Kartu Atas Secara Dinamis sesuai Pos Cabang Aktif
     setTxt('lblCardPos1', n1);
     setTxt('lblCardPos3', n3);
     setTxt('lblCardPos2', n2);
 
-    // Update Teks pada Tombol Tab secara Dinamis
     const elTab1 = document.getElementById('btnTabPos1'); if(elTab1) elTab1.innerText = `🛡️ ${n1}`;
     const elTab3 = document.getElementById('btnTabPos3'); if(elTab3) elTab3.innerText = `💵 ${n3}`;
     const elTab2 = document.getElementById('btnTabPos2'); if(elTab2) elTab2.innerText = `👶 ${n2}`;
 
-    if (typeof activeKasTab !== 'undefined') renderMutasiTabKas(activeKasTab);  
+    if (typeof activeKasTab !== 'undefined' && typeof renderMutasiTabKas === 'function') {
+        renderMutasiTabKas(activeKasTab);  
+    }
 }
 
 function gantiTabKas(jenis, el) { 
@@ -2462,7 +2480,7 @@ function hitungSisaGudangRealtime(index) {
 // ==========================================
 function simpanMutasiGudangMasal() {
     let adaPerubahan = false;
-    let daftarRiwayatBaru = []; // Menampung log untuk dikirim ke riwayat
+    let daftarRiwayatBaru = []; 
 
     masterProduk.forEach((p, index) => {
         const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
@@ -2475,7 +2493,6 @@ function simpanMutasiGudangMasal() {
         if (masukBaru > 0 || rusakBaru > 0) {
             adaPerubahan = true;
             
-            // Proses Penambahan Stok
             if (masukBaru > 0) {
                 p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
                 daftarRiwayatBaru.push({ 
@@ -2486,7 +2503,6 @@ function simpanMutasiGudangMasal() {
                 });
             }
             
-            // Proses Penambahan Barang Rusak
             if (rusakBaru > 0) {
                 p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
                 daftarRiwayatBaru.push({ 
@@ -2511,20 +2527,22 @@ function simpanMutasiGudangMasal() {
         window.masterProduk = masterProduk;
 
         if (typeof db !== 'undefined' && db !== null) {
+            // 1. Simpan Master Produk ke Firebase
             db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
-            .then(() => {
-                // Tembakkan log ke halaman "Riwayat Stok" satu per satu
-                if (typeof catatRiwayatStok === 'function') {
-                    daftarRiwayatBaru.forEach(log => {
-                        catatRiwayatStok(log.nama, log.aksi, log.jumlah, log.sisaAkhir);
-                    });
+            .then(async () => {
+                // 2. 👉 OPTIMASI: Jalankan pencatatan riwayat secara paralel (cepat)
+                if (typeof catatRiwayatStok === 'function' && daftarRiwayatBaru.length > 0) {
+                    const janjiRiwayat = daftarRiwayatBaru.map(log => 
+                        catatRiwayatStok(log.nama, log.aksi, log.jumlah, log.sisaAkhir)
+                    );
+                    await Promise.all(janjiRiwayat); // Menunggu semua log selesai dikirim bersamaan
                 }
+
                 if (typeof catatAktivitas === 'function') {
                     catatAktivitas("Master Produk", `Mutasi masal sukses: ${daftarRiwayatBaru.length} pergerakan barang dicatat.`);
                 }
                 if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Disimpan!");
                 
-                // 👉 PERBARUAN: Refresh tabel & reset tombol simpan otomatis
                 renderTabelMasterProduk(); 
             })
             .catch(err => {
