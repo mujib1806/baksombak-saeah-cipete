@@ -1239,7 +1239,7 @@ function loadGajiUI() {
     if(elTotal) elTotal.innerText = formatRupiah(hitungNominal); 
 }
 // ==========================================
-// 1. RENDER TABEL ENTRY STOK HARIAN (LEAN & BERSIH)
+// RENDER TABEL ENTRY STOK HARIAN (SUPER RAMPING & RAPI)
 // ==========================================
 function renderTabelMatriks() {
     const tgl = document.getElementById('tglOps').value; 
@@ -1248,16 +1248,16 @@ function renderTabelMatriks() {
     const thead = document.getElementById('theadMatriks');
     if(thead) {
         thead.innerHTML = `<tr>
-            <th>No</th>
+            <th style="width:30px; text-align:center;">No</th>
             <th style="text-align:left;">Produk & Kategori</th>
-            <th style="background:#fef9c3; color:#854d0e;">☀️ Awal</th>
-            <th style="background:#dcfce7; color:#166534;">➕ Refill Baru</th>
-            <th style="background:#bbf7d0; color:#14532d;">📊 Total Refill</th>
-            <th style="background:#fee2e2; color:#991b1b;">➖ Kurang</th>
-            <th style="background:#f1f5f9; color:#0f172a;">📦 Total</th>
-            <th style="background:#e2e8f0; color:#334155;">🌙 Sisa</th>
-            <th>Terjual</th>
-            <th>Aksi</th>
+            <th style="background:#fef9c3; color:#854d0e; text-align:center; width:55px;">Awal</th>
+            <th style="background:#dcfce7; color:#166534; text-align:center; width:50px;">+</th>
+            <th style="background:#bbf7d0; color:#14532d; text-align:center; width:65px;">= Refill</th>
+            <th style="background:#fee2e2; color:#991b1b; text-align:center; width:50px;">-</th>
+            <th style="background:#f1f5f9; color:#0f172a; text-align:center; width:60px;">Total</th>
+            <th style="background:#e2e8f0; color:#334155; text-align:center; width:55px;">Sisa</th>
+            <th style="text-align:center; width:60px;">Terjual</th>
+            <th style="text-align:center; width:50px;">Aksi</th>
         </tr>`;
     }
 
@@ -1275,41 +1275,41 @@ function renderTabelMatriks() {
         const totalTambah = (p.tambah !== "" && p.tambah !== null && p.tambah !== undefined) ? parseFloat(p.tambah) : 0; 
         const kurang = (p.kurang !== "" && p.kurang !== null && p.kurang !== undefined) ? parseFloat(p.kurang) : 0; 
         
-        // Total Stok = Awal + Akumulasi Refill + Refill Baru yang sedang diketik - Kurang
+        // Kalkulasi Total Stok = Awal + Refill Tersimpan + Refill Baru - Kurang
         const totalStok = awal + totalTambah + tambahInput - kurang; 
         const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
         let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
 
         let classRow = p.kategori.toLowerCase().includes('bakso') ? 'row-bakso' : 'row-reseller'; 
-        let badgeHTML = p.kategori.toLowerCase().includes('bakso') ? `<div class="badge-kategori badge-bakso">🍲 Bakso</div>` : `<div class="badge-kategori badge-reseller">🥤 Reseller</div>`; 
-        const actionHTML = locked ? '<span style="font-size:0.8rem;color:#94a3b8;">🔒</span>' : `<button onclick="hapusProduk(${idx})" class="btn btn-danger" style="padding:4px 8px; font-size:0.65rem; width:auto; margin:0; border-radius:6px;">Hapus</button>`;
+        // Badge teks bersih tanpa emoji ikon
+        let badgeHTML = p.kategori.toLowerCase().includes('bakso') ? `<div class="badge-kategori badge-bakso">Bakso</div>` : `<div class="badge-kategori badge-reseller">Reseller</div>`; 
+        const actionHTML = locked ? '<span style="font-size:0.8rem;color:#94a3b8;">🔒</span>' : `<button onclick="hapusProduk(${idx})" class="btn btn-danger" style="padding:2px 6px; font-size:0.65rem; width:auto; margin:0; border-radius:4px;">Hapus</button>`;
 
         const tr = document.createElement('tr'); 
         tr.className = classRow;
 
         tr.innerHTML = `
-            <td style="text-align:center; font-weight:700; color:#94a3b8;">${counter++}</td>
+            <td style="text-align:center; font-weight:700; color:#94a3b8; font-size:0.75rem;">${counter++}</td>
             <td><div style="font-weight:700; color:var(--text-main); font-size:0.8rem;">${p.nama}</div>${badgeHTML}</td>
-            <td style="text-align:center;"><input type="number" class="input-stok input-pagi" id="pagi_${idx}" value="${p.awal !== undefined ? p.awal : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
+            <td style="text-align:center;"><input type="number" class="input-stok input-pagi" style="width:45px; text-align:center;" id="pagi_${idx}" value="${p.awal !== undefined ? p.awal : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
             
-            <!-- KOLOM INPUT REFILL BARU (BERSIH TANPA TOMBOL + / - KECIL) -->
+            <!-- KOLOM INPUT REFILL BARU (+) -->
             <td style="text-align:center;">
-                <input type="number" class="input-stok input-tambah" style="width:50px; font-weight:bold; border-color:#86efac;" id="tambahInput_${idx}" value="${p.tambahInput || ''}" placeholder="0" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambahInput', this.value)" ${locked ? 'disabled' : ''}>
+                <input type="number" class="input-stok input-tambah" style="width:42px; font-weight:bold; border-color:#86efac; text-align:center;" id="tambahInput_${idx}" value="${p.tambahInput || ''}" placeholder="0" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambahInput', this.value)" ${locked ? 'disabled' : ''}>
             </td>
 
-            <!-- KOLOM AKUMULASI TOTAL REFILL TERSEMPAN -->
+            <!-- KOLOM TOTAL REFILL TERSIMPAN (= Refill) -->
             <td id="td_total_tambah_${idx}" style="text-align:center; font-weight:800; font-size:0.85rem; color:#15803d; background:#f0fdf4;">${totalTambah}</td>
 
-            <td style="text-align:center;"><input type="number" class="input-stok input-kurang" style="width:45px;" id="kurang_${idx}" value="${p.kurang || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'kurang', this.value)" ${locked ? 'disabled' : ''}></td>
-            <td id="td_total_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
-            <td style="text-align:center;"><input type="number" class="input-stok input-malam" id="malam_${idx}" value="${p.sisa !== undefined ? p.sisa : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
-            <td id="td_terjual_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0284c7;">${sisa !== null ? terjual : '-'}</td>
+            <td style="text-align:center;"><input type="number" class="input-stok input-kurang" style="width:42px; text-align:center;" id="kurang_${idx}" value="${p.kurang || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'kurang', this.value)" ${locked ? 'disabled' : ''}></td>
+            <td id="td_total_${idx}" style="text-align:center; font-weight:800; font-size:0.9rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
+            <td style="text-align:center;"><input type="number" class="input-stok input-malam" style="width:45px; text-align:center;" id="malam_${idx}" value="${p.sisa !== undefined ? p.sisa : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
+            <td id="td_terjual_${idx}" style="text-align:center; font-weight:800; font-size:0.9rem; color:#0284c7;">${sisa !== null ? terjual : '-'}</td>
             <td style="text-align:center;">${actionHTML}</td>
         `;
         tbody.appendChild(tr);
     });
 }
-
 function updateTehManisLokal() { 
     const tgl = document.getElementById('tglOps').value; if(isDataLocked(tgl)) return;
     let idxTeh = dbStok[tgl].findIndex(p => p.nama.toLowerCase() === 'teh manis'); 
