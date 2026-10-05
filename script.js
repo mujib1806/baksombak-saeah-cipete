@@ -1116,29 +1116,6 @@ async function simpanStokHarianMasal() {
         }
     }
 }
-// Fungsi untuk menambah/mengurangi nilai di kolom Tambah harian secara cepat
-function ubahStokHarianCepat(idx, tipe, nominalUbah) {
-    const tgl = document.getElementById('tglOps').value;
-    if (typeof isDataLocked === 'function' && isDataLocked(tgl)) {
-        alert("Data hari ini terkunci!");
-        return;
-    }
-    
-    if (!dbStok[tgl]) syncStokDenganMaster(tgl);
-    const p = dbStok[tgl][idx];
-    
-    let nilaiLama = parseFloat(p.tambah) || 0;
-    let nilaiBaru = Math.max(0, nilaiLama + nominalUbah);
-    
-    // PERBAIKAN: Set value langsung ke HTML sebelum masuk ke fungsi pengurang gudang
-    const inputEl = document.getElementById(`tambah_${idx}`);
-    if (inputEl) {
-        inputEl.value = nilaiBaru === 0 ? '' : nilaiBaru;
-    }
-    
-    // Panggil fungsi utama
-    updateNilaiStokLokal(idx, tipe, nilaiBaru === 0 ? '' : nilaiBaru);
-}
 
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
