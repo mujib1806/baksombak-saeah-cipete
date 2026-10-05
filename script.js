@@ -1003,8 +1003,9 @@ function simpanStokKeFirebase() {
         showToast('✅ Stok dan Rekap Profit Tersimpan!'); 
     }); 
 }
+
 // ==========================================
-// FUNGSI UPDATE STOK HARIAN (LOKAL MURNI - TIPE CEPAT & TANPA LAG)
+// 1. TIMPA FUNGSI LAMA DENGAN INI (LOKAL MURNI TANPA LAG)
 // ==========================================
 function updateNilaiStokLokal(idx, tipe, val) {   
     const tgl = document.getElementById('tglOps').value;   
@@ -1013,13 +1014,13 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const p = dbStok[tgl][idx];
     if (!p) return;
 
-    // 1. Simpan nilai ke memori lokal dbStok
+    // Simpan nilai ke memori lokal dbStok
     if (tipe === 'tambah') dbStok[tgl][idx].tambah = val; 
     else if (tipe === 'awal') dbStok[tgl][idx].awal = val;   
     else if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;   
     else if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;   
 
-    // 2. Hitung matematika lokal (Total & Terjual)
+    // Hitung matematika lokal (Total & Terjual)
     const awal = parseFloat(p.awal) || 0;   
     const tambah = parseFloat(p.tambah) || 0;   
     const kurang = parseFloat(p.kurang) || 0;   
@@ -1027,20 +1028,19 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;   
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;   
 
-    // 3. Update tampilan teks di sel tabel saja (Tanpa re-render tabel)
+    // Update tampilan teks di sel tabel saja
     const elTotal = document.getElementById('td_total_' + idx);   
     if (elTotal) elTotal.innerText = totalStok;   
     const elTerjual = document.getElementById('td_terjual_' + idx);   
     if (elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';   
 
-    // 4. Hitung kalkulasi kas secara ringan (jika ada)
     if (typeof updateKalkulasi === 'function') updateKalkulasi();   
 
-    // 👉 BERSIH: Tidak ada koneksi Firebase & log riwayat saat mengetik!
+    // 👉 KUNCI: Tidak ada koneksi Firebase & log riwayat saat mengetik agar tidak lag!
 }
 
 // ==========================================
-// FUNGSI BARU: SIMPAN STOK HARIAN MASAL KE FIREBASE (KLIK TOMBOL)
+// 2. TAMBAHKAN FUNGSI BARU INI DI BAWAHNYA (DIJALANKAN TOMBOL MELAYANG)
 // ==========================================
 async function simpanStokHarianMasal() {
     const tgl = document.getElementById('tglOps').value;
@@ -1055,11 +1055,10 @@ async function simpanStokHarianMasal() {
     if (btn) {
         btn.innerText = "⏳ Menyimpan...";
         btn.disabled = true;
-        btn.style.backgroundColor = "#eab308"; // Kuning loading
+        btn.style.backgroundColor = "#eab308";
     }
 
     try {
-        // 1. Sinkronkan pemotongan stok gudang ke Master Produk untuk items yang bertambah
         let janjiRiwayat = [];
         if (dbStok[tgl] && Array.isArray(dbStok[tgl])) {
             dbStok[tgl].forEach(p => {
@@ -1070,7 +1069,6 @@ async function simpanStokHarianMasal() {
                         let keluarSekarang = parseFloat(masterProduk[masterIdx].keluarEtalase) || 0;
                         let awalGudang = parseFloat(masterProduk[masterIdx].stokAwalGudang) || 0;
                         
-                        // Hitung keluar etalase baru
                         masterProduk[masterIdx].keluarEtalase = keluarSekarang + tambahVal;
                         let sisaGudangBaru = awalGudang - masterProduk[masterIdx].keluarEtalase - (parseFloat(masterProduk[masterIdx].stokRusak) || 0);
 
@@ -1082,25 +1080,21 @@ async function simpanStokHarianMasal() {
             });
         }
 
-        // 2. Simpan Master Produk ke Firebase
         if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
             await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
             
-            // Simpan Data Stok Harian
             if (typeof simpanStokKeFirebase === 'function') {
                 await simpanStokKeFirebase();
             }
         }
 
-        // 3. Jalankan pencatatan riwayat paralel
         if (janjiRiwayat.length > 0) {
             await Promise.all(janjiRiwayat);
         }
 
-        // 4. Update indikator tombol kembali hijau terang instan
         if (btn) {
             btn.innerText = "✅ Stok Harian Tersimpan";
-            btn.style.backgroundColor = "#16a34a"; // Hijau terang
+            btn.style.backgroundColor = "#16a34a";
             btn.disabled = false;
         }
 
@@ -1116,7 +1110,6 @@ async function simpanStokHarianMasal() {
         }
     }
 }
-
 function loadDataTanggalLocal() { 
     const tgl = document.getElementById('tglOps').value; syncStokDenganMaster(tgl); cekDanTarikDataKemarin(tgl); 
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
