@@ -1007,6 +1007,9 @@ function simpanStokKeFirebase() {
 // ==========================================
 // 1. TIMPA FUNGSI LAMA DENGAN INI (LOKAL MURNI TANPA LAG)
 // ==========================================
+// ==========================================
+// 2. UPDATE STOK LOKAL MURNI (INSTAN & TANPA LAG)
+// ==========================================
 function updateNilaiStokLokal(idx, tipe, val) {   
     const tgl = document.getElementById('tglOps').value;   
     if (!dbStok[tgl]) syncStokDenganMaster(tgl);   
@@ -1014,33 +1017,29 @@ function updateNilaiStokLokal(idx, tipe, val) {
     const p = dbStok[tgl][idx];
     if (!p) return;
 
-    // Simpan nilai ke memori lokal dbStok
-    if (tipe === 'tambah') dbStok[tgl][idx].tambah = val; 
+    if (tipe === 'tambahInput') dbStok[tgl][idx].tambahInput = val; 
     else if (tipe === 'awal') dbStok[tgl][idx].awal = val;   
     else if (tipe === 'kurang') dbStok[tgl][idx].kurang = val;   
     else if (tipe === 'sisa') dbStok[tgl][idx].sisa = val;   
 
-    // Hitung matematika lokal (Total & Terjual)
     const awal = parseFloat(p.awal) || 0;   
-    const tambah = parseFloat(p.tambah) || 0;   
+    const totalTambah = parseFloat(p.tambah) || 0;
+    const tambahInput = parseFloat(p.tambahInput) || 0;   
     const kurang = parseFloat(p.kurang) || 0;   
-    const totalStok = awal + tambah - kurang;   
+    
+    const totalStok = awal + totalTambah + tambahInput - kurang;   
     const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null;   
     let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0;   
 
-    // Update tampilan teks di sel tabel saja
     const elTotal = document.getElementById('td_total_' + idx);   
     if (elTotal) elTotal.innerText = totalStok;   
     const elTerjual = document.getElementById('td_terjual_' + idx);   
     if (elTerjual) elTerjual.innerText = (sisa !== null) ? terjual : '-';   
 
     if (typeof updateKalkulasi === 'function') updateKalkulasi();   
-
-    // 👉 KUNCI: Tidak ada koneksi Firebase & log riwayat saat mengetik agar tidak lag!
 }
-
 // ==========================================
-// 2. TAMBAHKAN FUNGSI BARU INI DI BAWAHNYA (DIJALANKAN TOMBOL MELAYANG)
+// 3. EKSKUSI SIMPAN HARIAN MASAL (AKUMULASI REFILL & POTONG GUDANG)
 // ==========================================
 async function simpanStokHarianMasal() {
     const tgl = document.getElementById('tglOps').value;
@@ -1060,20 +1059,30 @@ async function simpanStokHarianMasal() {
 
     try {
         let janjiRiwayat = [];
+        let adaPenambahanStok = false;
+
         if (dbStok[tgl] && Array.isArray(dbStok[tgl])) {
             dbStok[tgl].forEach(p => {
-                const tambahVal = parseFloat(p.tambah) || 0;
-                if (tambahVal > 0) {
+                const tambahInputVal = parseFloat(p.tambahInput) || 0;
+                
+                if (tambahInputVal > 0) {
+                    adaPenambahanStok = true;
+                    // 1. Akumulasi nilai Refill ke 'tambah'
+                    p.tambah = (parseFloat(p.tambah) || 0) + tambahInputVal;
+                    // Reset kolom input baru
+                    p.tambahInput = '';
+
+                    // 2. Potong Stok Gudang di Master Produk
                     const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
                     if (masterIdx !== -1) {
                         let keluarSekarang = parseFloat(masterProduk[masterIdx].keluarEtalase) || 0;
                         let awalGudang = parseFloat(masterProduk[masterIdx].stokAwalGudang) || 0;
                         
-                        masterProduk[masterIdx].keluarEtalase = keluarSekarang + tambahVal;
+                        masterProduk[masterIdx].keluarEtalase = keluarSekarang + tambahInputVal;
                         let sisaGudangBaru = awalGudang - masterProduk[masterIdx].keluarEtalase - (parseFloat(masterProduk[masterIdx].stokRusak) || 0);
 
                         if (typeof catatRiwayatStok === 'function') {
-                            janjiRiwayat.push(catatRiwayatStok(p.nama, 'Out', tambahVal, sisaGudangBaru));
+                            janjiRiwayat.push(catatRiwayatStok(p.nama, 'Out', tambahInputVal, sisaGudangBaru));
                         }
                     }
                 }
@@ -1081,8 +1090,12 @@ async function simpanStokHarianMasal() {
         }
 
         if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
-            await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+            // Simpan Master Produk jika ada penambahan stok gudang
+            if (adaPenambahanStok) {
+                await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
+            }
             
+            // Simpan Data Stok Harian
             if (typeof simpanStokKeFirebase === 'function') {
                 await simpanStokKeFirebase();
             }
@@ -1091,6 +1104,9 @@ async function simpanStokHarianMasal() {
         if (janjiRiwayat.length > 0) {
             await Promise.all(janjiRiwayat);
         }
+
+        // Re-render tabel agar kolom 'Total Refill' ter-update dan input 'Refill Baru' kembali bersih/kosong
+        renderTabelMatriks();
 
         if (btn) {
             btn.innerText = "✅ Stok Harian Tersimpan";
@@ -1218,13 +1234,28 @@ function loadGajiUI() {
     if(elTambahan) elTambahan.value = d.tambahan || 0; 
     if(elTotal) elTotal.innerText = formatRupiah(hitungNominal); 
 }
-
+// ==========================================
+// 1. RENDER TABEL ENTRY STOK HARIAN (LEAN & BERSIH)
+// ==========================================
 function renderTabelMatriks() {
     const tgl = document.getElementById('tglOps').value; 
     const locked = isDataLocked(tgl); 
 
     const thead = document.getElementById('theadMatriks');
-    if(thead) thead.innerHTML = `<tr><th>No</th><th style="text-align:left;">Produk & Kategori</th><th style="background:#fef9c3; color:#854d0e;">☀️ Awal</th><th style="background:#dcfce7; color:#166534;">➕ Tambah</th><th style="background:#fee2e2; color:#991b1b;">➖ Kurang</th><th style="background:#f1f5f9; color:#0f172a;">📦 Total</th><th style="background:#e2e8f0; color:#334155;">🌙 Sisa</th><th>Terjual</th><th>Aksi</th></tr>`;
+    if(thead) {
+        thead.innerHTML = `<tr>
+            <th>No</th>
+            <th style="text-align:left;">Produk & Kategori</th>
+            <th style="background:#fef9c3; color:#854d0e;">☀️ Awal</th>
+            <th style="background:#dcfce7; color:#166534;">➕ Refill Baru</th>
+            <th style="background:#bbf7d0; color:#14532d;">📊 Total Refill</th>
+            <th style="background:#fee2e2; color:#991b1b;">➖ Kurang</th>
+            <th style="background:#f1f5f9; color:#0f172a;">📦 Total</th>
+            <th style="background:#e2e8f0; color:#334155;">🌙 Sisa</th>
+            <th>Terjual</th>
+            <th>Aksi</th>
+        </tr>`;
+    }
 
     const tbody = document.getElementById('tbodyMatriks'); 
     if(!tbody) return;
@@ -1236,9 +1267,12 @@ function renderTabelMatriks() {
         if (p.nama.toLowerCase() === 'teh manis') return; 
 
         const awal = (p.awal !== "" && p.awal !== null) ? parseFloat(p.awal) : 0; 
-        const tambah = (p.tambah !== "" && p.tambah !== null && p.tambah !== undefined) ? parseFloat(p.tambah) : 0; 
+        const tambahInput = (p.tambahInput !== "" && p.tambahInput !== null && p.tambahInput !== undefined) ? parseFloat(p.tambahInput) : 0; 
+        const totalTambah = (p.tambah !== "" && p.tambah !== null && p.tambah !== undefined) ? parseFloat(p.tambah) : 0; 
         const kurang = (p.kurang !== "" && p.kurang !== null && p.kurang !== undefined) ? parseFloat(p.kurang) : 0; 
-        const totalStok = awal + tambah - kurang; 
+        
+        // Total Stok = Awal + Akumulasi Refill + Refill Baru yang sedang diketik - Kurang
+        const totalStok = awal + totalTambah + tambahInput - kurang; 
         const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
         let terjual = (sisa !== null && sisa <= totalStok) ? (totalStok - sisa) : 0; 
 
@@ -1252,11 +1286,19 @@ function renderTabelMatriks() {
         tr.innerHTML = `
             <td style="text-align:center; font-weight:700; color:#94a3b8;">${counter++}</td>
             <td><div style="font-weight:700; color:var(--text-main); font-size:0.8rem;">${p.nama}</div>${badgeHTML}</td>
-            <td style="text-align:center;"><input type="number" class="input-stok input-pagi" id="pagi_${idx}" value="${p.awal}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
-            <td style="text-align:center;">     <div style="display:flex; align-items:center; justify-content:center; gap:2px;">         <input type="number" class="input-stok input-tambah" style="width:40px;" id="tambah_${idx}" value="${p.tambah || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambah', this.value)" ${locked ? 'disabled' : ''}>         ${!locked ? `         <div style="display:flex; flex-direction:column; gap:1px;">             <button type="button" onclick="ubahStokHarianCepat(${idx}, 'tambah', 1)" style="background:#dcfce7; color:#166534; border:1px solid #86efac; border-radius:2px; font-size:0.55rem; padding:0 3px; cursor:pointer;" title="Tambah 1 Pcs">➕</button>             <button type="button" onclick="ubahStokHarianCepat(${idx}, 'tambah', -1)" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:2px; font-size:0.55rem; padding:0 3px; cursor:pointer;" title="Kurangi 1 Pcs">➖</button>         </div>` : ''}     </div> </td>
+            <td style="text-align:center;"><input type="number" class="input-stok input-pagi" id="pagi_${idx}" value="${p.awal !== undefined ? p.awal : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'awal', this.value)" ${locked ? 'disabled' : ''}></td>
+            
+            <!-- KOLOM INPUT REFILL BARU (BERSIH TANPA TOMBOL + / - KECIL) -->
+            <td style="text-align:center;">
+                <input type="number" class="input-stok input-tambah" style="width:50px; font-weight:bold; border-color:#86efac;" id="tambahInput_${idx}" value="${p.tambahInput || ''}" placeholder="0" min="0" oninput="updateNilaiStokLokal(${idx}, 'tambahInput', this.value)" ${locked ? 'disabled' : ''}>
+            </td>
+
+            <!-- KOLOM AKUMULASI TOTAL REFILL TERSEMPAN -->
+            <td id="td_total_tambah_${idx}" style="text-align:center; font-weight:800; font-size:0.85rem; color:#15803d; background:#f0fdf4;">${totalTambah}</td>
+
             <td style="text-align:center;"><input type="number" class="input-stok input-kurang" style="width:45px;" id="kurang_${idx}" value="${p.kurang || ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'kurang', this.value)" ${locked ? 'disabled' : ''}></td>
             <td id="td_total_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0f172a; background:#f8fafc;">${totalStok}</td>
-            <td style="text-align:center;"><input type="number" class="input-stok input-malam" id="malam_${idx}" value="${p.sisa}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
+            <td style="text-align:center;"><input type="number" class="input-stok input-malam" id="malam_${idx}" value="${p.sisa !== undefined ? p.sisa : ''}" min="0" oninput="updateNilaiStokLokal(${idx}, 'sisa', this.value)" ${locked ? 'disabled' : ''}></td>
             <td id="td_terjual_${idx}" style="text-align:center; font-weight:800; font-size:0.95rem; color:#0284c7;">${sisa !== null ? terjual : '-'}</td>
             <td style="text-align:center;">${actionHTML}</td>
         `;
