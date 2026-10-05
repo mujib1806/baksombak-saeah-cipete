@@ -612,9 +612,20 @@
             </div>
         </div>
 
-        <!-- OPERASIONAL HARIAN -->
+       <!-- OPERASIONAL HARIAN -->
         <div id="viewHarian" style="display:none;">
             <div class="card">
+                
+                <!-- 👉 FLOATING ACTION BAR: TOMBOL SIMPAN STOK HARIAN MELAYANG -->
+                <div style="position: sticky; top: 10px; z-index: 100; display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 12px; border: 1.5 solid #22c55e; border-left: 5px solid #16a34a;">
+                    <div style="font-weight: 800; color: #1e293b; font-size: 0.85rem; display:flex; align-items:center; gap:6px;">
+                        <span>📦 Input Stok Harian</span>
+                    </div>
+                    <button id="btnSimpanStokHarianMasal" onclick="simpanStokHarianMasal()" style="background-color: #16a34a; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.3); transition: all 0.2s;">
+                        💾 Simpan Stok Harian
+                    </button>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                     <h2 style="margin:0; font-size: 1.1rem;">📋 Entry Stok Harian</h2>
                     <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
@@ -636,7 +647,11 @@
                     <div id="textWarningRefill" style="font-size: 0.75rem; color: #92400e; margin-top: 4px;"></div>
                 </div>
 
-                <div style="font-size: 0.75rem; color: #16a34a; font-weight: 700; margin-bottom: 8px; text-align: right;">*Input stok otomatis tersimpan saat Anda berpindah kolom.</div>
+                <!-- TEKS PETUNJUK BARU -->
+                <div style="font-size: 0.75rem; color: #15803d; font-weight: 700; margin-bottom: 8px; text-align: right;">
+                    💡 Isi angka stok terlebih dahulu, lalu klik tombol <b>💾 Simpan Stok Harian</b> di atas.
+                </div>
+
                 <div class="table-wrapper"><table class="table-freeze"><thead id="theadMatriks"></thead><tbody id="tbodyMatriks"></tbody></table></div>
                 <div id="containerAkumulasiKategori" style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;"></div>
             </div>
