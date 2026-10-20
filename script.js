@@ -430,30 +430,33 @@ function inisiatisasiRealtimeListener() {
         applyLockUI(); 
     });
 
-    // LISTENER MASTER PRODUK (DIPERBAIKI)
-    db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => {  
-        if (doc.exists && doc.data().list) {  
-            masterProduk = doc.data().list;  
-            window.masterProduk = doc.data().list;
-        } else {  
+    // LISTENER MASTER PRODUK (AMAN DARI OVERWRITE / TERHAPUS OTOMATIS)
+db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').onSnapshot(doc => {  
+    if (doc.exists && doc.data() && Array.isArray(doc.data().list) && doc.data().list.length > 0) {  
+        // 1. Jika data dari Firebase ada dan tidak kosong, gunakan data Firebase
+        masterProduk = doc.data().list;  
+        window.masterProduk = doc.data().list;
+    } else {  
+        // 2. Jika dokumen belum ada / kosong di Firebase:
+        console.warn(`[WARN] Master Produk untuk ${CABANG_AKTIF} kosong atau belum ada.`);
+        
+        // Cek apakah ada defaultMasterProduk yang VALID sebelum menimpa
+        if (typeof defaultMasterProduk !== 'undefined' && Array.isArray(defaultMasterProduk) && defaultMasterProduk.length > 0) {
             masterProduk = [...defaultMasterProduk];  
             window.masterProduk = [...defaultMasterProduk];
-            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });  
-        }  
-        
-        const activeEl = document.activeElement;
-        const isTypingStok = activeEl && (activeEl.classList.contains('input-stok') || activeEl.tagName === 'INPUT');
-        
-        if (!isTypingStok) {
-            const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : '';
-            if (tgl) {
-                syncStokDenganMaster(tgl);
-            }
-            renderTabelMasterProduk();  
-            renderTabelMatriks();
-            updateKalkulasi();
+            // Simpan hanya jika defaultMasterProduk BENAR-BENAR ADA ISINYA
+            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }, { merge: true });  
+        } else {
+            // JIKA DEFAULT KOSONG, JANGAN .set() KE FIREBASE DULU!
+            // Biarkan lokal bernilai array kosong agar Firebase TIDAK TERTIMPA DATA KOSONG.
+            masterProduk = [];
+            window.masterProduk = [];
         }
-    });
+    }  
+    
+    // Render tabel master produk setelah snapshot diterima
+    if (typeof renderTabelMasterProduk === 'function') renderTabelMasterProduk();
+});
 
     db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('daftarKategori').onSnapshot(doc => { 
         if (doc.exists) daftarKategori = doc.data().list; 
