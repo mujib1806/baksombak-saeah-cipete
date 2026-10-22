@@ -3055,22 +3055,24 @@ function renderDashboardGrafik() {
             } 
         }); 
 
-        // 👉 KUNCI FIX: PENARIKAN DATA KASIR ONLINE DARI dbKasMasuk[tgl]
+        // 👉 DITARIK DARI dbKasMasuk MENGGUNAKAN KEY gojek, grab, shopee
         if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
             const kas = dbKasMasuk[tgl];
-            totalGojek += parseFloat(kas.gojek || kas.inGojek || 0);
-            totalGrab += parseFloat(kas.grab || kas.inGrab || 0);
-            totalShopee += parseFloat(kas.shopee || kas.inShopee || 0);
+            const parseNominal = (val) => {
+                if (!val) return 0;
+                if (typeof val === 'number') return val;
+                return parseFloat(val.toString().replace(/\./g, '')) || 0;
+            };
+
+            totalGojek += parseNominal(kas.gojek);
+            totalGrab += parseNominal(kas.grab);
+            totalShopee += parseNominal(kas.shopee);
         }
 
-        // --- 1. AMBIL BEBAN GAJI HARIAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? (parseFloat(dbGajiHarian[tgl].nominal) || 0) : nominalGajiStandar); 
-        
-        // --- 2. AMBIL BEBAN LACI KASIR ---
         const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
         
-        // --- 3. AMBIL PENGELUARAN DANA DARURAT ---
         let dDarurat = 0;
         if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
             dDarurat = dbLogKas
