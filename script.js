@@ -2941,11 +2941,11 @@ function terapkanFilterReseller() {
     renderDashboardGrafik(); 
 }
 
-// Variable instance chart online
+// Variable instance chart online (Pastikan letaknya di luar fungsi)
 let chartOnlineInstance = null;
 
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (FIXED 100% KASIR & ONLINE)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (DISEPERTIKAN DENGAN dbKasMasuk)
 // ==========================================
 function renderDashboardGrafik() {
     const isDapur = currentUser && currentUser.role === 'dapur';
@@ -3028,8 +3028,7 @@ function renderDashboardGrafik() {
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
         
-        // FIX: Pastikan items selalu berupa Array murni dari dbStok[tgl]
-        let items = Array.isArray(dbStok[tgl]) ? dbStok[tgl] : ((dbStok[tgl] && dbStok[tgl].items) ? dbStok[tgl].items : []); 
+        let items = dbStok[tgl] || []; 
         
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
@@ -3056,11 +3055,13 @@ function renderDashboardGrafik() {
             } 
         }); 
 
-        // FIX AMAN: Tarik data nominal kasir Gojek, Grab, Shopee dari berbagai kemungkinan sumber data
-        let kasirObj = (typeof dbKasir !== 'undefined' && dbKasir[tgl]) ? dbKasir[tgl] : (dbStok[tgl] && !Array.isArray(dbStok[tgl]) ? dbStok[tgl] : {});
-        totalGojek += parseFloat(kasirObj.gojek || kasirObj.kasirGojek || 0);
-        totalGrab += parseFloat(kasirObj.grab || kasirObj.kasirGrab || 0);
-        totalShopee += parseFloat(kasirObj.shopee || kasirObj.kasirShopee || 0);
+        // 👉 KUNCI FIX: PENARIKAN DATA KASIR ONLINE DARI dbKasMasuk[tgl]
+        if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
+            const kas = dbKasMasuk[tgl];
+            totalGojek += parseFloat(kas.gojek || kas.inGojek || 0);
+            totalGrab += parseFloat(kas.grab || kas.inGrab || 0);
+            totalShopee += parseFloat(kas.shopee || kas.inShopee || 0);
+        }
 
         // --- 1. AMBIL BEBAN GAJI HARIAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
