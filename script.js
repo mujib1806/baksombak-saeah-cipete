@@ -2519,75 +2519,51 @@ function munculkanTombolSimpanMasal() {
 }
 
 // ==========================================
-// 2. LOGIKA HITUNG REAL-TIME SAAT DIKETIK
+// 2. HITUNG SISA GUDANG REALTIME (SUPER RINGAN)
 // ==========================================
 function hitungSisaGudangRealtime(index) {
-    if (!masterProduk || !masterProduk[index]) return;
-    const p = masterProduk[index];
+    const p = window.masterProduk[index];
+    if (!p) return;
+
+    // Cek jika Bakso Malang, abaikan hitungan stok fisik gudang
+    const isBakso = p.kategori && p.kategori.toString().trim().toLowerCase() === 'bakso malang';
+    if (isBakso) return;
 
     const awalGudang = parseFloat(p.stokAwalGudang) || 0;
     const keluarEtalase = parseFloat(p.keluarEtalase) || 0;
-    const rusakTotal = parseFloat(p.stokRusak) || 0;
+    const rusakLama = parseFloat(p.stokRusak) || 0;
 
     const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
     const inputRusakEl = document.getElementById(`inputRusak_${index}`);
-    
+
     const masukBaru = inputMasukEl ? (parseFloat(inputMasukEl.value) || 0) : 0;
     const rusakBaru = inputRusakEl ? (parseFloat(inputRusakEl.value) || 0) : 0;
 
-    // Sisa Aktual = (Awal + Masuk Baru) - Keluar - (Rusak Lama + Rusak Baru)
-    const sisaBaru = (awalGudang + masukBaru) - keluarEtalase - (rusakTotal + rusakBaru);
-    
+    const sisaGudangBaru = (awalGudang + masukBaru) - keluarEtalase - (rusakLama + rusakBaru);
+
     const elSisa = document.getElementById(`sisaRealtime_${index}`);
     if (elSisa) {
-        elSisa.innerText = sisaBaru;
-        // Beri warna hijau jika ada perubahan, biru jika kosong/standar
-        if (masukBaru > 0 || rusakBaru > 0) {
-            elSisa.style.color = "#16a34a"; 
-        } else {
-            elSisa.style.color = "#0284c7";
-        }
+        elSisa.innerText = sisaGudangBaru;
+        elSisa.style.color = (masukBaru > 0 || rusakBaru > 0) ? '#16a34a' : '#0284c7';
     }
 }
 
 // ==========================================
-// 3. EKSEKUSI SIMPAN MUTASI MASAL KE FIREBASE
+// 3. EKSEKUSI SIMPAN MUTASI MASAL (FIREBASE BATCH)
 // ==========================================
-function simpanMutasiGudangMasal() {
-    let adaPerubahan = false;
-    let daftarRiwayatBaru = []; 
+async function simpanMutasiGudangMasal() {
+    if (!window.masterProduk || window.masterProduk.length === 0) {
+        alert("Data master produk kosong!");
+        return;
+    }
 
-    masterProduk.forEach((p, index) => {
+    let adaPerubahan = false;
+    window.masterProduk.forEach((p, index) => {
         const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
         const inputRusakEl = document.getElementById(`inputRusak_${index}`);
-        if (!inputMasukEl || !inputRusakEl) return;
-
-        const masukBaru = parseFloat(inputMasukEl.value) || 0;
-        const rusakBaru = parseFloat(inputRusakEl.value) || 0;
-
-        if (masukBaru > 0 || rusakBaru > 0) {
-            adaPerubahan = true;
-            
-            if (masukBaru > 0) {
-                p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
-                daftarRiwayatBaru.push({ 
-                    nama: p.nama, 
-                    aksi: 'In (Gudang)', 
-                    jumlah: masukBaru, 
-                    sisaAkhir: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0)) 
-                });
-            }
-            
-            if (rusakBaru > 0) {
-                p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
-                daftarRiwayatBaru.push({ 
-                    nama: p.nama, 
-                    aksi: 'Rusak (Gudang)', 
-                    jumlah: rusakBaru, 
-                    sisaAkhir: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - p.stokRusak) 
-                });
-            }
-        }
+        const masukBaru = inputMasukEl ? (parseFloat(inputMasukEl.value) || 0) : 0;
+        const rusakBaru = inputRusakEl ? (parseFloat(inputRusakEl.value) || 0) : 0;
+        if (masukBaru > 0 || rusakBaru > 0) adaPerubahan = true;
     });
 
     if (!adaPerubahan) {
@@ -2595,46 +2571,69 @@ function simpanMutasiGudangMasal() {
         return;
     }
 
-    if (confirm("Simpan semua perubahan stok ke database?")) {
-        const btn = document.querySelector('#containerBtnSimpanMasal button') || document.getElementById('btnSimpanMasal');
-        if(btn) { btn.innerText = "⏳ Sedang Menyimpan..."; btn.disabled = true; }
+    if (!confirm("Simpan semua perubahan stok ke database?")) return;
 
-        window.masterProduk = masterProduk;
+    const btn = document.querySelector('#containerBtnSimpanMasal button') || document.getElementById('btnSimpanMasal');
+    if (btn) { btn.innerText = "⏳ Sedang Menyimpan..."; btn.disabled = true; }
 
-        if (typeof db !== 'undefined' && db !== null) {
-            // 1. Simpan Master Produk ke Firebase
-            db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
-            .then(async () => {
-                // 2. 👉 OPTIMASI: Jalankan pencatatan riwayat secara paralel (cepat)
-                if (typeof catatRiwayatStok === 'function' && daftarRiwayatBaru.length > 0) {
-                    const janjiRiwayat = daftarRiwayatBaru.map(log => 
-                        catatRiwayatStok(log.nama, log.aksi, log.jumlah, log.sisaAkhir)
-                    );
-                    await Promise.all(janjiRiwayat); // Menunggu semua log selesai dikirim bersamaan
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    try {
+        const batch = db.batch();
+
+        window.masterProduk.forEach((p, index) => {
+            const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
+            const inputRusakEl = document.getElementById(`inputRusak_${index}`);
+
+            const masukBaru = inputMasukEl ? (parseFloat(inputMasukEl.value) || 0) : 0;
+            const rusakBaru = inputRusakEl ? (parseFloat(inputRusakEl.value) || 0) : 0;
+
+            if (masukBaru > 0 || rusakBaru > 0) {
+                if (masukBaru > 0) {
+                    p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
+                    const refIn = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
+                    batch.set(refIn, {
+                        produk: p.nama,
+                        tipe: 'In (Gudang)',
+                        jumlah: masukBaru,
+                        sisaGudang: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0)),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
 
-                if (typeof catatAktivitas === 'function') {
-                    catatAktivitas("Master Produk", `Mutasi masal sukses: ${daftarRiwayatBaru.length} pergerakan barang dicatat.`);
+                if (rusakBaru > 0) {
+                    p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
+                    const refRusak = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
+                    batch.set(refRusak, {
+                        produk: p.nama,
+                        tipe: 'Rusak (Gudang)',
+                        jumlah: rusakBaru,
+                        sisaGudang: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - p.stokRusak),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
-                if(typeof showToast === 'function') showToast("✅ Stok Baru Berhasil Disimpan!");
-                
-                renderTabelMasterProduk(); 
-            })
-            .catch(err => {
-                alert("Gagal menyimpan ke server: " + err);
-                if(btn) { 
-                    btn.innerText = "💾 Simpan"; 
-                    btn.disabled = false; 
-                    btn.style.backgroundColor = '#16a34a';
-                }
-            });
-        } else {
-            renderTabelMasterProduk();
-            alert("✅ Data tersimpan (Mode Lokal).");
-        }
+
+                if (inputMasukEl) inputMasukEl.value = '';
+                if (inputRusakEl) inputRusakEl.value = '';
+            }
+        });
+
+        // Simpan Master Produk sekaligus
+        const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+        batch.set(refMaster, { list: window.masterProduk }, { merge: true });
+
+        // Commiting Batch (Satu Kali Kirim)
+        await batch.commit();
+
+        renderTabelMasterProduk();
+        if (btn) { btn.innerText = "💾 Simpan"; btn.disabled = false; }
+        if (typeof showToast === 'function') showToast("✅ Mutasi Stok Berhasil Disimpan!");
+
+    } catch (err) {
+        alert("Gagal menyimpan ke server: " + err);
+        if (btn) { btn.innerText = "💾 Simpan"; btn.disabled = false; }
     }
 }
-
 // ==========================================
 // 4. FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL
 // ==========================================
@@ -2665,7 +2664,7 @@ function bukaModalKoreksiStok(i) {
     window.masterProduk = masterProduk;
 
     if(typeof db !== 'undefined' && db !== null) {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk })
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk')..set({ list: masterProduk }, { merge: true })
         .then(() => { 
             renderTabelMasterProduk(); 
             if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
