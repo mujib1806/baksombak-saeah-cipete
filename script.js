@@ -2961,7 +2961,13 @@ function renderDashboardGrafik() {
             document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
         }
 
-        const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
+      // 1. Ambil seluruh tanggal dari dbStok dan dbKasMasuk sekaligus
+        const keysStok = Object.keys(dbStok || {});
+        const keysKas = Object.keys(dbKasMasuk || {});
+        const combinedKeys = Array.from(new Set([...keysStok, ...keysKas]));
+
+        // 2. Filter format tanggal YYYY-MM-DD secara benar (tanpa typo slash)
+        const allDates = combinedKeys.filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
         const periodeEl = document.getElementById('filterDashboardPeriode');
         const periode = periodeEl ? periodeEl.value : '7';
         let targetDates = [];
