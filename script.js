@@ -2941,15 +2941,18 @@ function terapkanFilterReseller() {
     renderDashboardGrafik(); 
 }
 
+// Variable instance chart online (Letakkan di luar/atas jika belum ada)
+let chartOnlineInstance = null;
+
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN INFO SETORAN DAPUR & MODAL)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN INFO SETORAN DAPUR, MODAL & ONLINE CHANNEL)
 // ==========================================
 function renderDashboardGrafik() {
     const isDapur = currentUser && currentUser.role === 'dapur';
     if (isDapur) { 
         document.querySelectorAll('.summary-box').forEach(box => { 
             const text = box.innerText.toUpperCase(); 
-            if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('RANKING RESELLER') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET')) { 
+            if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('RANKING RESELLER') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET') || text.includes('PENJUALAN ONLINE')) { 
                 box.style.display = 'none'; 
             } 
         }); 
@@ -2957,12 +2960,11 @@ function renderDashboardGrafik() {
         document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
     }
 
-    const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort(); 
+    const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
     const periodeEl = document.getElementById('filterDashboardPeriode');
     const periode = periodeEl ? periodeEl.value : '7';
     let targetDates = [];
 
-    // KODE BARU (DENGAN SUPPORT CUSTOM TANGGAL):
     if (periode === '7') { targetDates = allDates.slice(-7); } 
     else if (periode === '30') { targetDates = allDates.slice(-30); } 
     else if (periode === 'bulan_ini') {
@@ -2977,7 +2979,6 @@ function renderDashboardGrafik() {
         if (m === 0) { y--; m = 12; }
         targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
     } 
-    // 👉 TAMBAHAN LOGIKA FILTER TANGGAL KUSTOM
     else if (periode === 'custom') {
         const tglAwal = document.getElementById('dashTglAwal')?.value;
         const tglAkhir = document.getElementById('dashTglAkhir')?.value;
@@ -2985,34 +2986,43 @@ function renderDashboardGrafik() {
         if (tglAwal && tglAkhir) {
             targetDates = allDates.filter(d => d >= tglAwal && d <= tglAkhir);
         } else {
-            targetDates = allDates.slice(-7); // Default jika tanggal belum dipilih
+            targetDates = allDates.slice(-7);
         }
     }
     else { targetDates = allDates; }
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+    
+    // 👉 [TITIK 1] PENAMBAHAN RESET APABILA DATA KOSONG
     if(targetDates.length === 0) {
         setTxt('dashTotalOmset', "Rp 0");
         setTxt('dashOmsetBakso', "Rp 0");
         setTxt('dashOmsetReseller', "Rp 0");
+        setTxt('dashTotalSetoranDapur', "Rp 0");
         setTxt('dashTotalProfit', "Rp 0");
-        setTxt('dashTotalSetoranDapur', "Rp 0"); // New ID
         setTxt('dashTotalBeban', "Rp 0");
         setTxt('dashBebanGaji', "Rp 0");
         setTxt('dashBebanDapur', "Rp 0");
         setTxt('dashBebanLaci', "Rp 0");
+        setTxt('dashTotalGojek', "Rp 0");
+        setTxt('dashTotalGrab', "Rp 0");
+        setTxt('dashTotalShopee', "Rp 0");
         if(chartTren) chartTren.destroy();
         if(chartTopBakso) chartTopBakso.destroy();
         if(chartTopReseller) chartTopReseller.destroy();
+        if(chartOnlineInstance) chartOnlineInstance.destroy();
         return;
     }
 
     let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
     let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
+    
+    // 👉 [TITIK 2] INISIALISASI VARIABEL TOTAL ONLINE
+    let totalGojek = 0, totalGrab = 0, totalShopee = 0;
+
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
-    // Cek Nama Pos Dana Darurat Dinamis dari Cabang Aktif
     const namaDarurat = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos1?.nama) 
         ? pengaturanCabangAktif.pos1.nama 
         : "Dana Darurat";
@@ -3020,7 +3030,10 @@ function renderDashboardGrafik() {
     targetDates.forEach(tgl => { 
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
-        let items = dbStok[tgl] || []; 
+        
+        // Ambil objek data harian lengkap
+        let dataHarianObj = dbStok[tgl] || {};
+        let items = Array.isArray(dataHarianObj) ? dataHarianObj : (dataHarianObj.items || []); 
         
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
@@ -3046,6 +3059,11 @@ function renderDashboardGrafik() {
             } 
         }); 
         
+        // 👉 [TITIK 2 Lanjutan] TARIK DATA NOMINAL KASIR GOJEK, GRAB, SHOPEE
+        totalGojek += parseFloat(dataHarianObj.gojek || dataHarianObj.kasirGojek || 0);
+        totalGrab += parseFloat(dataHarianObj.grab || dataHarianObj.kasirGrab || 0);
+        totalShopee += parseFloat(dataHarianObj.shopee || dataHarianObj.kasirShopee || 0);
+
         // --- 1. AMBIL BEBAN GAJI HARIAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
@@ -3053,7 +3071,7 @@ function renderDashboardGrafik() {
         // --- 2. AMBIL BEBAN LACI KASIR ---
         const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
         
-        // --- 3. 👉 AMBIL PENGELUARAN DANA DARURAT DARI dbLogKas ---
+        // --- 3. AMBIL PENGELUARAN DANA DARURAT ---
         let dDarurat = 0;
         if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
             dDarurat = dbLogKas
@@ -3061,8 +3079,6 @@ function renderDashboardGrafik() {
                 .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-        // --- 4. RUMUS PROFIT BERSIH RIIL ---
-        // Profit Kotor - (Gaji Harian + Belanja Laci + Uang Keluar Dana Darurat)
         const totalBebanHarian = dGaji + dLaci + dDarurat;
         const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
 
@@ -3089,16 +3105,50 @@ function renderDashboardGrafik() {
     setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
-    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // Menampilkan total Pengeluaran Dana Darurat
-    // 👉 KODE BARU: UPDATE TEKS KETERANGAN PROFIT BERSIH DENGAN NAMA POS DINAMIS (POS 2 & POS 3)
-    const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) 
-        ? pengaturanCabangAktif.pos2.nama 
-        : "Tabungan Anak";
-    const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) 
-        ? pengaturanCabangAktif.pos3.nama 
-        : "Laba Bersih";
+    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); 
+
+    // 👉 [TITIK 3] UPDATE TEXT CARD UNTUK NOMINAL ONLINE
+    setTxt('dashTotalGojek', formatRupiah(totalGojek));
+    setTxt('dashTotalGrab', formatRupiah(totalGrab));
+    setTxt('dashTotalShopee', formatRupiah(totalShopee));
+
+    const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) ? pengaturanCabangAktif.pos2.nama : "Tabungan Anak";
+    const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
     setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
-    
+
+    // 👉 [TITIK 3 Lanjutan] RENDER GRAFIK DONUT ONLINE CHANNEL
+    const ctxOnline = document.getElementById('chartOnlineChannel');
+    if (ctxOnline) {
+        if (chartOnlineInstance) chartOnlineInstance.destroy();
+        chartOnlineInstance = new Chart(ctxOnline, {
+            type: 'doughnut',
+            data: {
+                labels: ['Gojek', 'Grab', 'Shopee'],
+                datasets: [{
+                    data: [totalGojek, totalGrab, totalShopee],
+                    backgroundColor: ['#22c55e', '#10b981', '#f97316'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                    datalabels: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let val = context.raw || 0;
+                                return ` ${context.label}: Rp ${val.toLocaleString('id-ID')}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
     const formatSingkatan = function(value) { 
         if (value === 0 || !value) return ''; 
@@ -3107,7 +3157,7 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
-if(chartTren) chartTren.destroy(); 
+    if(chartTren) chartTren.destroy(); 
     const trenEl = document.getElementById('chartTren');
     if (trenEl) {
         const ctxTren = trenEl.getContext('2d'); 
@@ -3116,7 +3166,6 @@ if(chartTren) chartTren.destroy();
             data: { 
                 labels: labelsTren, 
                 datasets: [ 
-                    // 1. GARIS PROFIT BERSIH (HIJAU)
                     { 
                         type: 'line', 
                         label: 'Profit Bersih', 
@@ -3127,14 +3176,9 @@ if(chartTren) chartTren.destroy();
                         tension: 0.3, 
                         pointRadius: 4, 
                         datalabels: { 
-                            align: 'top', 
-                            anchor: 'end', 
-                            color: '#15803d', 
-                            font: { weight: 'bold', size: 10 }, 
-                            formatter: formatSingkatan 
+                            align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan 
                         } 
                     },
-                    // 2. GARIS SETORAN DAPUR (UNGU PUTUS-PUTUS)
                     { 
                         type: 'line', 
                         label: 'Setoran Dapur (Bakso)', 
@@ -3146,75 +3190,51 @@ if(chartTren) chartTren.destroy();
                         tension: 0.2, 
                         pointRadius: 3, 
                         datalabels: { 
-                            align: 'bottom', 
-                            anchor: 'start', 
-                            color: '#6d28d9', 
-                            font: { weight: 'bold', size: 8 }, 
-                            formatter: formatSingkatan 
+                            align: 'bottom', anchor: 'start', color: '#6d28d9', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan 
                         } 
                     },
-                    // 3. BALOK OMSET RESELLER (BIRU - BAWAH)
                     { 
                         type: 'bar', 
                         label: 'Omset Reseller', 
                         data: dataReseller, 
                         backgroundColor: '#3b82f6', 
                         datalabels: { 
-                            color: '#ffffff', 
-                            font: { weight: 'bold', size: 8 }, 
-                            formatter: formatSingkatan 
+                            color: '#ffffff', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan 
                         } 
                     }, 
-                    // 4. BALOK OMSET BAKSO (ORANYE - ATAS)
                     { 
                         type: 'bar', 
                         label: 'Omset Bakso', 
                         data: dataBakso, 
                         backgroundColor: '#ea580c', 
                         datalabels: { 
-                            align: 'top',
-                            anchor: 'end',
-                            color: '#0f172a', 
-                            font: { weight: 'bold', size: 10 }, 
+                            align: 'top', anchor: 'end', color: '#0f172a', font: { weight: 'bold', size: 10 }, 
                             formatter: function(val, ctx) {
                                 const idx = ctx.dataIndex;
-                                const omsetBakso = dataBakso[idx] || 0;
-                                const omsetReseller = dataReseller[idx] || 0;
-                                return formatSingkatan(omsetBakso + omsetReseller);
+                                return formatSingkatan((dataBakso[idx] || 0) + (dataReseller[idx] || 0));
                             }
                         } 
                     } 
                 ] 
             }, 
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                layout: { padding: { top: 25 } }, 
+                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, 
                 plugins: { 
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
                     datalabels: { display: true },
-                    // 👉 FITUR ANGKA REAL SAAT DI-KLIK / DI-TOUCH
                     tooltip: {
-                        enabled: true,
-                        mode: 'index',
-                        intersect: false,
+                        enabled: true, mode: 'index', intersect: false,
                         callbacks: {
-                            // Menampilkan nilai asli per dataset dalam format Rupiah lengkap
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 if (label) label += ': ';
-                                if (context.parsed.y !== null) {
-                                    label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
-                                }
+                                if (context.parsed.y !== null) label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
                                 return label;
                             },
-                            // Menampilkan Total Omset Harian Gabungan di bagian bawah tooltip
                             footer: function(tooltipItems) {
                                 let totalOmsetHarian = 0;
                                 tooltipItems.forEach(function(item) {
-                                    if (item.dataset.type === 'bar') {
-                                        totalOmsetHarian += item.parsed.y || 0;
-                                    }
+                                    if (item.dataset.type === 'bar') totalOmsetHarian += item.parsed.y || 0;
                                 });
                                 return '------------------------\nTotal Omset: Rp ' + totalOmsetHarian.toLocaleString('id-ID');
                             }
@@ -3228,6 +3248,7 @@ if(chartTren) chartTren.destroy();
             } 
         });
     }
+
     const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
     const topBakso = sortSliceTop5(produkBakso); 
 
@@ -3239,30 +3260,14 @@ if(chartTren) chartTren.destroy();
         .slice(0, 10);
 
     const optHorizontalBar = { 
-        indexAxis: 'y', 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        layout: { padding: { right: 45 } }, 
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 45 } }, 
         plugins: { 
             legend: { display: false }, 
-            datalabels: { 
-                align: 'right', 
-                anchor: 'end', 
-                color: '#334155', 
-                font: { weight: 'bold', size: 9 }, 
-                formatter: (val) => val + ' pcs' 
-            } 
+            datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 9 }, formatter: (val) => val + ' pcs' } 
         }, 
         scales: { 
-            x: { 
-                beginAtZero: true, 
-                display: false,
-                grace: '15%' 
-            }, 
-            y: { 
-                grid: { display: false }, 
-                ticks: { autoSkip: false, font: { size: 9 } } 
-            } 
+            x: { beginAtZero: true, display: false, grace: '15%' }, 
+            y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 9 } } } 
         } 
     };
 
