@@ -2664,7 +2664,8 @@ function bukaModalKoreksiStok(i) {
     window.masterProduk = masterProduk;
 
     if(typeof db !== 'undefined' && db !== null) {
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk')..set({ list: masterProduk }, { merge: true })
+        // PERBAIKAN: Gunakan .set (satu titik)
+        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }, { merge: true })
         .then(() => { 
             renderTabelMasterProduk(); 
             if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
@@ -2683,7 +2684,6 @@ function bukaModalKoreksiStok(i) {
         catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
     }
 }
-
 // ==========================================
 // 5. FUNGSI RENDER RIWAYAT STOK
 // ==========================================
