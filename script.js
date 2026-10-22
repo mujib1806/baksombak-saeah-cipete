@@ -469,17 +469,28 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
         renderFormOrderVendor(); 
     });
 
-    // LISTENER STOK HARIAN (DIPERBAIKI AGAR TIDAK MENGHAPUS PRODUK BARU)
-    db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
-        snapshot.forEach(doc => { dbStok[doc.id] = doc.data().items; }); 
-        const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : ''; 
-        if (tgl && (!document.activeElement || !document.activeElement.classList.contains('input-stok'))) { 
-            syncStokDenganMaster(tgl);
-            cekDanTarikDataKemarin(tgl);
-            renderTabelMatriks(); 
-            updateKalkulasi(); 
-        } 
-    });
+   // LISTENER STOK HARIAN (FIX BENTUK DATA ARRAY / OBJEK)
+db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').onSnapshot(snapshot => { 
+    snapshot.forEach(doc => { 
+        const dataDoc = doc.data();
+        // Jika dokumen punya properti .items, gunakan .items. Jika sudah Array, gunakan langsung.
+        if (dataDoc && Array.isArray(dataDoc.items)) {
+            dbStok[doc.id] = dataDoc.items;
+        } else if (Array.isArray(dataDoc)) {
+            dbStok[doc.id] = dataDoc;
+        } else {
+            dbStok[doc.id] = [];
+        }
+    }); 
+
+    const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : ''; 
+    if (tgl && (!document.activeElement || !document.activeElement.classList.contains('input-stok'))) { 
+        syncStokDenganMaster(tgl);
+        cekDanTarikDataKemarin(tgl);
+        renderTabelMatriks(); 
+        updateKalkulasi(); 
+    } 
+});
 
     db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').onSnapshot(snapshot => { 
     snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
@@ -2944,9 +2955,8 @@ function terapkanFilterReseller() {
 
 // Variable instance chart online
 let chartOnlineInstance = null;
-
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (ULTIMATE FIX)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (PERBAIKAN TOTAL)
 // ==========================================
 function renderDashboardGrafik() {
     try {
@@ -2967,7 +2977,7 @@ function renderDashboardGrafik() {
         const keysKas = Object.keys(dbKasMasuk || {});
         const combinedKeys = Array.from(new Set([...keysStok, ...keysKas]));
 
-        // 2. Filter format tanggal YYYY-MM-DD
+        // 2. PERBAIKAN BUG REGEX: Hilangkan backslash sebelum '\$'
         const allDates = combinedKeys.filter(tgl => /^\d{4}-\d{2}-\d{2}\$/.test(tgl)).sort(); 
         const periodeEl = document.getElementById('filterDashboardPeriode');
         const periode = periodeEl ? periodeEl.value : '7';
@@ -3291,6 +3301,7 @@ function renderDashboardGrafik() {
         console.error("Error pada renderDashboardGrafik:", errGlobal);
     }
 }
+
 // ==========================================
 // FUNGSI TOGGLE INPUT TANGGAL KUSTOM DASHBOARD
 // ==========================================
