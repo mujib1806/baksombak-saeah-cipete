@@ -2941,11 +2941,11 @@ function terapkanFilterReseller() {
     renderDashboardGrafik(); 
 }
 
-// Variable instance chart online (Letakkan di luar/atas jika belum ada)
+// Variable instance chart online
 let chartOnlineInstance = null;
 
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (DENGAN INFO SETORAN DAPUR, MODAL & ONLINE CHANNEL)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (FIXED 100% KASIR & ONLINE)
 // ==========================================
 function renderDashboardGrafik() {
     const isDapur = currentUser && currentUser.role === 'dapur';
@@ -2993,7 +2993,6 @@ function renderDashboardGrafik() {
 
     const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     
-    // 👉 [TITIK 1] PENAMBAHAN RESET APABILA DATA KOSONG
     if(targetDates.length === 0) {
         setTxt('dashTotalOmset', "Rp 0");
         setTxt('dashOmsetBakso', "Rp 0");
@@ -3016,8 +3015,6 @@ function renderDashboardGrafik() {
 
     let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
     let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
-    
-    // 👉 [TITIK 2] INISIALISASI VARIABEL TOTAL ONLINE
     let totalGojek = 0, totalGrab = 0, totalShopee = 0;
 
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
@@ -3031,9 +3028,8 @@ function renderDashboardGrafik() {
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
         
-        // Ambil objek data harian lengkap
-        let dataHarianObj = dbStok[tgl] || {};
-        let items = Array.isArray(dataHarianObj) ? dataHarianObj : (dataHarianObj.items || []); 
+        // FIX: Pastikan items selalu berupa Array murni dari dbStok[tgl]
+        let items = Array.isArray(dbStok[tgl]) ? dbStok[tgl] : ((dbStok[tgl] && dbStok[tgl].items) ? dbStok[tgl].items : []); 
         
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
@@ -3043,9 +3039,10 @@ function renderDashboardGrafik() {
             const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
             if(sisa !== null && sisa <= totalStok) { 
                 const laku = totalStok - sisa; 
-                const omset = laku * p.jual; 
-                const modalItem = laku * p.modal;
-                const profit = laku * p.margin; 
+                const omset = laku * (parseFloat(p.jual) || 0); 
+                const modalItem = laku * (parseFloat(p.modal) || 0);
+                const margin = parseFloat(p.margin) || ((parseFloat(p.jual) || 0) - (parseFloat(p.modal) || 0));
+                const profit = laku * margin; 
                 harianProfitKotor += profit; 
                 
                 if(p.kategori === 'Bakso Malang') { 
@@ -3058,15 +3055,16 @@ function renderDashboardGrafik() {
                 } 
             } 
         }); 
-        
-        // 👉 [TITIK 2 Lanjutan] TARIK DATA NOMINAL KASIR GOJEK, GRAB, SHOPEE
-        totalGojek += parseFloat(dataHarianObj.gojek || dataHarianObj.kasirGojek || 0);
-        totalGrab += parseFloat(dataHarianObj.grab || dataHarianObj.kasirGrab || 0);
-        totalShopee += parseFloat(dataHarianObj.shopee || dataHarianObj.kasirShopee || 0);
+
+        // FIX AMAN: Tarik data nominal kasir Gojek, Grab, Shopee dari berbagai kemungkinan sumber data
+        let kasirObj = (typeof dbKasir !== 'undefined' && dbKasir[tgl]) ? dbKasir[tgl] : (dbStok[tgl] && !Array.isArray(dbStok[tgl]) ? dbStok[tgl] : {});
+        totalGojek += parseFloat(kasirObj.gojek || kasirObj.kasirGojek || 0);
+        totalGrab += parseFloat(kasirObj.grab || kasirObj.kasirGrab || 0);
+        totalShopee += parseFloat(kasirObj.shopee || kasirObj.kasirShopee || 0);
 
         // --- 1. AMBIL BEBAN GAJI HARIAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
-        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
+        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? (parseFloat(dbGajiHarian[tgl].nominal) || 0) : nominalGajiStandar); 
         
         // --- 2. AMBIL BEBAN LACI KASIR ---
         const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
@@ -3096,7 +3094,7 @@ function renderDashboardGrafik() {
         dataSetoranBaksoLine.push(harianSetoranBakso);
     });
 
-    // Update Text Ringkasan Dashboard
+    // Update Text Ringkasan Utama
     setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
     setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
     setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
@@ -3107,7 +3105,7 @@ function renderDashboardGrafik() {
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
     setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); 
 
-    // 👉 [TITIK 3] UPDATE TEXT CARD UNTUK NOMINAL ONLINE
+    // UPDATE TEXT CARD NOMINAL ONLINE
     setTxt('dashTotalGojek', formatRupiah(totalGojek));
     setTxt('dashTotalGrab', formatRupiah(totalGrab));
     setTxt('dashTotalShopee', formatRupiah(totalShopee));
@@ -3116,7 +3114,7 @@ function renderDashboardGrafik() {
     const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
     setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
 
-    // 👉 [TITIK 3 Lanjutan] RENDER GRAFIK DONUT ONLINE CHANNEL
+    // RENDER GRAFIK DONUT ONLINE
     const ctxOnline = document.getElementById('chartOnlineChannel');
     if (ctxOnline) {
         if (chartOnlineInstance) chartOnlineInstance.destroy();
@@ -3167,46 +3165,21 @@ function renderDashboardGrafik() {
                 labels: labelsTren, 
                 datasets: [ 
                     { 
-                        type: 'line', 
-                        label: 'Profit Bersih', 
-                        data: dataProfitLine, 
-                        borderColor: '#16a34a', 
-                        backgroundColor: '#16a34a', 
-                        borderWidth: 2.5, 
-                        tension: 0.3, 
-                        pointRadius: 4, 
-                        datalabels: { 
-                            align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan 
-                        } 
+                        type: 'line', label: 'Profit Bersih', data: dataProfitLine, 
+                        borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, 
+                        datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } 
                     },
                     { 
-                        type: 'line', 
-                        label: 'Setoran Dapur (Bakso)', 
-                        data: dataSetoranBaksoLine, 
-                        borderColor: '#8b5cf6', 
-                        borderDash: [4, 4], 
-                        backgroundColor: '#8b5cf6', 
-                        borderWidth: 2, 
-                        tension: 0.2, 
-                        pointRadius: 3, 
-                        datalabels: { 
-                            align: 'bottom', anchor: 'start', color: '#6d28d9', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan 
-                        } 
+                        type: 'line', label: 'Setoran Dapur (Bakso)', data: dataSetoranBaksoLine, 
+                        borderColor: '#8b5cf6', borderDash: [4, 4], backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.2, pointRadius: 3, 
+                        datalabels: { align: 'bottom', anchor: 'start', color: '#6d28d9', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
                     },
                     { 
-                        type: 'bar', 
-                        label: 'Omset Reseller', 
-                        data: dataReseller, 
-                        backgroundColor: '#3b82f6', 
-                        datalabels: { 
-                            color: '#ffffff', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan 
-                        } 
+                        type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', 
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
                     }, 
                     { 
-                        type: 'bar', 
-                        label: 'Omset Bakso', 
-                        data: dataBakso, 
-                        backgroundColor: '#ea580c', 
+                        type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', 
                         datalabels: { 
                             align: 'top', anchor: 'end', color: '#0f172a', font: { weight: 'bold', size: 10 }, 
                             formatter: function(val, ctx) {
