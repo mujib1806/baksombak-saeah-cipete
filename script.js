@@ -2941,337 +2941,345 @@ function terapkanFilterReseller() {
     renderDashboardGrafik(); 
 }
 
-// Variable instance chart online (Pastikan letaknya di luar fungsi)
+// Variable instance chart online
 let chartOnlineInstance = null;
 
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (DISEPERTIKAN DENGAN dbKasMasuk)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (SAFE & ANTI-CRASH)
 // ==========================================
 function renderDashboardGrafik() {
-    const isDapur = currentUser && currentUser.role === 'dapur';
-    if (isDapur) { 
-        document.querySelectorAll('.summary-box').forEach(box => { 
-            const text = box.innerText.toUpperCase(); 
-            if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('RANKING RESELLER') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET') || text.includes('PENJUALAN ONLINE')) { 
-                box.style.display = 'none'; 
-            } 
-        }); 
-    } else { 
-        document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
-    }
-
-    const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
-    const periodeEl = document.getElementById('filterDashboardPeriode');
-    const periode = periodeEl ? periodeEl.value : '7';
-    let targetDates = [];
-
-    if (periode === '7') { targetDates = allDates.slice(-7); } 
-    else if (periode === '30') { targetDates = allDates.slice(-30); } 
-    else if (periode === 'bulan_ini') {
-        const today = new Date();
-        const y = today.getFullYear();
-        const m = String(today.getMonth() + 1).padStart(2, '0');
-        targetDates = allDates.filter(d => d.startsWith(`${y}-${m}`));
-    } 
-    else if (periode === 'bulan_lalu') {
-        const today = new Date();
-        let y = today.getFullYear(); let m = today.getMonth(); 
-        if (m === 0) { y--; m = 12; }
-        targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
-    } 
-    else if (periode === 'custom') {
-        const tglAwal = document.getElementById('dashTglAwal')?.value;
-        const tglAkhir = document.getElementById('dashTglAkhir')?.value;
-        
-        if (tglAwal && tglAkhir) {
-            targetDates = allDates.filter(d => d >= tglAwal && d <= tglAkhir);
-        } else {
-            targetDates = allDates.slice(-7);
-        }
-    }
-    else { targetDates = allDates; }
-
-    const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-    
-    if(targetDates.length === 0) {
-        setTxt('dashTotalOmset', "Rp 0");
-        setTxt('dashOmsetBakso', "Rp 0");
-        setTxt('dashOmsetReseller', "Rp 0");
-        setTxt('dashTotalSetoranDapur', "Rp 0");
-        setTxt('dashTotalProfit', "Rp 0");
-        setTxt('dashTotalBeban', "Rp 0");
-        setTxt('dashBebanGaji', "Rp 0");
-        setTxt('dashBebanDapur', "Rp 0");
-        setTxt('dashBebanLaci', "Rp 0");
-        setTxt('dashTotalGojek', "Rp 0");
-        setTxt('dashTotalGrab', "Rp 0");
-        setTxt('dashTotalShopee', "Rp 0");
-        if(chartTren) chartTren.destroy();
-        if(chartTopBakso) chartTopBakso.destroy();
-        if(chartTopReseller) chartTopReseller.destroy();
-        if(chartOnlineInstance) chartOnlineInstance.destroy();
-        return;
-    }
-
-    let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
-    let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
-    let totalGojek = 0, totalGrab = 0, totalShopee = 0;
-
-    let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
-    let produkBakso = {}, produkReseller = {};
-
-    const namaDarurat = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos1?.nama) 
-        ? pengaturanCabangAktif.pos1.nama 
-        : "Dana Darurat";
-
-    targetDates.forEach(tgl => { 
-        labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
-        let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
-        
-        let items = dbStok[tgl] || []; 
-        
-        items.forEach(p => { 
-            const awal = parseFloat(p.awal) || 0; 
-            const tambah = parseFloat(p.tambah) || 0; 
-            const kurang = parseFloat(p.kurang) || 0; 
-            const totalStok = awal + tambah - kurang; 
-            const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
-            if(sisa !== null && sisa <= totalStok) { 
-                const laku = totalStok - sisa; 
-                const omset = laku * (parseFloat(p.jual) || 0); 
-                const modalItem = laku * (parseFloat(p.modal) || 0);
-                const margin = parseFloat(p.margin) || ((parseFloat(p.jual) || 0) - (parseFloat(p.modal) || 0));
-                const profit = laku * margin; 
-                harianProfitKotor += profit; 
-                
-                if(p.kategori === 'Bakso Malang') { 
-                    harianOmsetBakso += omset; 
-                    harianSetoranBakso += modalItem; 
-                    if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; 
-                } else { 
-                    harianOmsetReseller += omset; 
-                    if(laku > 0) produkReseller[p.nama] = (produkReseller[p.nama] || 0) + laku; 
+    try {
+        const isDapur = currentUser && currentUser.role === 'dapur';
+        if (isDapur) { 
+            document.querySelectorAll('.summary-box').forEach(box => { 
+                const text = box.innerText.toUpperCase(); 
+                if (text.includes('BEBAN & PENGELUARAN') || text.includes('PROFIT BERSIH') || text.includes('RANKING RESELLER') || text.includes('TOP 5 RESELLER') || text.includes('TREN OMSET') || text.includes('PENJUALAN ONLINE')) { 
+                    box.style.display = 'none'; 
                 } 
-            } 
-        }); 
-
-        // 👉 DITARIK DARI dbKasMasuk MENGGUNAKAN KEY gojek, grab, shopee
-        if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
-            const kas = dbKasMasuk[tgl];
-            const parseNominal = (val) => {
-                if (!val) return 0;
-                if (typeof val === 'number') return val;
-                return parseFloat(val.toString().replace(/\./g, '')) || 0;
-            };
-
-            totalGojek += parseNominal(kas.gojek);
-            totalGrab += parseNominal(kas.grab);
-            totalShopee += parseNominal(kas.shopee);
+            }); 
+        } else { 
+            document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
         }
 
-        const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
-        const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? (parseFloat(dbGajiHarian[tgl].nominal) || 0) : nominalGajiStandar); 
-        const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
-        
-        let dDarurat = 0;
-        if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
-            dDarurat = dbLogKas
-                .filter(l => l.tgl === tgl && (l.jenis === namaDarurat || l.jenis === 'Dana Darurat') && l.tipe === 'keluar')
-                .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
-        }
+        const allDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
+        const periodeEl = document.getElementById('filterDashboardPeriode');
+        const periode = periodeEl ? periodeEl.value : '7';
+        let targetDates = [];
 
-        const totalBebanHarian = dGaji + dLaci + dDarurat;
-        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
-
-        totalOmsetBakso += harianOmsetBakso; 
-        totalOmsetReseller += harianOmsetReseller; 
-        totalSetoranDapurAkumulatif += harianSetoranBakso;
-        totalProfit += profitBersih; 
-        totalGaji += dGaji; 
-        totalLaci += dLaci; 
-        totalDarurat += dDarurat;
-
-        dataBakso.push(harianOmsetBakso); 
-        dataReseller.push(harianOmsetReseller); 
-        dataProfitLine.push(profitBersih); 
-        dataSetoranBaksoLine.push(harianSetoranBakso);
-    });
-
-    // Update Text Ringkasan Utama
-    setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
-    setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
-    setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
-    setTxt('dashTotalSetoranDapur', formatRupiah(totalSetoranDapurAkumulatif)); 
-    setTxt('dashTotalProfit', formatRupiah(totalProfit)); 
-    setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
-    setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
-    setTxt('dashBebanLaci', formatRupiah(totalLaci));
-    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); 
-
-    // UPDATE TEXT CARD NOMINAL ONLINE
-    setTxt('dashTotalGojek', formatRupiah(totalGojek));
-    setTxt('dashTotalGrab', formatRupiah(totalGrab));
-    setTxt('dashTotalShopee', formatRupiah(totalShopee));
-
-    const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) ? pengaturanCabangAktif.pos2.nama : "Tabungan Anak";
-    const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
-    setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
-
-    // RENDER GRAFIK DONUT ONLINE
-    const ctxOnline = document.getElementById('chartOnlineChannel');
-    if (ctxOnline) {
-        if (chartOnlineInstance) chartOnlineInstance.destroy();
-        chartOnlineInstance = new Chart(ctxOnline, {
-            type: 'doughnut',
-            data: {
-                labels: ['Gojek', 'Grab', 'Shopee'],
-                datasets: [{
-                    data: [totalGojek, totalGrab, totalShopee],
-                    backgroundColor: ['#22c55e', '#10b981', '#f97316'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { font: { size: 10 } } },
-                    datalabels: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let val = context.raw || 0;
-                                return ` ${context.label}: Rp ${val.toLocaleString('id-ID')}`;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
-    const formatSingkatan = function(value) { 
-        if (value === 0 || !value) return ''; 
-        if (value >= 1000000) { let j = value / 1000000; return (j % 1 === 0 ? j : j.toFixed(1).replace('.', ',')) + ' Jt'; } 
-        else if (value >= 1000) { let rb = value / 1000; return (rb % 1 === 0 ? rb : rb.toFixed(1).replace('.', ',')) + ' Rb'; } 
-        return value.toString(); 
-    };
-
-    if(chartTren) chartTren.destroy(); 
-    const trenEl = document.getElementById('chartTren');
-    if (trenEl) {
-        const ctxTren = trenEl.getContext('2d'); 
-        chartTren = new Chart(ctxTren, { 
-            type: 'bar', 
-            data: { 
-                labels: labelsTren, 
-                datasets: [ 
-                    { 
-                        type: 'line', label: 'Profit Bersih', data: dataProfitLine, 
-                        borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, 
-                        datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } 
-                    },
-                    { 
-                        type: 'line', label: 'Setoran Dapur (Bakso)', data: dataSetoranBaksoLine, 
-                        borderColor: '#8b5cf6', borderDash: [4, 4], backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.2, pointRadius: 3, 
-                        datalabels: { align: 'bottom', anchor: 'start', color: '#6d28d9', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
-                    },
-                    { 
-                        type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', 
-                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
-                    }, 
-                    { 
-                        type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', 
-                        datalabels: { 
-                            align: 'top', anchor: 'end', color: '#0f172a', font: { weight: 'bold', size: 10 }, 
-                            formatter: function(val, ctx) {
-                                const idx = ctx.dataIndex;
-                                return formatSingkatan((dataBakso[idx] || 0) + (dataReseller[idx] || 0));
-                            }
-                        } 
-                    } 
-                ] 
-            }, 
-            options: { 
-                responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, 
-                plugins: { 
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
-                    datalabels: { display: true },
-                    tooltip: {
-                        enabled: true, mode: 'index', intersect: false,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) label += ': ';
-                                if (context.parsed.y !== null) label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
-                                return label;
-                            },
-                            footer: function(tooltipItems) {
-                                let totalOmsetHarian = 0;
-                                tooltipItems.forEach(function(item) {
-                                    if (item.dataset.type === 'bar') totalOmsetHarian += item.parsed.y || 0;
-                                });
-                                return '------------------------\nTotal Omset: Rp ' + totalOmsetHarian.toLocaleString('id-ID');
-                            }
-                        }
-                    }
-                }, 
-                scales: { 
-                    x: { stacked: true, grid: { display: false } }, 
-                    y: { stacked: true, beginAtZero: true, display: false } 
-                } 
-            } 
-        });
-    }
-
-    const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
-    const topBakso = sortSliceTop5(produkBakso); 
-
-    window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
-    let resellerDifilter = Object.keys(produkReseller)
-        .filter(nama => !(window.produkResellerDisembunyikan || []).includes(nama))
-        .map(nama => ({nama: nama, qty: produkReseller[nama]}))
-        .sort((a,b) => b.qty - a.qty)
-        .slice(0, 10);
-
-    const optHorizontalBar = { 
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 45 } }, 
-        plugins: { 
-            legend: { display: false }, 
-            datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 9 }, formatter: (val) => val + ' pcs' } 
-        }, 
-        scales: { 
-            x: { beginAtZero: true, display: false, grace: '15%' }, 
-            y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 9 } } } 
+        if (periode === '7') { targetDates = allDates.slice(-7); } 
+        else if (periode === '30') { targetDates = allDates.slice(-30); } 
+        else if (periode === 'bulan_ini') {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            targetDates = allDates.filter(d => d.startsWith(`${y}-${m}`));
         } 
-    };
+        else if (periode === 'bulan_lalu') {
+            const today = new Date();
+            let y = today.getFullYear(); let m = today.getMonth(); 
+            if (m === 0) { y--; m = 12; }
+            targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
+        } 
+        else if (periode === 'custom') {
+            const tglAwal = document.getElementById('dashTglAwal')?.value;
+            const tglAkhir = document.getElementById('dashTglAkhir')?.value;
+            
+            if (tglAwal && tglAkhir) {
+                targetDates = allDates.filter(d => d >= tglAwal && d <= tglAkhir);
+            } else {
+                targetDates = allDates.slice(-7);
+            }
+        }
+        else { targetDates = allDates; }
 
-    if(chartTopBakso) chartTopBakso.destroy(); 
-    const baksoEl = document.getElementById('chartTopBakso');
-    if (baksoEl) {
-        const ctxBakso = baksoEl.getContext('2d'); 
-        chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
-    }
-
-    if(chartTopReseller) chartTopReseller.destroy(); 
-    const oldCanvasReseller = document.getElementById('chartTopReseller');
-    if (oldCanvasReseller) {
-        const parentReseller = oldCanvasReseller.parentNode;
-        oldCanvasReseller.remove();
+        const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
         
-        const newCanvasReseller = document.createElement('canvas');
-        newCanvasReseller.id = 'chartTopReseller';
-        const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
-        newCanvasReseller.style.height = tinggiDibutuhkan + 'px';
-        parentReseller.appendChild(newCanvasReseller);
+        if(targetDates.length === 0) {
+            setTxt('dashTotalOmset', "Rp 0");
+            setTxt('dashOmsetBakso', "Rp 0");
+            setTxt('dashOmsetReseller', "Rp 0");
+            setTxt('dashTotalSetoranDapur', "Rp 0");
+            setTxt('dashTotalProfit', "Rp 0");
+            setTxt('dashTotalBeban', "Rp 0");
+            setTxt('dashBebanGaji', "Rp 0");
+            setTxt('dashBebanDapur', "Rp 0");
+            setTxt('dashBebanLaci', "Rp 0");
+            setTxt('dashTotalGojek', "Rp 0");
+            setTxt('dashTotalGrab', "Rp 0");
+            setTxt('dashTotalShopee', "Rp 0");
+            if(chartTren) chartTren.destroy();
+            if(chartTopBakso) chartTopBakso.destroy();
+            if(chartTopReseller) chartTopReseller.destroy();
+            if(chartOnlineInstance) chartOnlineInstance.destroy();
+            return;
+        }
 
-        const ctxReseller = newCanvasReseller.getContext('2d'); 
-        chartTopReseller = new Chart(ctxReseller, { 
-            type: 'bar', 
-            data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, 
-            options: optHorizontalBar 
-        }); 
+        let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
+        let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
+        let totalGojek = 0, totalGrab = 0, totalShopee = 0;
+
+        let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
+        let produkBakso = {}, produkReseller = {};
+
+        const namaDarurat = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos1?.nama) 
+            ? pengaturanCabangAktif.pos1.nama 
+            : "Dana Darurat";
+
+        targetDates.forEach(tgl => { 
+            labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
+            let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
+            
+            let items = dbStok[tgl] || []; 
+            
+            items.forEach(p => { 
+                const awal = parseFloat(p.awal) || 0; 
+                const tambah = parseFloat(p.tambah) || 0; 
+                const kurang = parseFloat(p.kurang) || 0; 
+                const totalStok = awal + tambah - kurang; 
+                const sisa = (p.sisa !== "" && p.sisa !== null) ? parseFloat(p.sisa) : null; 
+                if(sisa !== null && sisa <= totalStok) { 
+                    const laku = totalStok - sisa; 
+                    const omset = laku * (parseFloat(p.jual) || 0); 
+                    const modalItem = laku * (parseFloat(p.modal) || 0);
+                    const margin = parseFloat(p.margin) || ((parseFloat(p.jual) || 0) - (parseFloat(p.modal) || 0));
+                    const profit = laku * margin; 
+                    harianProfitKotor += profit; 
+                    
+                    if(p.kategori === 'Bakso Malang') { 
+                        harianOmsetBakso += omset; 
+                        harianSetoranBakso += modalItem; 
+                        if(laku > 0) produkBakso[p.nama] = (produkBakso[p.nama] || 0) + laku; 
+                    } else { 
+                        harianOmsetReseller += omset; 
+                        if(laku > 0) produkReseller[p.nama] = (produkReseller[p.nama] || 0) + laku; 
+                    } 
+                } 
+            }); 
+
+            // Tarik data kasir Gojek, Grab, Shopee
+            if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
+                const kas = dbKasMasuk[tgl];
+                const parseNominal = (val) => {
+                    if (!val) return 0;
+                    if (typeof val === 'number') return val;
+                    return parseFloat(val.toString().replace(/\./g, '')) || 0;
+                };
+
+                totalGojek += parseNominal(kas.gojek);
+                totalGrab += parseNominal(kas.grab);
+                totalShopee += parseNominal(kas.shopee);
+            }
+
+            const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
+            const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? (parseFloat(dbGajiHarian[tgl].nominal) || 0) : nominalGajiStandar); 
+            const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
+            
+            let dDarurat = 0;
+            if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
+                dDarurat = dbLogKas
+                    .filter(l => l.tgl === tgl && (l.jenis === namaDarurat || l.jenis === 'Dana Darurat') && l.tipe === 'keluar')
+                    .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
+            }
+
+            const totalBebanHarian = dGaji + dLaci + dDarurat;
+            const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
+
+            totalOmsetBakso += harianOmsetBakso; 
+            totalOmsetReseller += harianOmsetReseller; 
+            totalSetoranDapurAkumulatif += harianSetoranBakso;
+            totalProfit += profitBersih; 
+            totalGaji += dGaji; 
+            totalLaci += dLaci; 
+            totalDarurat += dDarurat;
+
+            dataBakso.push(harianOmsetBakso); 
+            dataReseller.push(harianOmsetReseller); 
+            dataProfitLine.push(profitBersih); 
+            dataSetoranBaksoLine.push(harianSetoranBakso);
+        });
+
+        // Update Text Ringkasan Utama
+        setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
+        setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
+        setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
+        setTxt('dashTotalSetoranDapur', formatRupiah(totalSetoranDapurAkumulatif)); 
+        setTxt('dashTotalProfit', formatRupiah(totalProfit)); 
+        setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
+        setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
+        setTxt('dashBebanLaci', formatRupiah(totalLaci));
+        setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); 
+
+        // UPDATE TEXT CARD NOMINAL ONLINE
+        setTxt('dashTotalGojek', formatRupiah(totalGojek));
+        setTxt('dashTotalGrab', formatRupiah(totalGrab));
+        setTxt('dashTotalShopee', formatRupiah(totalShopee));
+
+        const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) ? pengaturanCabangAktif.pos2.nama : "Tabungan Anak";
+        const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
+        setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
+
+        // RENDER GRAFIK DONUT ONLINE (DENGAN BLOK SAFEGUARD TRY-CATCH)
+        try {
+            const ctxOnline = document.getElementById('chartOnlineChannel');
+            if (ctxOnline && typeof Chart !== 'undefined') {
+                if (chartOnlineInstance) chartOnlineInstance.destroy();
+                chartOnlineInstance = new Chart(ctxOnline, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Gojek', 'Grab', 'Shopee'],
+                        datasets: [{
+                            data: [totalGojek, totalGrab, totalShopee],
+                            backgroundColor: ['#22c55e', '#10b981', '#f97316'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                            datalabels: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.raw || 0;
+                                        return ` ${context.label}: Rp ${val.toLocaleString('id-ID')}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (errChartOnline) {
+            console.warn("Gagal merender chart online:", errChartOnline);
+        }
+
+        if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
+        const formatSingkatan = function(value) { 
+            if (value === 0 || !value) return ''; 
+            if (value >= 1000000) { let j = value / 1000000; return (j % 1 === 0 ? j : j.toFixed(1).replace('.', ',')) + ' Jt'; } 
+            else if (value >= 1000) { let rb = value / 1000; return (rb % 1 === 0 ? rb : rb.toFixed(1).replace('.', ',')) + ' Rb'; } 
+            return value.toString(); 
+        };
+
+        if(chartTren) chartTren.destroy(); 
+        const trenEl = document.getElementById('chartTren');
+        if (trenEl) {
+            const ctxTren = trenEl.getContext('2d'); 
+            chartTren = new Chart(ctxTren, { 
+                type: 'bar', 
+                data: { 
+                    labels: labelsTren, 
+                    datasets: [ 
+                        { 
+                            type: 'line', label: 'Profit Bersih', data: dataProfitLine, 
+                            borderColor: '#16a34a', backgroundColor: '#16a34a', borderWidth: 2.5, tension: 0.3, pointRadius: 4, 
+                            datalabels: { align: 'top', anchor: 'end', color: '#15803d', font: { weight: 'bold', size: 10 }, formatter: formatSingkatan } 
+                        },
+                        { 
+                            type: 'line', label: 'Setoran Dapur (Bakso)', data: dataSetoranBaksoLine, 
+                            borderColor: '#8b5cf6', borderDash: [4, 4], backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.2, pointRadius: 3, 
+                            datalabels: { align: 'bottom', anchor: 'start', color: '#6d28d9', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
+                        },
+                        { 
+                            type: 'bar', label: 'Omset Reseller', data: dataReseller, backgroundColor: '#3b82f6', 
+                            datalabels: { color: '#ffffff', font: { weight: 'bold', size: 8 }, formatter: formatSingkatan } 
+                        }, 
+                        { 
+                            type: 'bar', label: 'Omset Bakso', data: dataBakso, backgroundColor: '#ea580c', 
+                            datalabels: { 
+                                align: 'top', anchor: 'end', color: '#0f172a', font: { weight: 'bold', size: 10 }, 
+                                formatter: function(val, ctx) {
+                                    const idx = ctx.dataIndex;
+                                    return formatSingkatan((dataBakso[idx] || 0) + (dataReseller[idx] || 0));
+                                }
+                            } 
+                        } 
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 25 } }, 
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
+                        datalabels: { display: true },
+                        tooltip: {
+                            enabled: true, mode: 'index', intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
+                                    return label;
+                                },
+                                footer: function(tooltipItems) {
+                                    let totalOmsetHarian = 0;
+                                    tooltipItems.forEach(function(item) {
+                                        if (item.dataset.type === 'bar') totalOmsetHarian += item.parsed.y || 0;
+                                    });
+                                    return '------------------------\nTotal Omset: Rp ' + totalOmsetHarian.toLocaleString('id-ID');
+                                }
+                            }
+                        }
+                    }, 
+                    scales: { 
+                        x: { stacked: true, grid: { display: false } }, 
+                        y: { stacked: true, beginAtZero: true, display: false } 
+                    } 
+                } 
+            });
+        }
+
+        const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
+        const topBakso = sortSliceTop5(produkBakso); 
+
+        window.listProdukResellerAktif = Object.keys(produkReseller).sort(); 
+        let resellerDifilter = Object.keys(produkReseller)
+            .filter(nama => !(window.produkResellerDisembunyikan || []).includes(nama))
+            .map(nama => ({nama: nama, qty: produkReseller[nama]}))
+            .sort((a,b) => b.qty - a.qty)
+            .slice(0, 10);
+
+        const optHorizontalBar = { 
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 45 } }, 
+            plugins: { 
+                legend: { display: false }, 
+                datalabels: { align: 'right', anchor: 'end', color: '#334155', font: { weight: 'bold', size: 9 }, formatter: (val) => val + ' pcs' } 
+            }, 
+            scales: { 
+                x: { beginAtZero: true, display: false, grace: '15%' }, 
+                y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 9 } } } 
+            } 
+        };
+
+        if(chartTopBakso) chartTopBakso.destroy(); 
+        const baksoEl = document.getElementById('chartTopBakso');
+        if (baksoEl) {
+            const ctxBakso = baksoEl.getContext('2d'); 
+            chartTopBakso = new Chart(ctxBakso, { type: 'bar', data: { labels: topBakso.map(x => x.nama), datasets: [{ data: topBakso.map(x => x.qty), backgroundColor: '#fdba74', borderRadius: 3, maxBarThickness: 15 }] }, options: optHorizontalBar });
+        }
+
+        if(chartTopReseller) chartTopReseller.destroy(); 
+        const oldCanvasReseller = document.getElementById('chartTopReseller');
+        if (oldCanvasReseller) {
+            const parentReseller = oldCanvasReseller.parentNode;
+            oldCanvasReseller.remove();
+            
+            const newCanvasReseller = document.createElement('canvas');
+            newCanvasReseller.id = 'chartTopReseller';
+            const tinggiDibutuhkan = Math.max(150, resellerDifilter.length * 25); 
+            newCanvasReseller.style.height = tinggiDibutuhkan + 'px';
+            parentReseller.appendChild(newCanvasReseller);
+
+            const ctxReseller = newCanvasReseller.getContext('2d'); 
+            chartTopReseller = new Chart(ctxReseller, { 
+                type: 'bar', 
+                data: { labels: resellerDifilter.map(x => x.nama), datasets: [{ data: resellerDifilter.map(x => x.qty), backgroundColor: '#93c5fd', borderRadius: 3, maxBarThickness: 15 }] }, 
+                options: optHorizontalBar 
+            }); 
+        }
+    } catch (errGlobal) {
+        console.error("Error pada renderDashboardGrafik:", errGlobal);
     }
 }
 // ==========================================
