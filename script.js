@@ -482,10 +482,11 @@ db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProdu
     });
 
     db.collection('cabang').doc(CABANG_AKTIF).collection('kasMasuk').onSnapshot(snapshot => { 
-        snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
-        const tgl = document.getElementById('tglOps').value;
-        cekDanTarikDataKemarin(tgl); loadKasMasukUI(); updateKalkulasi(); 
-    });
+    snapshot.forEach(doc => { dbKasMasuk[doc.id] = doc.data(); }); 
+    const tgl = document.getElementById('tglOps').value;
+    cekDanTarikDataKemarin(tgl); loadKasMasukUI(); updateKalkulasi(); 
+    if (typeof renderDashboardGrafik === 'function') renderDashboardGrafik(); // <-- Tambahkan baris ini
+});
 
     db.collection('cabang').doc(CABANG_AKTIF).collection('pengeluaranHarian').onSnapshot(snapshot => { 
         dbPengeluaranHarian = []; 
@@ -2945,7 +2946,7 @@ function terapkanFilterReseller() {
 let chartOnlineInstance = null;
 
 // ==========================================
-// FUNGSI DASHBOARD GRAFIK CHART.JS (SAFE & ANTI-CRASH)
+// FUNGSI DASHBOARD GRAFIK CHART.JS (ULTIMATE FIX)
 // ==========================================
 function renderDashboardGrafik() {
     try {
@@ -2961,13 +2962,13 @@ function renderDashboardGrafik() {
             document.querySelectorAll('.summary-box').forEach(box => { box.style.display = 'block'; }); 
         }
 
-      // 1. Ambil seluruh tanggal dari dbStok dan dbKasMasuk sekaligus
+        // 1. Ambil gabungan tanggal unik dari dbStok dan dbKasMasuk
         const keysStok = Object.keys(dbStok || {});
         const keysKas = Object.keys(dbKasMasuk || {});
         const combinedKeys = Array.from(new Set([...keysStok, ...keysKas]));
 
-        // 2. Filter format tanggal YYYY-MM-DD secara benar (tanpa typo slash)
-        const allDates = combinedKeys.filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}\$/)).sort(); 
+        // 2. Filter format tanggal YYYY-MM-DD
+        const allDates = combinedKeys.filter(tgl => /^\d{4}-\d{2}-\d{2}\$/.test(tgl)).sort(); 
         const periodeEl = document.getElementById('filterDashboardPeriode');
         const periode = periodeEl ? periodeEl.value : '7';
         let targetDates = [];
@@ -3035,7 +3036,9 @@ function renderDashboardGrafik() {
             labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
             let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
             
-            let items = dbStok[tgl] || []; 
+            // Penanganan tipe data Array maupun Objek dari dbStok
+            let dataStokTgl = dbStok[tgl] || [];
+            let items = Array.isArray(dataStokTgl) ? dataStokTgl : (dataStokTgl.items || []); 
             
             items.forEach(p => { 
                 const awal = parseFloat(p.awal) || 0; 
@@ -3062,7 +3065,7 @@ function renderDashboardGrafik() {
                 } 
             }); 
 
-            // Tarik data kasir Gojek, Grab, Shopee
+            // Tarik data Kasir Gojek, Grab, Shopee dari dbKasMasuk
             if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
                 const kas = dbKasMasuk[tgl];
                 const parseNominal = (val) => {
@@ -3104,7 +3107,7 @@ function renderDashboardGrafik() {
             dataSetoranBaksoLine.push(harianSetoranBakso);
         });
 
-        // Update Text Ringkasan Utama
+        // Update Teks Ringkasan Utama
         setTxt('dashTotalOmset', formatRupiah(totalOmsetBakso + totalOmsetReseller)); 
         setTxt('dashOmsetBakso', formatRupiah(totalOmsetBakso)); 
         setTxt('dashOmsetReseller', formatRupiah(totalOmsetReseller)); 
@@ -3115,7 +3118,7 @@ function renderDashboardGrafik() {
         setTxt('dashBebanLaci', formatRupiah(totalLaci));
         setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); 
 
-        // UPDATE TEXT CARD NOMINAL ONLINE
+        // Update Teks Kartu Online
         setTxt('dashTotalGojek', formatRupiah(totalGojek));
         setTxt('dashTotalGrab', formatRupiah(totalGrab));
         setTxt('dashTotalShopee', formatRupiah(totalShopee));
@@ -3124,7 +3127,7 @@ function renderDashboardGrafik() {
         const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
         setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
 
-        // RENDER GRAFIK DONUT ONLINE (DENGAN BLOK SAFEGUARD TRY-CATCH)
+        // Render Grafik Donut Online
         try {
             const ctxOnline = document.getElementById('chartOnlineChannel');
             if (ctxOnline && typeof Chart !== 'undefined') {
@@ -3158,7 +3161,7 @@ function renderDashboardGrafik() {
                 });
             }
         } catch (errChartOnline) {
-            console.warn("Gagal merender chart online:", errChartOnline);
+            console.warn("Gagal render chart online:", errChartOnline);
         }
 
         if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
