@@ -1042,7 +1042,7 @@ function updateNilaiStokLokal(idx, tipe, val) {
     if (typeof updateKalkulasi === 'function') updateKalkulasi();   
 }
 // ==========================================
-// EKSKUSI SIMPAN HARIAN MASAL (TANPA FREEZE UI)
+// EKSKUSI SIMPAN HARIAN MASAL (SUPER CEPAT DENGAN FIREBASE BATCH)
 // ==========================================
 async function simpanStokHarianMasal() {
     const tgl = document.getElementById('tglOps').value;
@@ -1060,12 +1060,14 @@ async function simpanStokHarianMasal() {
         btn.style.backgroundColor = "#eab308";
     }
 
-    // 👉 BERI JEDA MIKRO (50ms) agar UI Sempat Render Tombol Loading Tanpa Freeze
+    // Jeda mikro agar tombol loading sempat ter-render mulus di UI
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
-        let janjiRiwayat = [];
         let adaPenambahanStok = false;
+        
+        // 1. Inisialisasi Firebase Batch
+        const batch = db.batch();
 
         if (dbStok[tgl] && Array.isArray(dbStok[tgl])) {
             dbStok[tgl].forEach(p => {
@@ -1073,6 +1075,7 @@ async function simpanStokHarianMasal() {
                 
                 if (tambahInputVal > 0) {
                     adaPenambahanStok = true;
+                    
                     // Akumulasi nilai Refill ke 'tambah'
                     p.tambah = (parseFloat(p.tambah) || 0) + tambahInputVal;
                     // Reset kolom input baru
@@ -1087,32 +1090,45 @@ async function simpanStokHarianMasal() {
                         masterProduk[masterIdx].keluarEtalase = keluarSekarang + tambahInputVal;
                         let sisaGudangBaru = awalGudang - masterProduk[masterIdx].keluarEtalase - (parseFloat(masterProduk[masterIdx].stokRusak) || 0);
 
-                        if (typeof catatRiwayatStok === 'function') {
-                            janjiRiwayat.push(catatRiwayatStok(p.nama, 'Out', tambahInputVal, sisaGudangBaru));
-                        }
+                        // Masukkan Log Riwayat ke Paket Batch (Bukan request terpisah)
+                        const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
+                        batch.set(refRiwayat, {
+                            produk: p.nama,
+                            tipe: 'Out',
+                            jumlah: tambahInputVal,
+                            sisaGudang: sisaGudangBaru,
+                            tanggal: tgl,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
                     }
                 }
             });
         }
 
-        if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
-            // 1. Simpan Master Produk sekaligus
-            if (adaPenambahanStok) {
-                await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk });
-            }
-            
-            // 2. Simpan Data Stok Harian
-            if (typeof simpanStokKeFirebase === 'function') {
-                await simpanStokKeFirebase();
-            }
+        // 2. Masukkan Data Master Produk & Stok Harian ke Paket Batch
+        if (adaPenambahanStok) {
+            const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+            batch.set(refMaster, { list: masterProduk }, { merge: true });
         }
 
-        // 3. Jalankan pencatatan riwayat secara paralel di background
-        if (janjiRiwayat.length > 0) {
-            await Promise.all(janjiRiwayat);
-        }
+        // Ambil hitungan profit bersih
+        let elemenProfit = document.getElementById('totalProfitBersih') ? document.getElementById('totalProfitBersih').innerText : "0";
+        let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,"")) || 0;
+        let profitSiapBagi = Math.max(0, profitAngka);
 
-        // Re-render tabel agar kolom 'Total Refill' ter-update & input 'Refill Baru' bersih
+        const refStokHarian = db.collection('cabang').doc(CABANG_AKTIF).collection('stokHarian').doc(tgl);
+        batch.set(refStokHarian, {
+            items: dbStok[tgl],
+            profitBersih: profitSiapBagi,
+            danaDarurat: profitSiapBagi * 0.20,
+            tabunganAnak: profitSiapBagi * 0.40,
+            labaBersih: profitSiapBagi * 0.40
+        }, { merge: true });
+
+        // 3. EKSKUSI BATCH (Kirim seluruh data dalam 1 kali tembak ke Firebase!)
+        await batch.commit();
+
+        // Re-render tabel agar UI langsung ter-update bersih
         renderTabelMatriks();
 
         if (btn) {
