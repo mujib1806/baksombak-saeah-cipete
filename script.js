@@ -71,7 +71,7 @@ let listAkunKasir = [];
 let hasAlertedTgl = "";
 let autoSaveTimeout = null; 
 let vendorSaveTimeout = null;
-let chartTren = null, chartTopBakso = null, chartTopReseller = null;
+let chartTren = null, chartTopBakso = null, chartTopReseller = null, chartOnlineChannel = null;
 window.addEventListener('offline', () => {
     const banner = document.getElementById('offlineBanner');
     banner.style.background = '#dc2626'; banner.innerText = '⚠️ Koneksi Terputus! Perubahan akan disimpan sementara di perangkat.'; banner.style.display = 'block';
@@ -3037,7 +3037,6 @@ function renderDashboardGrafik() {
     const periode = periodeEl ? periodeEl.value : '7';
     let targetDates = [];
 
-    // KODE BARU (DENGAN SUPPORT CUSTOM TANGGAL):
     if (periode === '7') { targetDates = allDates.slice(-7); } 
     else if (periode === '30') { targetDates = allDates.slice(-30); } 
     else if (periode === 'bulan_ini') {
@@ -3052,7 +3051,6 @@ function renderDashboardGrafik() {
         if (m === 0) { y--; m = 12; }
         targetDates = allDates.filter(d => d.startsWith(`${y}-${String(m).padStart(2, '0')}`));
     } 
-    // 👉 TAMBAHAN LOGIKA FILTER TANGGAL KUSTOM
     else if (periode === 'custom') {
         const tglAwal = document.getElementById('dashTglAwal')?.value;
         const tglAkhir = document.getElementById('dashTglAkhir')?.value;
@@ -3060,7 +3058,7 @@ function renderDashboardGrafik() {
         if (tglAwal && tglAkhir) {
             targetDates = allDates.filter(d => d >= tglAwal && d <= tglAkhir);
         } else {
-            targetDates = allDates.slice(-7); // Default jika tanggal belum dipilih
+            targetDates = allDates.slice(-7);
         }
     }
     else { targetDates = allDates; }
@@ -3071,23 +3069,32 @@ function renderDashboardGrafik() {
         setTxt('dashOmsetBakso', "Rp 0");
         setTxt('dashOmsetReseller', "Rp 0");
         setTxt('dashTotalProfit', "Rp 0");
-        setTxt('dashTotalSetoranDapur', "Rp 0"); // New ID
+        setTxt('dashTotalSetoranDapur', "Rp 0");
         setTxt('dashTotalBeban', "Rp 0");
         setTxt('dashBebanGaji', "Rp 0");
         setTxt('dashBebanDapur', "Rp 0");
         setTxt('dashBebanLaci', "Rp 0");
+        // Reset Teks Online
+        setTxt('dashTotalGojek', "Rp 0");
+        setTxt('dashTotalGrab', "Rp 0");
+        setTxt('dashTotalShopee', "Rp 0");
+        setTxt('dashTotalSemuaOnline', "Rp 0");
+
         if(chartTren) chartTren.destroy();
         if(chartTopBakso) chartTopBakso.destroy();
         if(chartTopReseller) chartTopReseller.destroy();
+        if(chartOnlineChannel) chartOnlineChannel.destroy();
         return;
     }
 
     let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
     let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
+    // 👉 AKUMULASI PENJUALAN ONLINE
+    let totalGojek = 0, totalGrab = 0, totalShopee = 0;
+
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
-    // Cek Nama Pos Dana Darurat Dinamis dari Cabang Aktif
     const namaDarurat = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos1?.nama) 
         ? pengaturanCabangAktif.pos1.nama 
         : "Dana Darurat";
@@ -3121,14 +3128,11 @@ function renderDashboardGrafik() {
             } 
         }); 
         
-        // --- 1. AMBIL BEBAN GAJI HARIAN ---
+        // --- AMBIL BEBAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
-        
-        // --- 2. AMBIL BEBAN LACI KASIR ---
         const dLaci = (dbPengeluaranHarian || []).filter(p => p.tgl === tgl).reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0); 
         
-        // --- 3. 👉 AMBIL PENGELUARAN DANA DARURAT DARI dbLogKas ---
         let dDarurat = 0;
         if (typeof dbLogKas !== 'undefined' && Array.isArray(dbLogKas)) {
             dDarurat = dbLogKas
@@ -3136,8 +3140,19 @@ function renderDashboardGrafik() {
                 .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-        // --- 4. RUMUS PROFIT BERSIH RIIL ---
-        // Profit Kotor - (Gaji Harian + Belanja Laci + Uang Keluar Dana Darurat)
+        // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
+        if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
+            const k = dbKasMasuk[tgl];
+            const parseVal = (v) => {
+                if (!v) return 0;
+                if (typeof v === 'number') return v;
+                return parseFloat(v.toString().replace(/\./g, '')) || 0;
+            };
+            totalGojek += parseVal(k.gojek);
+            totalGrab += parseVal(k.grab);
+            totalShopee += parseVal(k.shopee);
+        }
+
         const totalBebanHarian = dGaji + dLaci + dDarurat;
         const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
 
@@ -3164,14 +3179,18 @@ function renderDashboardGrafik() {
     setTxt('dashTotalBeban', formatRupiah(totalGaji + totalLaci + totalDarurat)); 
     setTxt('dashBebanGaji', formatRupiah(totalGaji)); 
     setTxt('dashBebanLaci', formatRupiah(totalLaci));
-    setTxt('dashBebanDarurat', formatRupiah(totalDarurat)); // Menampilkan total Pengeluaran Dana Darurat
-    // 👉 KODE BARU: UPDATE TEKS KETERANGAN PROFIT BERSIH DENGAN NAMA POS DINAMIS (POS 2 & POS 3)
+    setTxt('dashBebanDarurat', formatRupiah(totalDarurat));
+
+    // 👉 UPDATE TEKS RINGKASAN CHANNEL ONLINE
+    setTxt('dashTotalGojek', formatRupiah(totalGojek));
+    setTxt('dashTotalGrab', formatRupiah(totalGrab));
+    setTxt('dashTotalShopee', formatRupiah(totalShopee));
+    setTxt('dashTotalSemuaOnline', formatRupiah(totalGojek + totalGrab + totalShopee));
+
     const n2 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos2?.nama) 
-        ? pengaturanCabangAktif.pos2.nama 
-        : "Tabungan Anak";
+        ? pengaturanCabangAktif.pos2.nama : "Tabungan Anak";
     const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) 
-        ? pengaturanCabangAktif.pos3.nama 
-        : "Laba Bersih";
+        ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
     setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
     
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
@@ -3182,7 +3201,49 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
-if(chartTren) chartTren.destroy(); 
+    // 👉 DRAW GRAFIK DONUT CHANNEL ONLINE
+    if(chartOnlineChannel) chartOnlineChannel.destroy();
+    const onlineEl = document.getElementById('chartOnlineChannel');
+    if (onlineEl) {
+        const ctxOnline = onlineEl.getContext('2d');
+        chartOnlineChannel = new Chart(ctxOnline, {
+            type: 'doughnut',
+            data: {
+                labels: ['Gojek', 'Grab', 'Shopee'],
+                datasets: [{
+                    data: [totalGojek, totalGrab, totalShopee],
+                    backgroundColor: ['#22c55e', '#10b981', '#f97316'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { weight: 'bold', size: 9 },
+                        formatter: function(value, ctx) {
+                            if (!value || value === 0) return '';
+                            return formatSingkatan(value);
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + context.label + ': Rp ' + (context.parsed || 0).toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- CHART TREN OMSET & PROFIT ---
+    if(chartTren) chartTren.destroy(); 
     const trenEl = document.getElementById('chartTren');
     if (trenEl) {
         const ctxTren = trenEl.getContext('2d'); 
@@ -3191,7 +3252,6 @@ if(chartTren) chartTren.destroy();
             data: { 
                 labels: labelsTren, 
                 datasets: [ 
-                    // 1. GARIS PROFIT BERSIH (HIJAU)
                     { 
                         type: 'line', 
                         label: 'Profit Bersih', 
@@ -3209,7 +3269,6 @@ if(chartTren) chartTren.destroy();
                             formatter: formatSingkatan 
                         } 
                     },
-                    // 2. GARIS SETORAN DAPUR (UNGU PUTUS-PUTUS)
                     { 
                         type: 'line', 
                         label: 'Setoran Dapur (Bakso)', 
@@ -3228,7 +3287,6 @@ if(chartTren) chartTren.destroy();
                             formatter: formatSingkatan 
                         } 
                     },
-                    // 3. BALOK OMSET RESELLER (BIRU - BAWAH)
                     { 
                         type: 'bar', 
                         label: 'Omset Reseller', 
@@ -3240,7 +3298,6 @@ if(chartTren) chartTren.destroy();
                             formatter: formatSingkatan 
                         } 
                     }, 
-                    // 4. BALOK OMSET BAKSO (ORANYE - ATAS)
                     { 
                         type: 'bar', 
                         label: 'Omset Bakso', 
@@ -3268,13 +3325,11 @@ if(chartTren) chartTren.destroy();
                 plugins: { 
                     legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }, 
                     datalabels: { display: true },
-                    // 👉 FITUR ANGKA REAL SAAT DI-KLIK / DI-TOUCH
                     tooltip: {
                         enabled: true,
                         mode: 'index',
                         intersect: false,
                         callbacks: {
-                            // Menampilkan nilai asli per dataset dalam format Rupiah lengkap
                             label: function(context) {
                                 let label = context.dataset.label || '';
                                 if (label) label += ': ';
@@ -3283,7 +3338,6 @@ if(chartTren) chartTren.destroy();
                                 }
                                 return label;
                             },
-                            // Menampilkan Total Omset Harian Gabungan di bagian bawah tooltip
                             footer: function(tooltipItems) {
                                 let totalOmsetHarian = 0;
                                 tooltipItems.forEach(function(item) {
@@ -3303,6 +3357,7 @@ if(chartTren) chartTren.destroy();
             } 
         });
     }
+
     const sortSliceTop5 = (dict) => Object.keys(dict).map(k => ({nama: k, qty: dict[k]})).sort((a,b) => b.qty - a.qty).slice(0, 5); 
     const topBakso = sortSliceTop5(produkBakso); 
 
