@@ -1128,7 +1128,10 @@ async function simpanStokHarianMasal() {
 
         // 3. EKSKUSI BATCH (Kirim seluruh data dalam 1 kali tembak ke Firebase!)
         await batch.commit();
-
+        // Tambahkan baris ini tepat setelah 'await batch.commit();'
+        setTimeout(() => {
+        refreshTabelRiwayatStok();
+        }, 1500); // Beri jeda 1,5 detik agar Firestore selesai memproses batch
         // Re-render tabel agar UI langsung ter-update bersih
         renderTabelMatriks();
 
@@ -2695,7 +2698,9 @@ async function bukaModalKoreksiStok(i) {
 
             // Eksekusi pengiriman latar belakang sekaligus
             await batch.commit();
-
+            setTimeout(() => {
+            refreshTabelRiwayatStok();
+            }, 1500); // Beri jeda 1,5 detik agar Firestore selesai memproses batch
             if (typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
 
             // Catat log aktivitas jika ada
@@ -5026,4 +5031,56 @@ function importMasterProdukCSV(event) {
     };
 
     reader.readAsText(file);
+}
+// ==========================================
+// FUNGSI REFRESH TABLE RIWAYAT STOK (MANUAL & OTOMATIS)
+// ==========================================
+async function refreshTabelRiwayatStok() {
+    const btn = document.getElementById('btnRefreshRiwayat');
+    if (btn) {
+        btn.innerText = "🔄 Memuat...";
+        btn.disabled = true;
+    }
+
+    try {
+        if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+            // Tarik 50 data riwayat terbaru dari Firestore
+            const snap = await db.collection('cabang').doc(CABANG_AKTIF)
+                                  .collection('riwayatStok')
+                                  .orderBy('timestamp', 'desc')
+                                  .limit(50)
+                                  .get();
+            
+            let dataBaru = [];
+            snap.forEach(doc => {
+                const d = doc.data();
+                dataBaru.push({
+                    waktu: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : (d.waktu || '-'),
+                    tanggalIso: d.tanggalIso || (d.tanggal ? d.tanggal : ''),
+                    produk: d.produk || '-',
+                    aksi: d.tipe && d.tipe.includes('In') ? 'In' : 'Out',
+                    perubahan: d.jumlah ? (d.tipe && d.tipe.includes('In') ? `+${d.jumlah}` : `-${d.jumlah}`) : '-',
+                    sisa: d.sisaGudang !== undefined ? d.sisaGudang : '-',
+                    oleh: d.oleh || 'Admin'
+                });
+            });
+
+            // Update variabel global riwayatStok
+            window.riwayatStok = dataBaru;
+            
+            // Render ulang tabel riwayat
+            if (typeof terapkanFilterRiwayat === 'function') {
+                terapkanFilterRiwayat();
+            }
+            
+            if (typeof showToast === 'function') showToast("✅ Riwayat stok diperbarui!");
+        }
+    } catch (err) {
+        console.error("Gagal refresh riwayat:", err);
+    } finally {
+        if (btn) {
+            btn.innerText = "🔄 Refresh Riwayat";
+            btn.disabled = false;
+        }
+    }
 }
