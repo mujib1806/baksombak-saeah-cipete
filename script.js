@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
 function simpanPengaturanFinansialCabang(e) {
     e.preventDefault();
     if (!db) return;
@@ -140,8 +141,16 @@ function simpanPengaturanFinansialCabang(e) {
     .then(() => {
         pengaturanCabangAktif = dataBaru;
         showToast('✅ Pengaturan Finansial Disimpan!');
-        updateKalkulasi();
-        if(document.getElementById('viewGajiBulanan').style.display === 'block') renderRekapGajiBulanan();
+        
+        // Hanya hitung ulang jika tanggal yang sedang dibuka TIDAK DIGEMBOK
+        const tglAktif = document.getElementById('tglOps')?.value;
+        if (tglAktif && !isDataLocked(tglAktif)) {
+            updateKalkulasi();
+        }
+        
+        if (document.getElementById('viewGajiBulanan')?.style.display === 'block') {
+            renderRekapGajiBulanan();
+        }
     });
 }
 
@@ -1196,13 +1205,42 @@ function toggleLock() {
     } 
 }
 function setLockStatus(tgl, status) { 
-    if(db) { 
-        db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').doc(tgl).set({ terkunci: status }).then(() => {
+    if (db) { 
+        const docRef = db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').doc(tgl);
+        
+        let dataPayload = { terkunci: status };
+        
+        // JIKA DIGEMBOK: Simpan snapshot persentase & nama pos aktif saat ini
+        if (status) {
+            dataPayload.snapshotFinansial = {
+                pos1: { ...(pengaturanCabangAktif.pos1 || { nama: "Dana Darurat", persen: 20 }) },
+                pos2: { ...(pengaturanCabangAktif.pos2 || { nama: "Tabungan Anak", persen: 40 }) },
+                pos3: { ...(pengaturanCabangAktif.pos3 || { nama: "Laba Bersih", persen: 40 }) }
+            };
+        }
+
+        docRef.set(dataPayload, { merge: true }).then(() => {
+            if (!dbStatusKunci[tgl]) dbStatusKunci[tgl] = {};
+            dbStatusKunci[tgl].terkunci = status;
+            if (status) dbStatusKunci[tgl].snapshotFinansial = dataPayload.snapshotFinansial;
+
             const statusStr = status ? "MENKUNCI (LOCK)" : "MEMBUKA (UNLOCK)";
             catatAktivitas('Keamanan Data', `${statusStr} data operasional untuk tanggal ${tgl}`);
+            applyLockUI();
+            updateKalkulasi();
         }); 
     } else { 
-        dbStatusKunci[tgl] = status; applyLockUI(); 
+        if (!dbStatusKunci[tgl]) dbStatusKunci[tgl] = {};
+        dbStatusKunci[tgl].terkunci = status;
+        if (status) {
+            dbStatusKunci[tgl].snapshotFinansial = {
+                pos1: { ...(pengaturanCabangAktif.pos1 || { nama: "Dana Darurat", persen: 20 }) },
+                pos2: { ...(pengaturanCabangAktif.pos2 || { nama: "Tabungan Anak", persen: 40 }) },
+                pos3: { ...(pengaturanCabangAktif.pos3 || { nama: "Laba Bersih", persen: 40 }) }
+            };
+        }
+        applyLockUI(); 
+        updateKalkulasi();
     } 
 }
 
@@ -1655,16 +1693,29 @@ function updateKalkulasi() {
     let profitAlokasiBasis = Math.max(0, totalProfitBersih);
     
     setTxt('totalProfitBersih', formatRupiah(totalProfitBersih)); 
-    let p1 = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
-    let p2 = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
-    let p3 = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
-    const n1 = pengaturanCabangAktif.pos1?.nama || "Dana Darurat";
-    const n2 = pengaturanCabangAktif.pos2?.nama || "Tabungan Anak";
-    const n3 = pengaturanCabangAktif.pos3?.nama || "Laba Bersih";
 
-    const p1Num = pengaturanCabangAktif.pos1?.persen || 20;
-    const p2Num = pengaturanCabangAktif.pos2?.persen || 40;
-    const p3Num = pengaturanCabangAktif.pos3?.persen || 40;
+    // 👉 LOGIKA SNAPSHOT FINANCIAL (TIDAK MERUSAK HARI YANG SUDAH DIGEMBOK)
+    const dataLockObj = dbStatusKunci[tgl];
+    const isLocked = (typeof dataLockObj === 'object') ? dataLockObj.terkunci : dataLockObj;
+    const snapshot = dataLockObj?.snapshotFinansial;
+
+    // Jika digembok DAN punya data snapshot, gunakan data historis gembok. 
+    // Jika tidak, gunakan pengaturan aktif dari Pusat Kontrol Owner.
+    const pos1Data = (isLocked && snapshot?.pos1) ? snapshot.pos1 : (pengaturanCabangAktif.pos1 || { nama: "Dana Darurat", persen: 20 });
+    const pos2Data = (isLocked && snapshot?.pos2) ? snapshot.pos2 : (pengaturanCabangAktif.pos2 || { nama: "Tabungan Anak", persen: 40 });
+    const pos3Data = (isLocked && snapshot?.pos3) ? snapshot.pos3 : (pengaturanCabangAktif.pos3 || { nama: "Laba Bersih", persen: 40 });
+
+    const p1Num = parseFloat(pos1Data.persen) || 20;
+    const p2Num = parseFloat(pos2Data.persen) || 40;
+    const p3Num = parseFloat(pos3Data.persen) || 40;
+
+    let p1 = p1Num / 100;
+    let p2 = p2Num / 100;
+    let p3 = p3Num / 100;
+
+    const n1 = pos1Data.nama || "Dana Darurat";
+    const n2 = pos2Data.nama || "Tabungan Anak";
+    const n3 = pos3Data.nama || "Laba Bersih";
 
     setTxt('lblPos1', `${n1}(${p1Num}%)`);
     setTxt('lblPos2', `${n2}(${p2Num}%)`);
