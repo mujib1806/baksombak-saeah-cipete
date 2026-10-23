@@ -2639,17 +2639,16 @@ async function simpanMutasiGudangMasal() {
     }
 }
 // ==========================================
-// 4. FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL (OPTIMASI SUPER CEPAT)
+// FUNGSI KOREKSI STOK FISIK (AMAN, RINGAN, DAN LANGSUNG MUNCUL)
 // ==========================================
-async function bukaModalKoreksiStok(i) {
+function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
     if (!p) return;
 
     let stokLama = (parseFloat(p.stokAwalGudang) || 0) - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0);
-
     let inputBaru = prompt(`⚙️ KOREKSI STOK FISIK: ${p.nama}\n\nMasukkan jumlah SISA STOK GUDANG yang aktual/riil saat ini di gudang:`, stokLama);
     
-    if (inputBaru === null) return; // Batal
+    if (inputBaru === null) return;
     let stokFisikAktual = parseInt(inputBaru);
     
     if (isNaN(stokFisikAktual) || stokFisikAktual < 0) {
@@ -2658,62 +2657,59 @@ async function bukaModalKoreksiStok(i) {
     }
 
     let selisih = stokFisikAktual - stokLama;
-
     if (selisih === 0) {
         alert("Stok sudah sesuai, tidak ada perubahan.");
         return;
     }
 
-    // 1. UPDATE LOKAL LANGSUNG (UI Optimistik - Tanpa Menunggu Server)
+    // 1. Update master produk lokal
     p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + selisih;
     window.masterProduk = masterProduk;
 
-    // Render layar seketika agar tidak terasa patah/freeze
-    renderTabelMasterProduk(); 
-    if (typeof showToast === 'function') showToast("⚡ Memproses Koreksi Stok...");
-
+    // 2. Buat item riwayat baru sesuai struktur asli
+    const now = new Date();
+    const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
     const jenisAksi = selisih > 0 ? 'In' : 'Out';
+    
+    const itemRiwayatBaru = {
+        waktu: `${tglFormat}, ${jamFormat}`,
+        tanggalIso: now.toISOString().split('T')[0],
+        produk: p.nama,
+        aksi: `Koreksi (${jenisAksi})`,
+        perubahan: selisih > 0 ? `+${selisih}` : `${selisih}`,
+        sisa: stokFisikAktual,
+        oleh: (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin"
+    };
 
-    // 2. PROSES BACKEND MENGGUNAKAN FIREBASE BATCH (1 Tembakan Kolektif)
+    if (!Array.isArray(window.riwayatStok)) window.riwayatStok = [];
+    window.riwayatStok.unshift(itemRiwayatBaru);
+    if (window.riwayatStok.length > 500) window.riwayatStok.pop();
+
+    // 3. Render Tampilan Langsung (Seketika Tanpa Menunggu Firebase)
+    renderTabelMasterProduk();
+    if (typeof renderTabelRiwayatStok === 'function') {
+        renderTabelRiwayatStok();
+    }
+
+    // 4. Simpan ke Firebase di background
     if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
-        try {
-            const batch = db.batch();
+        const batch = db.batch();
+        const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+        const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok');
 
-            // A. Paket 1: Master Produk
-            const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
-            batch.set(refMaster, { list: masterProduk }, { merge: true });
+        batch.set(refMaster, { list: masterProduk }, { merge: true });
+        batch.set(refRiwayat, { list: window.riwayatStok }, { merge: true });
 
-            // B. Paket 2: Log Riwayat Stok (Disimpan sebagai dokumen individual agar tidak menimpa array berat)
-            const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
-            const now = new Date();
-            batch.set(refRiwayat, {
-                produk: p.nama,
-                tipe: `Koreksi Fisik (${jenisAksi})`,
-                jumlah: Math.abs(selisih),
-                sisaGudang: stokFisikAktual,
-                oleh: (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin",
-                tanggalIso: now.toISOString().split('T')[0],
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+        batch.commit().then(() => {
+            if (typeof showToast === 'function') showToast("✅ Koreksi stok tersimpan!");
+        }).catch(err => {
+            console.error("Gagal simpan ke Firestore:", err);
+        });
+    }
 
-            // Eksekusi pengiriman latar belakang sekaligus
-            await batch.commit();
-            setTimeout(() => {
-            refreshTabelRiwayatStok();
-            }, 1500); // Beri jeda 1,5 detik agar Firestore selesai memproses batch
-            if (typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
-
-            // Catat log aktivitas jika ada
-            if (typeof catatAktivitas === 'function') {
-                catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
-            }
-
-        } catch (err) {
-            console.error("Gagal koreksi stok di server:", err);
-            alert("⚠️ Perubahan disimpan secara lokal, namun gagal sinkron ke server: " + err.message);
-        }
-    } else {
-        if (typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi (Lokal)!");
+    if (typeof catatAktivitas === 'function') {
+        catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
     }
 }
 // ==========================================
@@ -5033,7 +5029,7 @@ function importMasterProdukCSV(event) {
     reader.readAsText(file);
 }
 // ==========================================
-// FUNGSI REFRESH TABLE RIWAYAT STOK (MANUAL & OTOMATIS)
+// FUNGSI REFRESH TABLE RIWAYAT STOK (STABIL & TANPA FREEZE)
 // ==========================================
 async function refreshTabelRiwayatStok() {
     const btn = document.getElementById('btnRefreshRiwayat');
@@ -5044,32 +5040,18 @@ async function refreshTabelRiwayatStok() {
 
     try {
         if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
-            // Tarik 50 data riwayat terbaru dari Firestore
-            const snap = await db.collection('cabang').doc(CABANG_AKTIF)
-                                  .collection('riwayatStok')
-                                  .orderBy('timestamp', 'desc')
-                                  .limit(50)
-                                  .get();
+            // Tarik dokumen riwayatStok sesuai struktur asli aplikasi Anda
+            const docSnap = await db.collection('cabang').doc(CABANG_AKTIF)
+                                    .collection('appData').doc('riwayatStok').get();
             
-            let dataBaru = [];
-            snap.forEach(doc => {
-                const d = doc.data();
-                dataBaru.push({
-                    waktu: d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : (d.waktu || '-'),
-                    tanggalIso: d.tanggalIso || (d.tanggal ? d.tanggal : ''),
-                    produk: d.produk || '-',
-                    aksi: d.tipe && d.tipe.includes('In') ? 'In' : 'Out',
-                    perubahan: d.jumlah ? (d.tipe && d.tipe.includes('In') ? `+${d.jumlah}` : `-${d.jumlah}`) : '-',
-                    sisa: d.sisaGudang !== undefined ? d.sisaGudang : '-',
-                    oleh: d.oleh || 'Admin'
-                });
-            });
+            if (docSnap.exists && docSnap.data().list) {
+                window.riwayatStok = docSnap.data().list;
+            }
 
-            // Update variabel global riwayatStok
-            window.riwayatStok = dataBaru;
-            
             // Render ulang tabel riwayat
-            if (typeof terapkanFilterRiwayat === 'function') {
+            if (typeof renderTabelRiwayatStok === 'function') {
+                renderTabelRiwayatStok();
+            } else if (typeof terapkanFilterRiwayat === 'function') {
                 terapkanFilterRiwayat();
             }
             
