@@ -433,10 +433,18 @@ function hapusAkunUser(hp) { if(confirm(`PERINGATAN: Hapus akses untuk pengguna 
 function inisiatisasiRealtimeListener() {
     if (!db) throw new Error("Database Cloud Belum Terhubung!");
 
+    // LISTENER STATUS HARIAN (DIPERBAIKI AGAR MEMBAWA SNAPSHOT FINANSIAL)
     db.collection('cabang').doc(CABANG_AKTIF).collection('statusHarian').onSnapshot(snapshot => { 
-        snapshot.forEach(doc => { dbStatusKunci[doc.id] = doc.data().terkunci; }); 
-        const tgl = document.getElementById('tglOps').value;
-        if(dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
+        snapshot.forEach(doc => { 
+            const data = doc.data();
+            // Simpan seluruh objek agar data snapshotFinansial tidak hilang
+            dbStatusKunci[doc.id] = {
+                terkunci: data.terkunci || false,
+                snapshotFinansial: data.snapshotFinansial || null
+            }; 
+        }); 
+        const tgl = document.getElementById('tglOps') ? document.getElementById('tglOps').value : '';
+        if (tgl && dbStok[tgl]) cekDanTarikDataKemarin(tgl); 
         applyLockUI(); 
     });
 
@@ -1177,7 +1185,13 @@ function loadDataTanggalLocal() {
     renderTabelMatriks(); loadKasMasukUI(); loadSetoranDapurUI(); loadGajiUI(); renderPengeluaranTables(); updateKalkulasi(); renderViewSetoranBakso(); applyLockUI(); 
 }
 
-function isDataLocked(tgl) { return dbStatusKunci[tgl] === true; }
+function isDataLocked(tgl) { 
+    const val = dbStatusKunci[tgl];
+    if (typeof val === 'object' && val !== null) {
+        return val.terkunci === true;
+    }
+    return val === true; 
+}
 
 function toggleLock() { 
     const tgl = document.getElementById('tglOps').value; 
@@ -3191,6 +3205,11 @@ function renderDashboardGrafik() {
             } 
         }); 
         
+        // 👉 CEK SNAPSHOT GEMBOK UNTUK DASHBOARD HARIAN
+        const dataLockObj = dbStatusKunci[tgl];
+        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
+        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
+
         // --- AMBIL BEBAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
@@ -3203,30 +3222,30 @@ function renderDashboardGrafik() {
                 .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-      // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
-let harianGojek = 0, harianGrab = 0, harianShopee = 0;
-if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
-    const k = dbKasMasuk[tgl];
-    const parseVal = (v) => {
-        if (!v) return 0;
-        if (typeof v === 'number') return v;
-        return parseFloat(v.toString().replace(/\./g, '')) || 0;
-    };
-    harianGojek = parseVal(k.gojek);
-    harianGrab = parseVal(k.grab);
-    harianShopee = parseVal(k.shopee);
-}
+        // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
+        let harianGojek = 0, harianGrab = 0, harianShopee = 0;
+        if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
+            const k = dbKasMasuk[tgl];
+            const parseVal = (v) => {
+                if (!v) return 0;
+                if (typeof v === 'number') return v;
+                return parseFloat(v.toString().replace(/\./g, '')) || 0;
+            };
+            harianGojek = parseVal(k.gojek);
+            harianGrab = parseVal(k.grab);
+            harianShopee = parseVal(k.shopee);
+        }
 
-totalGojek += harianGojek;
-totalGrab += harianGrab;
-totalShopee += harianShopee;
+        totalGojek += harianGojek;
+        totalGrab += harianGrab;
+        totalShopee += harianShopee;
 
-dataGojekLine.push(harianGojek);
-dataGrabLine.push(harianGrab);
-dataShopeeLine.push(harianShopee);
+        dataGojekLine.push(harianGojek);
+        dataGrabLine.push(harianGrab);
+        dataShopeeLine.push(harianShopee);
 
         const totalBebanHarian = dGaji + dLaci + dDarurat;
-        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
+        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian);
 
         totalOmsetBakso += harianOmsetBakso; 
         totalOmsetReseller += harianOmsetReseller; 
