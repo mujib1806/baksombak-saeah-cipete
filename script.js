@@ -2070,15 +2070,25 @@ function eksekusiHitungKasTotalSebenarnya() {
     let kasReseller = 0, kasPlastik = 0, kasDarurat = 0, kasLaba = 0, kasAnak = 0;  
     const validDates = Object.keys(dbStok).filter(tgl => tgl.match(/^\d{4}-\d{2}-\d{2}$/)).sort();  
 
-    let p1 = (pengaturanCabangAktif.pos1?.persen || 20) / 100;
-    let p2 = (pengaturanCabangAktif.pos2?.persen || 40) / 100;
-    let p3 = (pengaturanCabangAktif.pos3?.persen || 40) / 100;
-
+    // Ambil nama label pos aktif saat ini untuk pencocokan log transaksi manual
     let n1 = pengaturanCabangAktif.pos1?.nama || "Dana Darurat";
     let n2 = pengaturanCabangAktif.pos2?.nama || "Tabungan Anak";
     let n3 = pengaturanCabangAktif.pos3?.nama || "Laba Bersih";
 
     validDates.forEach(tgl => {  
+        // 👉 CEK STATUS GEMBOK & AMBIL SNAPSHOT HISTORIS TANGGAL INI
+        const dataLockObj = dbStatusKunci[tgl];
+        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
+        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
+
+        const pos1Data = (isLocked && snapshot?.pos1) ? snapshot.pos1 : (pengaturanCabangAktif.pos1 || { persen: 20 });
+        const pos2Data = (isLocked && snapshot?.pos2) ? snapshot.pos2 : (pengaturanCabangAktif.pos2 || { persen: 40 });
+        const pos3Data = (isLocked && snapshot?.pos3) ? snapshot.pos3 : (pengaturanCabangAktif.pos3 || { persen: 40 });
+
+        const p1 = (parseFloat(pos1Data.persen) || 20) / 100;
+        const p2 = (parseFloat(pos2Data.persen) || 40) / 100;
+        const p3 = (parseFloat(pos3Data.persen) || 40) / 100;
+
         let pKotor = 0, omsetLebihan = 0, modalReseller = 0;  
         (dbStok[tgl] || []).forEach(p => {  
             const awal = parseFloat(p.awal) || 0;  
@@ -2108,6 +2118,8 @@ function eksekusiHitungKasTotalSebenarnya() {
 
         kasReseller += modalReseller;  
         kasPlastik += omsetLebihan;  
+        
+        // 👉 GUNAKAN PERSENTASE SNAPSHOT HISTORIS TANGGAL INI
         kasDarurat += (basis * p1);  
         kasLaba += (basis * p3);      
         kasAnak += (basis * p2);      
