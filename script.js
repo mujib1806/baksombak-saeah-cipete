@@ -3164,8 +3164,9 @@ function renderDashboardGrafik() {
         return;
     }
 
-    let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
-    let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
+   let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
+let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
+let totalAllocPos2 = 0, totalAllocPos3 = 0; // 👉 Tambahkan penampung alokasi Pos 2 & 3
     // 👉 AKUMULASI & DATA HARIAN PENJUALAN ONLINE
     let totalGojek = 0, totalGrab = 0, totalShopee = 0;
     let dataGojekLine = [], dataGrabLine = [], dataShopeeLine = [];
@@ -3244,8 +3245,24 @@ function renderDashboardGrafik() {
         dataGrabLine.push(harianGrab);
         dataShopeeLine.push(harianShopee);
 
-        const totalBebanHarian = dGaji + dLaci + dDarurat;
-        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian);
+       const totalBebanHarian = dGaji + dLaci + dDarurat;
+        const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
+
+        // 👉 Ambil data snapshot persentase jika tanggal tergembok
+        const dataLockObj = dbStatusKunci[tgl];
+        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
+        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
+
+        const pos2Data = (isLocked && snapshot?.pos2) ? snapshot.pos2 : (pengaturanCabangAktif.pos2 || { persen: 40 });
+        const pos3Data = (isLocked && snapshot?.pos3) ? snapshot.pos3 : (pengaturanCabangAktif.pos3 || { persen: 40 });
+
+        const p2 = (parseFloat(pos2Data.persen) || 40) / 100;
+        const p3 = (parseFloat(pos3Data.persen) || 40) / 100;
+        const totalPersenP2P3 = p2 + p3 || 1; 
+
+        // 👉 Hitung proporsi Profit Bersih khusus Pos 2 & Pos 3
+        totalAllocPos2 += profitBersih * (p2 / totalPersenP2P3);
+        totalAllocPos3 += profitBersih * (p3 / totalPersenP2P3);
 
         totalOmsetBakso += harianOmsetBakso; 
         totalOmsetReseller += harianOmsetReseller; 
@@ -3282,7 +3299,15 @@ function renderDashboardGrafik() {
         ? pengaturanCabangAktif.pos2.nama : "Tabungan Anak";
     const n3 = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.pos3?.nama) 
         ? pengaturanCabangAktif.pos3.nama : "Laba Bersih";
-    setTxt('lblKetProfitBersih', `*Siap dialokasikan (${n2}, ${n3})`);
+
+    // 👉 Update rincian nominal Pos 2 & Pos 3
+    const elRincian = document.getElementById('lblKetProfitBersih');
+    if (elRincian) {
+        elRincian.innerHTML = `
+            <span>👶 ${n2}: <strong style="color:#15803d;">${formatRupiah(totalAllocPos2)}</strong></span> | 
+            <span>💵 ${n3}: <strong style="color:#15803d;">${formatRupiah(totalAllocPos3)}</strong></span>
+        `;
+    }
     
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels); 
     const formatSingkatan = function(value) { 
