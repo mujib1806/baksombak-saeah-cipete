@@ -233,103 +233,71 @@ function bukaLayarAplikasi() {
     dbStatusKunci = {};
     masterProduk = [...defaultMasterProduk];
 
-    // Safe Helper Function untuk manipulasi style tanpa bikin crash
-    const setDisplay = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = value;
-    };
-
-    const setText = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = value;
-    };
-
-    const setValueDate = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.valueAsDate = value;
-    };
-
-    const setValue = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) el.value = value;
-    };
-
-    setDisplay('loginScreen', 'none'); 
-    setDisplay('appScreen', 'block');        
+    document.getElementById('loginScreen').style.display = 'none'; 
+    document.getElementById('appScreen').style.display = 'block';        
     
-    if (typeof currentUser !== 'undefined' && currentUser) {
-        setText('namaUserAktif', currentUser.nama || 'Pengguna');        
-        const isOwner = currentUser.role === 'owner'; 
-        const isDapur = currentUser.role === 'dapur';        
-        setText('roleUserAktif', isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR'));        
-        
-        const savedNamaCabang = localStorage.getItem('namaCabangAktif') || 'Cabang Cipete Utara';
-        setText('labelCabangBanner', savedNamaCabang.replace('Cabang ', ''));
-        setText('headerNamaCabang', savedNamaCabang.replace('Cabang ', ''));
-        
-        document.querySelectorAll('.teks-cabang-pdf').forEach(el => {
-            el.innerText = savedNamaCabang;
-        });
+    document.getElementById('namaUserAktif').innerText = currentUser.nama;        
+    const isOwner = currentUser.role === 'owner'; 
+    const isDapur = currentUser.role === 'dapur';        
+    document.getElementById('roleUserAktif').innerText = isOwner ? '👑 OWNER' : (isDapur ? '🔪 DAPUR' : '🧑‍🍳 KASIR');        
+    const savedNamaCabang = localStorage.getItem('namaCabangAktif') || 'Cabang Cipete Utara';
+    const bannerLabel = document.getElementById('labelCabangBanner');
+    if (bannerLabel) bannerLabel.innerText = savedNamaCabang.replace('Cabang ', '');
+    const headerLama = document.getElementById('headerNamaCabang');
+    if (headerLama) headerLama.innerText = savedNamaCabang.replace('Cabang ', '');
+    document.querySelectorAll('.teks-cabang-pdf').forEach(el => {
+        el.innerText = savedNamaCabang;
+    });
 
-        const dropdownPindah = document.getElementById('dropdownPindahCabang');
-        if ((isOwner || isDapur) && dropdownPindah) {
-            dropdownPindah.style.display = 'block'; 
-            if (typeof db !== 'undefined' && db) {
-                db.collection('daftarCabang').get().then(snap => {
-                    dropdownPindah.innerHTML = '<option value="">🔄 Pindah Cabang...</option>';
-                    snap.forEach(doc => {
-                        const selected = (typeof CABANG_AKTIF !== 'undefined' && doc.id === CABANG_AKTIF) ? 'selected' : '';
-                        dropdownPindah.innerHTML += `<option value="${doc.id}" ${selected}>${doc.data().nama}</option>`;
-                    });
-                }).catch(err => console.log("Gagal memuat cabang:", err));
-            }
-        } else if (dropdownPindah) {
-            dropdownPindah.style.display = 'none'; 
+    const dropdownPindah = document.getElementById('dropdownPindahCabang');
+  if ((isOwner || isDapur) && dropdownPindah) {
+        dropdownPindah.style.display = 'block'; 
+        if (db) {
+            db.collection('daftarCabang').get().then(snap => {
+                dropdownPindah.innerHTML = '<option value="">🔄 Pindah Cabang...</option>';
+                snap.forEach(doc => {
+                    const selected = (doc.id === CABANG_AKTIF) ? 'selected' : '';
+                    dropdownPindah.innerHTML += `<option value="${doc.id}" ${selected}>${doc.data().nama}</option>`;
+                });
+            });
         }
-
-        // Pengaturan Navigasi Sidebar (Aman dari null)
-        setDisplay('menuSetoran', 'block');        
-        setDisplay('menuTransfer', isOwner ? 'block' : 'none');        
-        setDisplay('menuMutasi', isOwner ? 'block' : 'none');        
-        setDisplay('menuGaji', isOwner ? 'block' : 'none');      
-        setDisplay('menuDashboardGlobal', isOwner ? 'block' : 'none');
-        setDisplay('menuDashboard', (isOwner || isDapur) ? 'block' : 'none');        
-        setDisplay('menuProduk', isOwner ? 'block' : 'none');        
-        setDisplay('menuPusatKontrol', isOwner ? 'block' : 'none');  
-        setDisplay('menuRiwayat', isOwner ? 'block' : 'none');
-        setDisplay('menuCetakBerkala', (isOwner || isDapur) ? 'block' : 'none');        
-        setDisplay('grupKeuanganTitle', isOwner ? 'block' : 'none');
-        setDisplay('grupPengaturanTitle', (isOwner || isDapur) ? 'block' : 'none');
-        setDisplay('menuOrderVendor', isDapur ? 'none' : 'block');
-
-        // Card & Container Harian
-        setDisplay('cardAbsensi', isDapur ? 'none' : 'block');
-        setDisplay('cardKasir', isDapur ? 'none' : 'block');
-        setDisplay('containerAkumulasiKategori', (isOwner || isDapur) ? 'grid' : 'none');        
-
-        pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
+    } else if (dropdownPindah) {
+        dropdownPindah.style.display = 'none'; 
     }
+    document.getElementById('menuSetoran').style.display = 'block';        
+    document.getElementById('menuTransfer').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuMutasi').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuGaji').style.display = isOwner ? 'block' : 'none';      
+    const menuGlobal = document.getElementById('menuDashboardGlobal');
+    if (menuGlobal) menuGlobal.style.display = isOwner ? 'block' : 'none';
+    document.getElementById('menuDashboard').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('menuProduk').style.display = isOwner ? 'block' : 'none';        
+    document.getElementById('menuPusatKontrol').style.display = isOwner ? 'block' : 'none';  
+    document.getElementById('menuRiwayat').style.display = isOwner ? 'block' : 'none';
+    document.getElementById('menuCetakBerkala').style.display = (isOwner || isDapur) ? 'block' : 'none';        
+    document.getElementById('grupKeuanganTitle').style.display = isOwner ? 'block' : 'none';
+    document.getElementById('grupPengaturanTitle').style.display = (isOwner || isDapur) ? 'block' : 'none';
+    document.getElementById('menuOrderVendor').style.display = isDapur ? 'none' : 'block';
+    document.getElementById('cardAbsensi').style.display = isDapur ? 'none' : 'block';
+    document.getElementById('cardKasir').style.display = isDapur ? 'none' : 'block';
+    document.getElementById('containerAkumulasiKategori').style.display = (isOwner || isDapur) ? 'grid' : 'none';        
 
-    // Set Tanggal Operasional secara aman
+    pilihMenuNav(isOwner || isDapur ? 'dashboard' : 'harian');
+
     const today = new Date(); 
-    setValueDate('tglOps', today);        
-    setValueDate('cetakTglAwal', today); 
-    setValueDate('cetakTglAkhir', today);        
-    setValue('cetakBulan', today.toISOString().slice(0, 7));        
-    setValue('filterBulanGaji', today.toISOString().slice(0, 7));        
+    document.getElementById('tglOps').valueAsDate = today;        
+    document.getElementById('cetakTglAwal').valueAsDate = today; 
+    document.getElementById('cetakTglAkhir').valueAsDate = today;        
+    document.getElementById('cetakBulan').value = today.toISOString().slice(0, 7);        
+    document.getElementById('filterBulanGaji').value = today.toISOString().slice(0, 7);        
 
     try { 
-        if (typeof inisiatisasiRealtimeListener === 'function') {
-            inisiatisasiRealtimeListener(); 
-        } else if (typeof loadDataTanggalLocal === 'function') {
-            loadDataTanggalLocal();
-        }
+        inisiatisasiRealtimeListener(); 
     } catch(e) { 
-        if (typeof loadDataTanggalLocal === 'function') {
-            loadDataTanggalLocal(); 
-        }
+        loadDataTanggalLocal(); 
     }        
 }
+
 function prosesLogout() { 
     if(confirm("Anda yakin ingin keluar (Logout) dari aplikasi?")) { 
         if (currentUser) {
