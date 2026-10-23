@@ -471,6 +471,48 @@
         </div>
 
         <!-- ========================================== -->
+        <!-- 👉 SISIPAN BARU: PENJUALAN CHANNEL ONLINE (GOJEK, GRAB, SHOPEE) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="margin-bottom: 16px; background: #ffffff; padding: 14px; border-radius: 10px; border-top: 4px solid #10b981; border-color: #a7f3d0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+            
+            <!-- Header Bagian Online -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h4 style="margin: 0; color: #065f46; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    🛵 PENJUALAN CHANNEL ONLINE
+                </h4>
+                <span style="font-size: 0.75rem; background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 6px; font-weight: bold;">
+                    Total: <span id="dashTotalSemuaOnline">Rp 0</span>
+                </span>
+            </div>
+
+            <!-- 3 Kartu Ringkasan Kanal Online -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                <!-- Gojek -->
+                <div style="background: #f0fdf4; border-left: 3px solid #22c55e; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #15803d; font-weight: bold; font-size: 0.7rem;">Gojek</small>
+                    <div id="dashTotalGojek" style="color: #166534; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
+                </div>
+
+                <!-- Grab -->
+                <div style="background: #ecfdf5; border-left: 3px solid #10b981; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #047857; font-weight: bold; font-size: 0.7rem;">Grab</small>
+                    <div id="dashTotalGrab" style="color: #065f46; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
+                </div>
+
+                <!-- Shopee -->
+                <div style="background: #fff7ed; border-left: 3px solid #f97316; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #c2410c; font-weight: bold; font-size: 0.7rem;">Shopee</small>
+                    <div id="dashTotalShopee" style="color: #9a3412; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
+                </div>
+            </div>
+
+            <!-- Area Grafik Donut Penjualan Online -->
+            <div style="position: relative; height: 160px; width: 100%;">
+                <canvas id="chartOnlineChannel"></canvas>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
         <!-- BARIS 3: TREN OMSET & PROFIT BERSIH (FULL WIDTH / PLONG) -->
         <!-- ========================================== -->
         <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 16px; padding: 14px;">
