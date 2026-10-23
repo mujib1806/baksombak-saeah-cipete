@@ -3177,11 +3177,20 @@ let totalAllocPos2 = 0, totalAllocPos3 = 0; // 👉 Tambahkan penampung alokasi 
         ? pengaturanCabangAktif.pos1.nama 
         : "Dana Darurat";
 
-    targetDates.forEach(tgl => { 
+   targetDates.forEach(tgl => { 
         labelsTren.push(tgl.slice(-2) + '/' + tgl.slice(5,7)); 
         let harianOmsetBakso = 0, harianOmsetReseller = 0, harianProfitKotor = 0, harianSetoranBakso = 0; 
         let items = dbStok[tgl] || []; 
         
+        // 👉 1. DEKLARASI SNAPSHOT GEMBOK (CUKUP 1 KALI DI ATAS)
+        const dataLockObj = dbStatusKunci[tgl];
+        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
+        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
+
+        const pos1Data = (isLocked && snapshot?.pos1) ? snapshot.pos1 : (pengaturanCabangAktif.pos1 || { nama: "Dana Darurat", persen: 20 });
+        const pos2Data = (isLocked && snapshot?.pos2) ? snapshot.pos2 : (pengaturanCabangAktif.pos2 || { persen: 40 });
+        const pos3Data = (isLocked && snapshot?.pos3) ? snapshot.pos3 : (pengaturanCabangAktif.pos3 || { persen: 40 });
+
         items.forEach(p => { 
             const awal = parseFloat(p.awal) || 0; 
             const tambah = parseFloat(p.tambah) || 0; 
@@ -3206,11 +3215,6 @@ let totalAllocPos2 = 0, totalAllocPos3 = 0; // 👉 Tambahkan penampung alokasi 
             } 
         }); 
         
-        // 👉 CEK SNAPSHOT GEMBOK UNTUK DASHBOARD HARIAN
-        const dataLockObj = dbStatusKunci[tgl];
-        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
-        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
-
         // --- AMBIL BEBAN ---
         const nominalGajiStandar = (typeof pengaturanCabangAktif !== 'undefined' && pengaturanCabangAktif.gajiHarian) || 50000;
         const dGaji = (dbGajiHarian && dbGajiHarian[tgl] ? dbGajiHarian[tgl].nominal : nominalGajiStandar); 
@@ -3223,7 +3227,7 @@ let totalAllocPos2 = 0, totalAllocPos3 = 0; // 👉 Tambahkan penampung alokasi 
                 .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-        // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
+        // --- DATA PENJUALAN ONLINE DARI dbKasMasuk ---
         let harianGojek = 0, harianGrab = 0, harianShopee = 0;
         if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
             const k = dbKasMasuk[tgl];
@@ -3245,22 +3249,14 @@ let totalAllocPos2 = 0, totalAllocPos3 = 0; // 👉 Tambahkan penampung alokasi 
         dataGrabLine.push(harianGrab);
         dataShopeeLine.push(harianShopee);
 
-       const totalBebanHarian = dGaji + dLaci + dDarurat;
+        const totalBebanHarian = dGaji + dLaci + dDarurat;
         const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
 
-        // 👉 Ambil data snapshot persentase jika tanggal tergembok
-        const dataLockObj = dbStatusKunci[tgl];
-        const isLocked = (typeof dataLockObj === 'object') ? dataLockObj?.terkunci : dataLockObj;
-        const snapshot = (typeof dataLockObj === 'object') ? dataLockObj?.snapshotFinansial : null;
-
-        const pos2Data = (isLocked && snapshot?.pos2) ? snapshot.pos2 : (pengaturanCabangAktif.pos2 || { persen: 40 });
-        const pos3Data = (isLocked && snapshot?.pos3) ? snapshot.pos3 : (pengaturanCabangAktif.pos3 || { persen: 40 });
-
+        // 👉 2. HITUNG PROPORSI KHUSUS POS 2 & POS 3 (MEMAKAI POS2DATA & POS3DATA DI ATAS)
         const p2 = (parseFloat(pos2Data.persen) || 40) / 100;
         const p3 = (parseFloat(pos3Data.persen) || 40) / 100;
         const totalPersenP2P3 = p2 + p3 || 1; 
 
-        // 👉 Hitung proporsi Profit Bersih khusus Pos 2 & Pos 3
         totalAllocPos2 += profitBersih * (p2 / totalPersenP2P3);
         totalAllocPos3 += profitBersih * (p3 / totalPersenP2P3);
 
