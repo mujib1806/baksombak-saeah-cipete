@@ -33,6 +33,7 @@ let dbStok = {}, dbPengeluaranHarian = [], dbKasMasuk = {}, dbLogKas = [], dbSet
 let activeKasTab = 'Reseller';
 let currentUser = null;
 let riwayatStok = [];
+
 function catatRiwayatStok(namaProduk, jenisAksi, jumlahPerubahan, sisaStokAkhir) {
     const now = new Date();
     const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
@@ -2635,9 +2636,9 @@ async function simpanMutasiGudangMasal() {
     }
 }
 // ==========================================
-// 4. FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL
+// 4. FUNGSI KOREKSI / SESUAIKAN STOK FISIK AKTUAL (OPTIMASI SUPER CEPAT)
 // ==========================================
-function bukaModalKoreksiStok(i) {
+async function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
     if (!p) return;
 
@@ -2660,28 +2661,54 @@ function bukaModalKoreksiStok(i) {
         return;
     }
 
+    // 1. UPDATE LOKAL LANGSUNG (UI Optimistik - Tanpa Menunggu Server)
     p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + selisih;
     window.masterProduk = masterProduk;
 
-    if(typeof db !== 'undefined' && db !== null) {
-        // PERBAIKAN: Gunakan .set (satu titik)
-        db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk').set({ list: masterProduk }, { merge: true })
-        .then(() => { 
-            renderTabelMasterProduk(); 
-            if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
-        }); 
-    } else { 
-        renderTabelMasterProduk(); 
-        if(typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi (Lokal)!"); 
-    }
+    // Render layar seketika agar tidak terasa patah/freeze
+    renderTabelMasterProduk(); 
+    if (typeof showToast === 'function') showToast("⚡ Memproses Koreksi Stok...");
 
     const jenisAksi = selisih > 0 ? 'In' : 'Out';
-    if (typeof catatRiwayatStok === 'function') {
-        catatRiwayatStok(p.nama, `Koreksi Fisik (${jenisAksi})`, Math.abs(selisih), stokFisikAktual);
-    }
-    
-    if (typeof catatAktivitas === 'function') {
-        catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+
+    // 2. PROSES BACKEND MENGGUNAKAN FIREBASE BATCH (1 Tembakan Kolektif)
+    if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
+        try {
+            const batch = db.batch();
+
+            // A. Paket 1: Master Produk
+            const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+            batch.set(refMaster, { list: masterProduk }, { merge: true });
+
+            // B. Paket 2: Log Riwayat Stok (Disimpan sebagai dokumen individual agar tidak menimpa array berat)
+            const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
+            const now = new Date();
+            batch.set(refRiwayat, {
+                produk: p.nama,
+                tipe: `Koreksi Fisik (${jenisAksi})`,
+                jumlah: Math.abs(selisih),
+                sisaGudang: stokFisikAktual,
+                oleh: (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin",
+                tanggalIso: now.toISOString().split('T')[0],
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            // Eksekusi pengiriman latar belakang sekaligus
+            await batch.commit();
+
+            if (typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi!");
+
+            // Catat log aktivitas jika ada
+            if (typeof catatAktivitas === 'function') {
+                catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+            }
+
+        } catch (err) {
+            console.error("Gagal koreksi stok di server:", err);
+            alert("⚠️ Perubahan disimpan secara lokal, namun gagal sinkron ke server: " + err.message);
+        }
+    } else {
+        if (typeof showToast === 'function') showToast("✅ Stok Berhasil Dikoreksi (Lokal)!");
     }
 }
 // ==========================================
