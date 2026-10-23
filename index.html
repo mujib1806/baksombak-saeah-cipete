@@ -398,8 +398,7 @@
                 </div>
             </div>
         </div>
-
-       <!-- DASHBOARD CABANG -->
+<!-- DASHBOARD CABANG -->
 <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
     <div class="card" style="border-top: 4px solid #8b5cf6;">
         
@@ -425,18 +424,14 @@
             </div>
         </div>
         
-        <!-- ========================================== -->
-        <!-- BARIS 1: TOTAL OMSET & SETORAN DAPUR (2 KOLOM SEIMBANG) -->
-        <!-- ========================================== -->
+        <!-- BARIS 1: TOTAL OMSET & SETORAN DAPUR -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;">
-            <!-- 1. TOTAL OMSET -->
             <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center; padding: 12px;">
                 <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
                 <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
                 <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
             </div>
 
-            <!-- 2. SETORAN DAPUR -->
             <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; text-align:center; padding: 12px;">
                 <span style="font-size:0.75rem; font-weight:800; color:#c2410c; text-transform:uppercase;">🍲 SETORAN DAPUR (BAKSO)</span>
                 <div id="dashTotalSetoranDapur" style="font-size:1.5rem; font-weight:900; color:#ea580c; margin:4px 0;">Rp 0</div>
@@ -444,18 +439,14 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- BARIS 2: PROFIT BERSIH & BEBAN PENGELUARAN (2 KOLOM SEIMBANG) -->
-        <!-- ========================================== -->
+        <!-- BARIS 2: PROFIT BERSIH & BEBAN PENGELUARAN -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
-            <!-- 3. TOTAL PROFIT BERSIH -->
             <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center; padding: 12px; display:flex; flex-direction:column; justify-content:center;">
                 <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
                 <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
                 <div id="lblKetProfitBersih" style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan</div>
             </div>
 
-            <!-- 4. TOTAL BEBAN & PENGELUARAN -->
             <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; padding: 12px;">
                 <div style="text-align:center; margin-bottom: 8px;">
                     <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
@@ -470,12 +461,8 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- 👉 SISIPAN BARU: PENJUALAN CHANNEL ONLINE (GOJEK, GRAB, SHOPEE) -->
-        <!-- ========================================== -->
+        <!-- SISIPAN BARU: PENJUALAN CHANNEL ONLINE (GOJEK, GRAB, SHOPEE) -->
         <div class="summary-box" style="margin-bottom: 16px; background: #ffffff; padding: 14px; border-radius: 10px; border-top: 4px solid #10b981; border-color: #a7f3d0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-            
-            <!-- Header Bagian Online -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                 <h4 style="margin: 0; color: #065f46; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                     🛵 PENJUALAN CHANNEL ONLINE
@@ -485,51 +472,39 @@
                 </span>
             </div>
 
-            <!-- 3 Kartu Ringkasan Kanal Online -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                <!-- Gojek -->
                 <div style="background: #f0fdf4; border-left: 3px solid #22c55e; padding: 8px 10px; border-radius: 6px;">
                     <small style="color: #15803d; font-weight: bold; font-size: 0.7rem;">Gojek</small>
                     <div id="dashTotalGojek" style="color: #166534; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
                 </div>
-
-                <!-- Grab -->
                 <div style="background: #ecfdf5; border-left: 3px solid #10b981; padding: 8px 10px; border-radius: 6px;">
                     <small style="color: #047857; font-weight: bold; font-size: 0.7rem;">Grab</small>
                     <div id="dashTotalGrab" style="color: #065f46; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
                 </div>
-
-                <!-- Shopee -->
                 <div style="background: #fff7ed; border-left: 3px solid #f97316; padding: 8px 10px; border-radius: 6px;">
                     <small style="color: #c2410c; font-weight: bold; font-size: 0.7rem;">Shopee</small>
                     <div id="dashTotalShopee" style="color: #9a3412; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
                 </div>
             </div>
 
-<!-- Area Grafik Balok Penjualan Online Harian -->
-<div style="position: relative; height: 240px; width: 100%;">
-    <canvas id="chartOnlineChannel"></canvas>
-</div>
+            <div style="position: relative; height: 240px; width: 100%;">
+                <canvas id="chartOnlineChannel"></canvas>
+            </div>
+        </div> <!-- FIX: Tag Penutup Kasir Channel Online Diberikan di Sini -->
 
-        <!-- ========================================== -->
-        <!-- BARIS 3: TREN OMSET & PROFIT BERSIH (FULL WIDTH / PLONG) -->
-        <!-- ========================================== -->
+        <!-- BARIS 3: TREN OMSET & PROFIT BERSIH -->
         <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 16px; padding: 14px;">
             <h4 style="font-size:0.85rem; color:#334155; margin: 0 0 12px 0; text-align:center; font-weight:800;">📈 TREN OMSET & PROFIT BERSIH</h4>
             <div class="chart-container" style="position: relative; height: 320px; width: 100%;"><canvas id="chartTren"></canvas></div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- BARIS 4: TOP 5 BAKSO MALANG (FULL WIDTH) -->
-        <!-- ========================================== -->
+        <!-- BARIS 4: TOP 5 BAKSO MALANG -->
         <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding: 14px; margin-bottom: 16px;">
             <h4 style="font-size:0.85rem; color:#ea580c; margin:0 0 10px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
             <div style="position: relative; height: 180px; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #ffedd5;"><canvas id="chartTopBakso"></canvas></div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- BARIS 5: RANKING RESELLER (FULL WIDTH) -->
-        <!-- ========================================== -->
+        <!-- BARIS 5: RANKING RESELLER -->
         <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding: 14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="font-size:0.85rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
@@ -538,11 +513,12 @@
             <div style="position: relative; max-height: 260px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #dbeafe;"><canvas id="chartTopReseller"></canvas></div>
         </div>
 
-    </div>
-</div>
+    </div> <!-- Penutup <div class="card"> -->
+</div> <!-- Penutup <div id="viewDashboard"> -->
 
-        <!-- PUSAT KONTROL OWNER -->
-        <div id="viewPusatKontrol" style="display: none; padding: 15px;">
+<!-- PUSAT KONTROL OWNER -->
+<div id="viewPusatKontrol" style="display: none; padding: 15px;">
+       
             <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                 <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
                 
