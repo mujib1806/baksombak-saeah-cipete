@@ -1054,11 +1054,18 @@ MODALS DAN CETAK PDF
         <tbody id="tbodyMasterProduk"></tbody>
     </table>
 </div>
-    <!-- KARTU RIWAYAT PERGERAKAN STOK GUDANG (BARU) -->
+ <!-- KARTU RIWAYAT PERGERAKAN STOK GUDANG (BARU) -->
     <div class="card" style="margin-top: 20px; border-top: 4px solid #0284c7; background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-            <h3 style="color: #0369a1; margin:0; font-size: 1rem; font-weight: 800;">📜 Riwayat Pergerakan Stok Gudang</h3>
-            <span style="font-size: 0.7rem; color: #64748b; background: #f0f9ff; padding: 3px 6px; border-radius: 4px;">Audit Trail Masuk & Keluar</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h3 style="color: #0369a1; margin:0; font-size: 1rem; font-weight: 800;">📜 Riwayat Pergerakan Stok Gudang</h3>
+                <span style="font-size: 0.7rem; color: #64748b; background: #f0f9ff; padding: 3px 6px; border-radius: 4px;">Audit Trail Masuk & Keluar</span>
+            </div>
+
+            <!-- 👉 TOMBOL REFRESH DIPASANG DI SINI -->
+            <button id="btnRefreshRiwayat" onclick="refreshTabelRiwayatStok()" style="background: #0284c7; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                🔄 Refresh Riwayat
+            </button>
         </div>
 
         <div class="table-wrapper">
@@ -1128,8 +1135,7 @@ MODALS DAN CETAK PDF
             </div>
         </form>
     </div>
-</div>
-
+</div> 
 <div class="modal" id="modalKas">
     <div class="modal-content">
         <h3 id="modalKasJudul" style="font-size:1.1rem; font-weight:800;">Kelola Kas</h3>
