@@ -1045,6 +1045,9 @@ function updateNilaiStokLokal(idx, tipe, val) {
 // ==========================================
 // EKSKUSI SIMPAN HARIAN MASAL (SUPER CEPAT DENGAN FIREBASE BATCH)
 // ==========================================
+// ==========================================
+// FUNGSI SIMPAN HARIAN MASAL (PENCATATAN RIWAYAT DISATUKAN)
+// ==========================================
 async function simpanStokHarianMasal() {
     const tgl = document.getElementById('tglOps').value;
     if (typeof isDataLocked === 'function' && isDataLocked(tgl)) {
@@ -1058,17 +1061,26 @@ async function simpanStokHarianMasal() {
     if (btn) {
         btn.innerText = "⏳ Menyimpan...";
         btn.disabled = true;
-        btn.style.backgroundColor = "#eab308";
     }
 
-    // Jeda mikro agar tombol loading sempat ter-render mulus di UI
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
         let adaPenambahanStok = false;
         
-        // 1. Inisialisasi Firebase Batch
-        const batch = db.batch();
+        // Tarik data riwayat lama agar tidak tertimpa
+        let riwayatAda = [];
+        if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+            const docSnap = await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').get();
+            if (docSnap.exists && Array.isArray(docSnap.data().list)) {
+                riwayatAda = docSnap.data().list;
+            }
+        }
+
+        const now = new Date();
+        const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+        const userSkrg = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
 
         if (dbStok[tgl] && Array.isArray(dbStok[tgl])) {
             dbStok[tgl].forEach(p => {
@@ -1077,12 +1089,9 @@ async function simpanStokHarianMasal() {
                 if (tambahInputVal > 0) {
                     adaPenambahanStok = true;
                     
-                    // Akumulasi nilai Refill ke 'tambah'
                     p.tambah = (parseFloat(p.tambah) || 0) + tambahInputVal;
-                    // Reset kolom input baru
                     p.tambahInput = '';
 
-                    // Potong Stok Gudang di Master Produk
                     const masterIdx = masterProduk.findIndex(mp => mp.nama === p.nama);
                     if (masterIdx !== -1) {
                         let keluarSekarang = parseFloat(masterProduk[masterIdx].keluarEtalase) || 0;
@@ -1091,28 +1100,34 @@ async function simpanStokHarianMasal() {
                         masterProduk[masterIdx].keluarEtalase = keluarSekarang + tambahInputVal;
                         let sisaGudangBaru = awalGudang - masterProduk[masterIdx].keluarEtalase - (parseFloat(masterProduk[masterIdx].stokRusak) || 0);
 
-                        // Masukkan Log Riwayat ke Paket Batch (Bukan request terpisah)
-                        const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
-                        batch.set(refRiwayat, {
+                        // Masukkan Log Riwayat Penambahan ke Array Utama
+                        riwayatAda.unshift({
+                            waktu: `${tglFormat}, ${jamFormat}`,
+                            tanggalIso: tgl,
                             produk: p.nama,
-                            tipe: 'Out',
-                            jumlah: tambahInputVal,
-                            sisaGudang: sisaGudangBaru,
-                            tanggal: tgl,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            aksi: 'Out', // Stok keluar dari gudang ke etalase
+                            perubahan: `-${tambahInputVal}`,
+                            sisa: sisaGudangBaru,
+                            oleh: userSkrg
                         });
                     }
                 }
             });
         }
 
-        // 2. Masukkan Data Master Produk & Stok Harian ke Paket Batch
+        if (riwayatAda.length > 500) riwayatAda = riwayatAda.slice(0, 500);
+        window.riwayatStok = riwayatAda;
+
+        // Simpan ke Firestore via Batch
+        const batch = db.batch();
+
         if (adaPenambahanStok) {
             const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+            const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok');
             batch.set(refMaster, { list: masterProduk }, { merge: true });
+            batch.set(refRiwayat, { list: window.riwayatStok }, { merge: true });
         }
 
-        // Ambil hitungan profit bersih
         let elemenProfit = document.getElementById('totalProfitBersih') ? document.getElementById('totalProfitBersih').innerText : "0";
         let profitAngka = Number(elemenProfit.replace(/[^0-9,-]+/g,"")) || 0;
         let profitSiapBagi = Math.max(0, profitAngka);
@@ -1126,14 +1141,10 @@ async function simpanStokHarianMasal() {
             labaBersih: profitSiapBagi * 0.40
         }, { merge: true });
 
-        // 3. EKSKUSI BATCH (Kirim seluruh data dalam 1 kali tembak ke Firebase!)
         await batch.commit();
-        // Tambahkan baris ini tepat setelah 'await batch.commit();'
-        setTimeout(() => {
-        refreshTabelRiwayatStok();
-        }, 1500); // Beri jeda 1,5 detik agar Firestore selesai memproses batch
-        // Re-render tabel agar UI langsung ter-update bersih
+
         renderTabelMatriks();
+        if (typeof terapkanFilterRiwayat === 'function') terapkanFilterRiwayat();
 
         if (btn) {
             btn.innerText = "✅ Stok Harian Tersimpan";
@@ -1141,8 +1152,7 @@ async function simpanStokHarianMasal() {
             btn.disabled = false;
         }
 
-        if (typeof showToast === 'function') showToast("✅ Stok Harian & Gudang Berhasil Disimpan!");
-        if (typeof hitungAkumulasiKasTotal === 'function') hitungAkumulasiKasTotal();
+        if (typeof showToast === 'function') showToast("✅ Stok Harian & Riwayat Berhasil Disimpan!");
 
     } catch (err) {
         alert("Gagal menyimpan stok harian: " + err);
@@ -2639,9 +2649,9 @@ async function simpanMutasiGudangMasal() {
     }
 }
 // ==========================================
-// FUNGSI KOREKSI STOK FISIK (AMAN, RINGAN, DAN LANGSUNG MUNCUL)
+// FUNGSI KOREKSI STOK FISIK (AMAN DARI TIMPA DATA LAMA)
 // ==========================================
-function bukaModalKoreksiStok(i) {
+async function bukaModalKoreksiStok(i) {
     const p = masterProduk[i];
     if (!p) return;
 
@@ -2662,11 +2672,24 @@ function bukaModalKoreksiStok(i) {
         return;
     }
 
-    // 1. Update master produk lokal
+    // 1. Ambil data riwayat lama dari Firebase terlebih dahulu agar tidak hilang/tertimpa
+    let riwayatAda = [];
+    try {
+        if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+            const docSnap = await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').get();
+            if (docSnap.exists && Array.isArray(docSnap.data().list)) {
+                riwayatAda = docSnap.data().list;
+            }
+        }
+    } catch(e) {
+        riwayatAda = Array.isArray(window.riwayatStok) ? window.riwayatStok : [];
+    }
+
+    // 2. Update master produk lokal
     p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + selisih;
     window.masterProduk = masterProduk;
 
-    // 2. Buat item riwayat baru sesuai struktur asli
+    // 3. Sisipkan catatan riwayat baru di paling atas
     const now = new Date();
     const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
@@ -2682,17 +2705,15 @@ function bukaModalKoreksiStok(i) {
         oleh: (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin"
     };
 
-    if (!Array.isArray(window.riwayatStok)) window.riwayatStok = [];
-    window.riwayatStok.unshift(itemRiwayatBaru);
-    if (window.riwayatStok.length > 500) window.riwayatStok.pop();
+    riwayatAda.unshift(itemRiwayatBaru);
+    if (riwayatAda.length > 500) riwayatAda.pop();
+    window.riwayatStok = riwayatAda;
 
-    // 3. Render Tampilan Langsung (Seketika Tanpa Menunggu Firebase)
+    // 4. Update Tampilan Layar Seketika
     renderTabelMasterProduk();
-    if (typeof renderTabelRiwayatStok === 'function') {
-        renderTabelRiwayatStok();
-    }
+    if (typeof terapkanFilterRiwayat === 'function') terapkanFilterRiwayat();
 
-    // 4. Simpan ke Firebase di background
+    // 5. Simpan ke Firebase Batch
     if (typeof db !== 'undefined' && db !== null && typeof CABANG_AKTIF !== 'undefined') {
         const batch = db.batch();
         const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
@@ -2703,13 +2724,7 @@ function bukaModalKoreksiStok(i) {
 
         batch.commit().then(() => {
             if (typeof showToast === 'function') showToast("✅ Koreksi stok tersimpan!");
-        }).catch(err => {
-            console.error("Gagal simpan ke Firestore:", err);
-        });
-    }
-
-    if (typeof catatAktivitas === 'function') {
-        catatAktivitas('Master Produk', `Koreksi stok fisik "${p.nama}" menjadi ${stokFisikAktual} Pcs`);
+        }).catch(err => console.error("Gagal simpan ke Firestore:", err));
     }
 }
 // ==========================================
