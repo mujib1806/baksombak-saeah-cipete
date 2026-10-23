@@ -24,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
+    <!-- Menghubungkan file style.css eksternal -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,7 +32,6 @@
 <div id="offlineBanner">⚠️ Koneksi Terputus! Perubahan akan disimpan sementara di perangkat.</div>
 <div id="toastNotif" class="toast-notif">✅ Tersimpan!</div>
 
-<!-- LOGIN SCREEN -->
 <div id="loginScreen">
     <div class="login-card">
         <img src="AGAK HIDUP.png" alt="Logo Warung" class="login-logo">
@@ -46,7 +46,6 @@
     </div>
 </div>
 
-<!-- APP SCREEN -->
 <div id="appScreen">
     <div class="mobile-header">
         <div class="header-left">
@@ -75,7 +74,6 @@
 
     <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h3 style="margin: 0; border: none; padding: 0; font-size: 0.95rem; font-weight: 700; color: #f8fafc; letter-spacing: 0.5px;">📌 Navigasi Utama</h3>
@@ -89,8 +87,8 @@
             <div id="roleUserAktif" style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; background: rgba(56, 189, 248, 0.12); display: inline-block; padding: 2px 8px; border-radius: 4px; margin-top: 5px; border: 1px solid rgba(56, 189, 248, 0.2);">-</div>
             
             <button id="menuDashboardGlobal" onclick="pilihMenuNav('dashboardGlobal')" style="display: none; align-items: center; justify-content: center; width: 100%; padding: 10px; margin-top: 15px; background: linear-gradient(135deg, #facc15, #f97316); color: #0f172a; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.4); transition: transform 0.2s;">
-                <span style="margin-right: 6px; font-size: 1rem; color: #0f172a;">🌐</span> Dashboard Global
-            </button>
+    <span style="margin-right: 6px; font-size: 1rem; color: #0f172a;">🌐</span> Dashboard Global
+</button>
         </div>
         
         <ul class="sidebar-menu">
@@ -136,202 +134,163 @@
         </ul>
     </div>
 
-    <!-- MAIN CONTAINER -->
     <div class="container">
-
-        <!-- 1. VIEW DASHBOARD CABANG -->
-        <div id="viewDashboard" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #8b5cf6;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:8px;">
-                    <h2 style="color: #6d28d9; margin: 0; font-size: 1.2rem;">📈 Dashboard Analisa Bisnis</h2>
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <select id="filterDashboardPeriode" onchange="toggleCustomDateDashboard(); renderDashboardGrafik();" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
-                            <option value="7">7 Hari Terakhir</option>
-                            <option value="30">30 Hari Terakhir</option>
-                            <option value="bulan_ini">Bulan Ini</option>
-                            <option value="bulan_lalu">Bulan Lalu</option>
-                            <option value="custom">📅 Custom Tanggal...</option>
-                            <option value="semua">Semua Waktu</option>
-                        </select>
-                        <div id="containerCustomDateDash" style="display:none; align-items:center; gap:5px; background:#f1f5f9; padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1;">
-                            <input type="date" id="dashTglAwal" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
-                            <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
-                            <input type="date" id="dashTglAkhir" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;">
-                    <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center; padding: 12px;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
-                        <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
-                        <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
-                    </div>
-                    <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; text-align:center; padding: 12px;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#c2410c; text-transform:uppercase;">🍲 SETORAN DAPUR (BAKSO)</span>
-                        <div id="dashTotalSetoranDapur" style="font-size:1.5rem; font-weight:900; color:#ea580c; margin:4px 0;">Rp 0</div>
-                        <div style="font-size:0.72rem; color:#9a3412;">*Modal porsi bakso disetor ke Dapur</div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
-                    <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center; padding: 12px; display:flex; flex-direction:column; justify-content:center;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
-                        <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
-                        <div id="lblKetProfitBersih" style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan</div>
-                    </div>
-
-                    <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; padding: 12px;">
-                        <div style="text-align:center; margin-bottom: 8px;">
-                            <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
-                            <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
-                            <div style="font-size:0.7rem; color:#e11d48;">*(Memotong Profit Kotor untuk menghasilkan Profit Bersih Riil)*</div>
-                        </div>
-                        <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
-                            <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan Harian:</span><strong id="dashBebanGaji">Rp 0</strong></div>
-                            <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Belanja Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
-                            <div style="display:flex; justify-content:space-between;"><span>▪️ 🛡️ Pengeluaran Dana Darurat:</span><strong id="dashBebanDarurat">Rp 0</strong></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="summary-box" style="margin-bottom: 16px; background: #ffffff; padding: 14px; border-radius: 10px; border-top: 4px solid #10b981; border-color: #a7f3d0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                        <h4 style="margin: 0; color: #065f46; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">🛵 PENJUALAN CHANNEL ONLINE</h4>
-                        <span style="font-size: 0.75rem; background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 6px; font-weight: bold;">
-                            Total: <span id="dashTotalSemuaOnline">Rp 0</span>
-                        </span>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                        <div style="background: #f0fdf4; border-left: 3px solid #22c55e; padding: 8px 10px; border-radius: 6px;">
-                            <small style="color: #15803d; font-weight: bold; font-size: 0.7rem;">Gojek</small>
-                            <div id="dashTotalGojek" style="color: #166534; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
-                        </div>
-                        <div style="background: #ecfdf5; border-left: 3px solid #10b981; padding: 8px 10px; border-radius: 6px;">
-                            <small style="color: #047857; font-weight: bold; font-size: 0.7rem;">Grab</small>
-                            <div id="dashTotalGrab" style="color: #065f46; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
-                        </div>
-                        <div style="background: #fff7ed; border-left: 3px solid #f97316; padding: 8px 10px; border-radius: 6px;">
-                            <small style="color: #c2410c; font-weight: bold; font-size: 0.7rem;">Shopee</small>
-                            <div id="dashTotalShopee" style="color: #9a3412; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
-                        </div>
-                    </div>
-
-                    <div style="position: relative; height: 240px; width: 100%;"><canvas id="chartOnlineChannel"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 16px; padding: 14px;">
-                    <h4 style="font-size:0.85rem; color:#334155; margin: 0 0 12px 0; text-align:center; font-weight:800;">📈 TREN OMSET & PROFIT BERSIH</h4>
-                    <div class="chart-container" style="position: relative; height: 320px; width: 100%;"><canvas id="chartTren"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding: 14px; margin-bottom: 16px;">
-                    <h4 style="font-size:0.85rem; color:#ea580c; margin:0 0 10px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
-                    <div style="position: relative; height: 180px; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #ffedd5;"><canvas id="chartTopBakso"></canvas></div>
-                </div>
-
-                <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding: 14px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                        <h4 style="font-size:0.85rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
-                        <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:bold; cursor:pointer;">⚙️ Filter</button>
-                    </div>
-                    <div style="position: relative; max-height: 260px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #dbeafe;"><canvas id="chartTopReseller"></canvas></div>
-                </div>
-            </div>
+      <!-- VENDOR ORDER -->
+<div id="viewOrderVendor" style="display:none; margin-bottom: 40px;">
+    <div class="card" style="border-top: 4px solid #f59e0b;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <h2 style="color: #d97706; margin:0;">🛒 Form Pemesanan Vendor (PO)</h2>
+            <button onclick="bukaModalTambahVendor()" class="btn btn-warning" style="width:auto; padding:8px 12px; margin:0; border-radius:12px; font-size: 0.75rem;">➕ Tambah Produk Baru</button>
+        </div>
+        
+        <div id="bannerWarningGudang" style="display: none; background: #fef2f2; border-left: 4px solid #ef4444; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
+            <div style="font-size: 0.8rem; font-weight: 800; color: #b91c1c;">🚨 PERINGATAN STOK MENIPIS (GUDANG + ETALASE)</div>
+            <div id="textWarningGudang" style="font-size: 0.75rem; color: #991b1b; margin-top: 4px;"></div>
+        </div>
+        
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 12px;">
+            *Isi kolom <strong>Qty</strong> untuk memesan. <strong>Harga/Karton</strong> bisa diedit jika ada perubahan harga dari supplier. Semua perubahan otomatis tersimpan.
         </div>
 
-        <!-- 2. VENDOR ORDER -->
-        <div id="viewOrderVendor" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #f59e0b;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-                    <h2 style="color: #d97706; margin:0;">🛒 Form Pemesanan Vendor (PO)</h2>
-                    <button onclick="bukaModalTambahVendor()" class="btn btn-warning" style="width:auto; padding:8px 12px; margin:0; border-radius:12px; font-size: 0.75rem;">➕ Tambah Produk Baru</button>
-                </div>
-                
-                <div id="bannerWarningGudang" style="display: none; background: #fef2f2; border-left: 4px solid #ef4444; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
-                    <div style="font-size: 0.8rem; font-weight: 800; color: #b91c1c;">🚨 PERINGATAN STOK MENIPIS (GUDANG + ETALASE)</div>
-                    <div id="textWarningGudang" style="font-size: 0.75rem; color: #991b1b; margin-top: 4px;"></div>
-                </div>
-
-                <div class="table-wrapper">
-                    <table class="table-freeze">
-                        <thead>
-                            <tr>
-                                <th style="width:30px;">No</th>
-                                <th style="text-align:left; min-width: 140px;">Nama Produk</th>
-                                <th>Kemasan</th>
-                                <th>Vol</th>
-                                <th>Isi</th>
-                                <th>Rasa</th>
-                                <th style="background:#eff6ff; color:#1d4ed8;">Qty (Karton)</th>
-                                <th style="background:#fefce8; color:#a16207;">Harga/Karton (Rp)</th>
-                                <th style="background:#f0fdf4; color:#15803d;">Total (Rp)</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyOrderVendor"></tbody>
-                    </table>
-                </div>
-
-                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; margin-top: 15px; padding: 20px; text-align: center;">
-                    <span style="font-size: 0.85rem; font-weight: 800; color: #c2410c; text-transform: uppercase;">GRAND TOTAL PEMESANAN:</span>
-                    <div id="vendorGrandTotal" style="font-size: 2rem; font-weight: 900; color: #ea580c; margin: 8px 0;">Rp 0</div>
-                    
-                    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px;">
-                        <span style="font-size: 13px; font-weight: bold; color: #c2410c;">Dipesan Oleh:</span>
-                        <input type="text" id="inputNamaPemesanVendor" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #fdba74; font-weight: bold; width: 140px; text-align: center;" placeholder="Nama Anda...">
-                    </div>
-                    
-                    <button onclick="kirimWhatsAppOrder()" class="btn btn-wa" style="width: 100%; max-width: 400px; margin: 0 auto; border-radius: 12px;">Kirim Order via WhatsApp</button>
-                </div>
-            </div>
+        <div class="table-wrapper">
+            <table class="table-freeze">
+                <thead>
+                    <tr>
+                        <th style="width:30px;">No</th>
+                        <th style="text-align:left; min-width: 140px;">Nama Produk</th>
+                        <th>Kemasan</th>
+                        <th>Vol</th>
+                        <th>Isi</th>
+                        <th>Rasa</th>
+                        <th style="background:#eff6ff; color:#1d4ed8;">Qty (Karton)</th>
+                        <th style="background:#fefce8; color:#a16207;">Harga/Karton (Rp)</th>
+                        <th style="background:#f0fdf4; color:#15803d;">Total (Rp)</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyOrderVendor"></tbody>
+            </table>
         </div>
 
-        <!-- 3. LAPORAN BERKALA -->
+        <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; margin-top: 15px; padding: 20px; text-align: center;">
+            <span style="font-size: 0.85rem; font-weight: 800; color: #c2410c; text-transform: uppercase;">GRAND TOTAL PEMESANAN:</span>
+            <div id="vendorGrandTotal" style="font-size: 2rem; font-weight: 900; color: #ea580c; margin: 8px 0;">Rp 0</div>
+            <p style="font-size: 0.75rem; color: #9a3412; margin-bottom: 15px;">*Siapkan uang sejumlah di atas saat kurir barang datang.</p>
+            
+            <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px;">
+                <span style="font-size: 13px; font-weight: bold; color: #c2410c;">Dipesan Oleh:</span>
+                <input type="text" id="inputNamaPemesanVendor" style="padding: 6px 12px; border-radius: 8px; border: 1px solid #fdba74; outline: none; font-weight: bold; color: #9a3412; width: 140px; text-align: center; background: #fff;" placeholder="Nama Anda...">
+            </div>
+            
+            <button onclick="kirimWhatsAppOrder()" class="btn btn-wa" style="width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; border-radius: 12px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                </svg> Kirim Order via WhatsApp
+            </button>
+        </div>
+    </div>
+</div>
+<!-- TEMPLAT CETAK PDF VENDOR (RESPONSIF HP & LAPTOP) -->
+<div id="pdfAreaVendor" style="display: none; width: 100%; max-width: 650px; padding: 20px; background: #ffffff; color: #1e293b; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box;">
+    
+    <!-- Header PO dengan Logo & Identitas Toko -->
+    <div style="border-bottom: 3px solid #f59e0b; padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="AGAK HIDUP.png" alt="Logo" style="width: 45px; height: 45px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0;" onerror="this.style.display='none'">
+            <div>
+                <div style="font-size: 9px; font-weight: 800; color: #d97706; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Purchase Order (PO) Vendor</div>
+                <h1 style="margin: 0; color: #0f172a; font-size: 16px; font-weight: 900;">Bakso Malang Asli Mbak Sae'ah</h1>
+                <p style="margin: 2px 0 0 0; font-size: 9px; color: #64748b;">Dokumen Resmi Pemesanan Stok Cabang</p>
+            </div>
+        </div>
+        <div style="text-align: right; background: #fffbeb; padding: 6px 10px; border-radius: 6px; border: 1px solid #fde68a;">
+            <span style="display: block; font-size: 8px; font-weight: bold; color: #b45309; text-transform: uppercase;">Tanggal Pesanan</span>
+            <span id="pdfVendorTgl" style="font-size: 10px; font-weight: bold; color: #92400e;">-</span>
+        </div>
+    </div>
+    
+    <!-- Tabel Barang -->
+    <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 15px;" border="1" cellpadding="5">
+        <thead>
+            <tr style="background: #f8fafc; color: #475569; text-align: center;">
+                <th style="padding: 6px; width: 25px;">No</th>
+                <th style="padding: 6px; text-align: left;">Nama Barang & Spesifikasi</th>
+                <th style="padding: 6px;">Kemasan</th>
+                <th style="padding: 6px;">Qty</th>
+                <th style="padding: 6px; text-align: right;">Harga Satuan</th>
+                <th style="padding: 6px; text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody id="pdfTbodyVendor">
+            <!-- Data item pesanan terisi otomatis -->
+        </tbody>
+    </table>
+    
+    <!-- Grand Total Box -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 8px 15px; border-radius: 6px; text-align: right; min-width: 200px;">
+            <span style="font-size: 9px; font-weight: 800; color: #b45309; text-transform: uppercase; display: block;">Grand Total Pemesanan:</span>
+            <span id="pdfVendorTotal" style="font-size: 15px; font-weight: 900; color: #d97706; display: block; margin-top: 2px;">Rp 0</span>
+        </div>
+    </div>
+
+    <!-- Tanda Tangan & Footer -->
+    <div style="font-size: 10px; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+        <div>
+            <p style="margin: 0; color: #64748b; font-size: 9px;">Dipesan Oleh:</p>
+            <br><br>
+            <strong id="pdfNamaPemesanCetak" style="font-size: 11px; color: #0f172a; border-bottom: 1px dashed #94a3b8; padding-bottom: 2px;">-</strong>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; color: #64748b; font-size: 9px;">Tanggal Cetak Sistem:</p>
+            <span id="pdfTanggalCetakVendor" style="font-weight: bold; color: #334155; font-size: 10px;">-</span>
+        </div>
+    </div>
+</div>
+        <!-- LAPORAN BERKALA -->
         <div id="viewLaporanBerkala" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #3b82f6;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
                     <h2 style="color: #2563eb; margin: 0;">📊 Laporan Berkala</h2>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <input type="text" id="inputNamaPembuatLaporan" placeholder="Nama Kasir..." style="padding:6px 10px; border-radius:8px; border:2px solid #bfdbfe; background:#eff6ff; width: 110px;">
-                        <button onclick="cetakPDFBerkala()" style="background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:8px; font-weight:bold;">🖨️ PDF</button>
-                        <button onclick="bagikanWABerkala()" style="background:#25d366; color:white; padding:6px 12px; border:none; border-radius:8px; font-weight:bold;">💬 WA</button>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="inputNamaPembuatLaporan" placeholder="Nama Kasir..." style="padding:6px 10px; border-radius:8px; border:2px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; font-weight:800; font-size:0.8rem; outline:none; width: 110px;">
+                        <button onclick="cetakPDFBerkala()" style="background:#ef4444; color:white; padding:6px 12px; border:none; border-radius:8px; font-weight:bold; font-size:0.8rem; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🖨️ PDF</button>
+                        <button onclick="bagikanWABerkala()" style="background:#25d366; color:white; padding:6px 12px; border:none; border-radius:8px; font-weight:bold; font-size:0.8rem; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">💬 WA</button>
                     </div>
                 </div>
 
                 <div class="summary-box" style="background:#f8fafc; border-color:#cbd5e1; margin-bottom: 20px; display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
                     <div style="flex:1; min-width: 130px;">
                         <label style="font-size:0.75rem; font-weight:800; color:#475569;">MULAI TANGGAL</label>
-                        <input type="date" id="filterBerkalaMulai" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <input type="date" id="filterBerkalaMulai" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; outline:none; font-weight:bold; font-size:0.85rem; margin-top:4px;">
                     </div>
                     <div style="flex:1; min-width: 130px;">
                         <label style="font-size:0.75rem; font-weight:800; color:#475569;">SAMPAI TANGGAL</label>
-                        <input type="date" id="filterBerkalaAkhir" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                        <input type="date" id="filterBerkalaAkhir" style="width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; outline:none; font-weight:bold; font-size:0.85rem; margin-top:4px;">
                     </div>
                     <div>
-                        <button onclick="prosesTampilLaporanBerkala()" style="background:#3b82f6; color:white; padding:9px 20px; border:none; border-radius:6px; font-weight:bold;">🔍 Tampilkan</button>
+                        <button onclick="prosesTampilLaporanBerkala()" style="background:#3b82f6; color:white; padding:9px 20px; border:none; border-radius:6px; font-weight:bold; font-size:0.85rem; cursor:pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">🔍 Tampilkan</button>
                     </div>
                 </div>
 
                 <div id="areaCetakLaporan" style="background:#ffffff; padding:15px; border-radius:8px; border: 1px solid #e2e8f0;">
                     <div style="text-align: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 12px; margin-bottom: 15px;">
-                        <h3 style="margin: 0; color: #0f172a; font-size: 1.2rem; font-weight:900;">BAKSO MBAK SAE'AH</h3>
+                        <h3 style="margin: 0; color: #0f172a; font-size: 1.2rem; font-weight:900; letter-spacing: 0.5px;">BAKSO MBAK SAE'AH</h3>
                         <p style="margin: 3px 0; color: #475569; font-size: 0.8rem; font-weight:bold;"><span class="teks-cabang-pdf">Cabang Cipete</span> - Laporan Penjualan</p>
                         <span id="teksPeriodeLaporan" style="display:inline-block; margin-top:5px; background:#eff6ff; color:#1d4ed8; padding:4px 12px; border-radius:12px; font-size:0.75rem; font-weight:bold;">Periode: -</span>
                     </div>
 
                     <div class="grid-mobile" style="margin-bottom: 15px;">
                         <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center;">
-                            <span style="font-size:0.7rem; font-weight:800; color:#166534;">TOTAL OMSET</span>
+                            <span style="font-size:0.7rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL OMSET</span>
                             <div id="teksOmsetLaporan" style="font-size:1.3rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
                         </div>
                         <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; text-align:center;">
-                            <span style="font-size:0.7rem; font-weight:800; color:#9f1239;">PENGELUARAN</span>
+                            <span style="font-size:0.7rem; font-weight:800; color:#9f1239; text-transform:uppercase;">PENGELUARAN</span>
                             <div id="teksPengeluaranLaporan" style="font-size:1.3rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
                         </div>
                         <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; text-align:center;">
-                            <span style="font-size:0.7rem; font-weight:800; color:#1e40af;">PROFIT BERSIH</span>
+                            <span style="font-size:0.7rem; font-weight:800; color:#1e40af; text-transform:uppercase;">PROFIT BERSIH</span>
                             <div id="teksProfitLaporan" style="font-size:1.3rem; font-weight:900; color:#1d4ed8; margin:4px 0;">Rp 0</div>
                         </div>
                     </div>
@@ -341,53 +300,82 @@
                             <h4 style="margin:0; font-size:0.85rem; color:#334155; font-weight:800;">🛒 RINCIAN PRODUK</h4>
                         </div>
                         <div style="overflow-x: auto; padding: 10px 15px;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; min-width: 320px;">
                                 <thead>
                                     <tr style="border-bottom: 2px solid #e2e8f0;">
-                                        <th style="padding: 8px 4px;">Produk</th>
-                                        <th style="padding: 8px 4px; text-align: center;">Qty</th>
-                                        <th style="padding: 8px 4px; text-align: right;">Subtotal</th>
+                                        <th style="padding: 8px 4px; color: #475569; font-weight: 800;">Produk</th>
+                                        <th style="padding: 8px 4px; text-align: center; color: #475569; font-weight: 800;">Qty</th>
+                                        <th style="padding: 8px 4px; text-align: right; color: #475569; font-weight: 800;">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelLaporanBerkala">
-                                    <tr><td colspan="3" style="text-align: center; padding: 25px; color: #94a3b8;">Silakan pilih tanggal & klik Tampilkan</td></tr>
+                                    <tr><td colspan="3" style="text-align: center; padding: 25px; color: #94a3b8; font-style:italic;">Silakan pilih tanggal & klik Tampilkan</td></tr>
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; display: flex; justify-content: flex-end; font-size:0.8rem; color:#0f172a; page-break-inside: avoid;">
+                        <div style="text-align: center; width: 160px;">
+                            <p style="margin: 0; color: #64748b;">Jakarta, <span id="pdfTanggalCetakLaporan">-</span></p>
+                            <p style="margin: 5px 0 50px 0;">Dibuat Oleh,</p>
+                            <p id="pdfNamaPembuatCetak" style="margin: 0; font-weight: 800; text-decoration: underline; text-transform: uppercase;">Admin</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 4. DASHBOARD GLOBAL -->
+        <!-- DASHBOARD GLOBAL -->
         <div id="viewDashboardGlobal" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #1e293b; background: #f8fafc;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; flex-wrap:wrap; gap:8px;">
                     <h2 style="color: #0f172a; margin: 0;">🌐 Dashboard Global</h2>
-                    <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-                        <select id="filterGlobalKategori" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #cbd5e1;">
+                    <div style="display:flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <select id="filterGlobalKategori" onchange="renderDashboardGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #cbd5e1; background:#fff; color:#334155; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
                             <option value="semua">Semua Kategori</option>
                             <option value="Bakso Malang">Khusus Bakso Malang</option>
                             <option value="Reseller">Khusus Reseller</option>
                         </select>
-                        <select id="filterGlobalPeriode" onchange="cekFilterKustomGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #fbbf24;">
+                        <select id="filterGlobalPeriode" onchange="cekFilterKustomGlobal()" style="padding:6px 10px; border-radius:8px; border:2px solid #fbbf24; background:#fffbeb; color:#d97706; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
                             <option value="7">7 Hari Terakhir</option>
                             <option value="30">30 Hari Terakhir</option>
                             <option value="bulan_ini">Bulan Ini</option>
                             <option value="bulan_lalu">Bulan Lalu</option>
                             <option value="kustom">Pilih Tanggal...</option>
                         </select>
+                        <div id="areaFilterKustomGlobal" style="display:none; gap:5px; align-items:center;">
+                            <input type="date" id="tglMulaiGlobal" style="padding:5px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.75rem; outline:none;">
+                            <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
+                            <input type="date" id="tglAkhirGlobal" style="padding:5px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.75rem; outline:none;">
+                            <button onclick="renderDashboardGlobal()" style="background:#10b981; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:bold; font-size:0.75rem; cursor:pointer;">Cari</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid-mobile" style="margin-bottom: 15px;">
                     <div class="summary-box" style="background:#1e293b; border-color:#0f172a; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#94a3b8;">TOTAL OMSET GABUNGAN</span>
+                        <span style="font-size:0.75rem; font-weight:800; color:#94a3b8; text-transform:uppercase;">TOTAL OMSET GABUNGAN</span>
                         <div id="globalTotalOmset" style="font-size:1.5rem; font-weight:900; color:#fbbf24; margin:4px 0;">Rp 0</div>
+                        <div style="font-size:0.75rem; color:#cbd5e1;">🍲 Bakso: <strong id="globalOmsetBakso" style="color:#f87171;">Rp 0</strong> | 🥤 Reseller: <strong id="globalOmsetReseller" style="color:#60a5fa;">Rp 0</strong></div>
                     </div>
                     <div class="summary-box" style="background:#064e3b; border-color:#022c22; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:800; color:#6ee7b7;">PROFIT KOTOR GABUNGAN</span>
+                        <span style="font-size:0.75rem; font-weight:800; color:#6ee7b7; text-transform:uppercase;">PROFIT KOTOR GABUNGAN</span>
                         <div id="globalTotalProfit" style="font-size:1.5rem; font-weight:900; color:#34d399; margin:4px 0;">Rp 0</div>
+                        <div style="font-size:0.75rem; color:#a7f3d0;">Cipete: <strong id="globalProfitCipete" style="color:#fff;">Rp 0</strong> | Blok M: <strong id="globalProfitBlokM" style="color:#fff;">Rp 0</strong></div>
+                    </div>
+                </div>
+
+                <div class="grid-mobile" style="margin-bottom: 15px;">
+                    <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 PENGELUARAN GLOBAL</span>
+                        <div id="globalTotalPengeluaran" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
+                        <div style="font-size:0.75rem; color:#e11d48;">Cipete: <strong id="globalPengeluaranCipete" style="color:#9f1239;">Rp 0</strong> | Blok M: <strong id="globalPengeluaranBlokM" style="color:#9f1239;">Rp 0</strong></div>
+                    </div>
+                    <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">🟢 LABA BERSIH (UANG MASUK)</span>
+                        <div id="globalLabaBersih" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
+                        <div style="font-size:0.75rem; color:#16a34a;">*(Profit Kotor dikurangi Pengeluaran)*</div>
                     </div>
                 </div>
 
@@ -395,32 +383,190 @@
                     <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">📈 TREN OMSET HARIAN GLOBAL</h4>
                     <div class="chart-container" style="position: relative; height: 250px;"><canvas id="chartTrenGlobal"></canvas></div>
                 </div>
+
+                <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 15px;">
+                    <h4 style="font-size:0.85rem; color:#334155; margin-bottom:10px; text-align:center; font-weight:800;">PERBANDINGAN OMSET ANTAR CABANG</h4>
+                    <div class="chart-container" style="position: relative; height: 250px;"><canvas id="chartGlobalCabang"></canvas></div>
+                </div>
+
+                <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; margin-bottom: 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                        <h4 style="font-size:0.85rem; color:#ea580c; margin:0; font-weight:800;">🏆 TOP 10 PRODUK GLOBAL</h4>
+                        <input type="text" id="filterGlobalKecualikan" onkeyup="renderDashboardGlobal()" placeholder="Kecualikan: cth. Es Teh, Kerupuk" style="padding:6px 10px; border-radius:6px; border:1px solid #fdba74; font-size:0.75rem; outline:none; width: 200px;">
+                    </div>
+                    <div class="chart-container" style="position: relative; height: 300px;"><canvas id="chartTop10Global"></canvas></div>
+                </div>
             </div>
         </div>
 
-        <!-- 5. PUSAT KONTROL OWNER -->
-        <div id="viewPusatKontrol" style="display: none; padding: 15px;">
-            <div style="max-width: 650px; margin: 0 auto; background: #ffffff; padding: 20px; border-radius: 12px;">
-                <h2 style="color: #2563eb; margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
-                
-                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
-                    <h4 style="color: #1e40af; margin-bottom: 6px;">🏪 Kelola Cabang Usaha</h4>
-                    <div class="table-wrapper" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; background: #fff;">
-                        <table style="width: 100%;"><tbody id="tbodyDaftarCabang"></tbody></table>
-                    </div>
-                    <button type="button" onclick="buatCabangBaru()" class="btn" style="background: #2563eb; color: #ffffff; width: auto; padding: 8px 16px;">➕ Buat Cabang Baru</button>
+       <!-- DASHBOARD CABANG -->
+<div id="viewDashboard" style="display:none; margin-bottom: 40px;">
+    <div class="card" style="border-top: 4px solid #8b5cf6;">
+        
+        <!-- HEADER & FILTER PERIODE -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:8px;">
+            <h2 style="color: #6d28d9; margin: 0; font-size: 1.2rem;">📈 Dashboard Analisa Bisnis</h2>
+            
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <select id="filterDashboardPeriode" onchange="toggleCustomDateDashboard(); renderDashboardGrafik();" style="padding:6px 10px; border-radius:8px; border:2px solid #c4b5fd; background:#f5f3ff; color:#6d28d9; font-weight:800; font-size:0.8rem; outline:none; cursor:pointer;">
+                    <option value="7">7 Hari Terakhir</option>
+                    <option value="30">30 Hari Terakhir</option>
+                    <option value="bulan_ini">Bulan Ini</option>
+                    <option value="bulan_lalu">Bulan Lalu</option>
+                    <option value="custom">📅 Custom Tanggal...</option>
+                    <option value="semua">Semua Waktu</option>
+                </select>
+
+                <div id="containerCustomDateDash" style="display:none; align-items:center; gap:5px; background:#f1f5f9; padding:4px 8px; border-radius:8px; border:1px solid #cbd5e1;">
+                    <input type="date" id="dashTglAwal" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
+                    <span style="font-size:0.75rem; font-weight:bold; color:#64748b;">s/d</span>
+                    <input type="date" id="dashTglAkhir" onchange="renderDashboardGrafik()" style="padding:4px; border-radius:5px; border:1px solid #94a3b8; font-size:0.78rem; outline:none;">
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========================================== -->
+        <!-- BARIS 1: TOTAL OMSET & SETORAN DAPUR (2 KOLOM SEIMBANG) -->
+        <!-- ========================================== -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 12px;">
+            <!-- 1. TOTAL OMSET -->
+            <div class="summary-box" style="background:#fff; border-color:#cbd5e1; text-align:center; padding: 12px;">
+                <span style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase;">TOTAL OMSET</span>
+                <div id="dashTotalOmset" style="font-size:1.5rem; font-weight:900; color:#0f172a; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.75rem; color:#64748b;">🍲 Bakso: <strong id="dashOmsetBakso" style="color:#ea580c;">Rp 0</strong> | 🥤 Reseller: <strong id="dashOmsetReseller" style="color:#3b82f6;">Rp 0</strong></div>
+            </div>
+
+            <!-- 2. SETORAN DAPUR -->
+            <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; text-align:center; padding: 12px;">
+                <span style="font-size:0.75rem; font-weight:800; color:#c2410c; text-transform:uppercase;">🍲 SETORAN DAPUR (BAKSO)</span>
+                <div id="dashTotalSetoranDapur" style="font-size:1.5rem; font-weight:900; color:#ea580c; margin:4px 0;">Rp 0</div>
+                <div style="font-size:0.72rem; color:#9a3412;">*Modal porsi bakso disetor ke Dapur</div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 2: PROFIT BERSIH & BEBAN PENGELUARAN (2 KOLOM SEIMBANG) -->
+        <!-- ========================================== -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 16px;">
+            <!-- 3. TOTAL PROFIT BERSIH -->
+            <div class="summary-box" style="background:#f0fdf4; border-color:#86efac; text-align:center; padding: 12px; display:flex; flex-direction:column; justify-content:center;">
+                <span style="font-size:0.75rem; font-weight:800; color:#166534; text-transform:uppercase;">TOTAL PROFIT BERSIH</span>
+                <div id="dashTotalProfit" style="font-size:1.5rem; font-weight:900; color:#15803d; margin:4px 0;">Rp 0</div>
+                <div id="lblKetProfitBersih" style="font-size:0.75rem; color:#16a34a;">*Siap dialokasikan</div>
+            </div>
+
+            <!-- 4. TOTAL BEBAN & PENGELUARAN -->
+            <div class="summary-box" style="background:#fff1f2; border-color:#fda4af; padding: 12px;">
+                <div style="text-align:center; margin-bottom: 8px;">
+                    <span style="font-size:0.75rem; font-weight:800; color:#9f1239; text-transform:uppercase;">🔴 TOTAL BEBAN & PENGELUARAN</span>
+                    <div id="dashTotalBeban" style="font-size:1.5rem; font-weight:900; color:#be123c; margin:4px 0;">Rp 0</div>
+                    <div style="font-size:0.7rem; color:#e11d48;">*(Memotong Profit Kotor untuk menghasilkan Profit Bersih Riil)*</div>
+                </div>
+                <div style="font-size:0.75rem; color:#881337; border-top:1px dashed #fecdd3; padding-top:8px; display:flex; flex-direction:column; gap:4px;">
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🧑‍🍳 Gaji Karyawan Harian:</span><strong id="dashBebanGaji">Rp 0</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🧾 Belanja Laci Kasir:</span><strong id="dashBebanLaci">Rp 0</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>▪️ 🛡️ Pengeluaran Dana Darurat:</span><strong id="dashBebanDarurat">Rp 0</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 👉 SISIPAN BARU: PENJUALAN CHANNEL ONLINE (GOJEK, GRAB, SHOPEE) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="margin-bottom: 16px; background: #ffffff; padding: 14px; border-radius: 10px; border-top: 4px solid #10b981; border-color: #a7f3d0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+            
+            <!-- Header Bagian Online -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h4 style="margin: 0; color: #065f46; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                    🛵 PENJUALAN CHANNEL ONLINE
+                </h4>
+                <span style="font-size: 0.75rem; background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 6px; font-weight: bold;">
+                    Total: <span id="dashTotalSemuaOnline">Rp 0</span>
+                </span>
+            </div>
+
+            <!-- 3 Kartu Ringkasan Kanal Online -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                <!-- Gojek -->
+                <div style="background: #f0fdf4; border-left: 3px solid #22c55e; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #15803d; font-weight: bold; font-size: 0.7rem;">Gojek</small>
+                    <div id="dashTotalGojek" style="color: #166534; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
                 </div>
 
-                <h4 style="color: #0f172a; margin-bottom: 10px;">👥 Daftar Akun Kasir & Staf</h4>
+                <!-- Grab -->
+                <div style="background: #ecfdf5; border-left: 3px solid #10b981; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #047857; font-weight: bold; font-size: 0.7rem;">Grab</small>
+                    <div id="dashTotalGrab" style="color: #065f46; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
+                </div>
+
+                <!-- Shopee -->
+                <div style="background: #fff7ed; border-left: 3px solid #f97316; padding: 8px 10px; border-radius: 6px;">
+                    <small style="color: #c2410c; font-weight: bold; font-size: 0.7rem;">Shopee</small>
+                    <div id="dashTotalShopee" style="color: #9a3412; font-weight: 800; font-size: 0.9rem; margin-top: 2px;">Rp 0</div>
+                </div>
+            </div>
+
+<!-- Area Grafik Balok Penjualan Online Harian -->
+<div style="position: relative; height: 240px; width: 100%;">
+    <canvas id="chartOnlineChannel"></canvas>
+</div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 3: TREN OMSET & PROFIT BERSIH (FULL WIDTH / PLONG) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#fff; border-color:#cbd5e1; margin-bottom: 16px; padding: 14px;">
+            <h4 style="font-size:0.85rem; color:#334155; margin: 0 0 12px 0; text-align:center; font-weight:800;">📈 TREN OMSET & PROFIT BERSIH</h4>
+            <div class="chart-container" style="position: relative; height: 320px; width: 100%;"><canvas id="chartTren"></canvas></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 4: TOP 5 BAKSO MALANG (FULL WIDTH) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#fff7ed; border-color:#fdba74; padding: 14px; margin-bottom: 16px;">
+            <h4 style="font-size:0.85rem; color:#ea580c; margin:0 0 10px 0; text-align:center; font-weight:800;">🏆 TOP 5 BAKSO MALANG</h4>
+            <div style="position: relative; height: 180px; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #ffedd5;"><canvas id="chartTopBakso"></canvas></div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- BARIS 5: RANKING RESELLER (FULL WIDTH) -->
+        <!-- ========================================== -->
+        <div class="summary-box" style="background:#eff6ff; border-color:#93c5fd; padding: 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="font-size:0.85rem; color:#1d4ed8; margin:0; font-weight:800;">🥤 RANKING RESELLER</h4>
+                <button onclick="bukaFilterReseller()" style="background:#3b82f6; border:none; color:#fff; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-weight:bold; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">⚙️ Filter</button>
+            </div>
+            <div style="position: relative; max-height: 260px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 8px; padding: 8px; border: 1px solid #dbeafe;"><canvas id="chartTopReseller"></canvas></div>
+        </div>
+
+    </div>
+</div>
+
+        <!-- PUSAT KONTROL OWNER -->
+        <div id="viewPusatKontrol" style="display: none; padding: 15px;">
+            <div style="max-width: 650px; margin: 0 auto; background: var(--card-bg, #ffffff); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <h2 style="color: var(--primary); margin-bottom: 15px; font-weight: 800;">👑 Pusat Kontrol Owner</h2>
+                
+                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bfdbfe;">
+                    <h4 style="color: #1e40af; margin-bottom: 6px; font-weight: 700;">🏪 Kelola Cabang Usaha</h4>
+                    <p style="font-size: 0.8rem; color: #475569; margin-bottom: 10px;">Daftar cabang aktif. Menghapus cabang akan menutup akses login ke cabang tersebut.</p>
+                    <div class="table-wrapper" style="max-height: 150px; overflow-y: auto; margin-bottom: 15px; background: #fff; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;"><tbody id="tbodyDaftarCabang"></tbody></table>
+                    </div>
+                    <button type="button" onclick="buatCabangBaru()" class="btn" style="background: #2563eb; color: #ffffff; width: auto; padding: 8px 16px; font-size: 0.85rem;">➕ Buat Cabang Baru</button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+                <h4 style="color: #0f172a; margin-bottom: 10px; font-weight: 700;">👥 Daftar Akun Kasir & Staf</h4>
                 <div class="table-wrapper" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
                     <table><thead><tr><th>Nama</th><th>No. HP</th><th>Role</th><th>Aksi</th></tr></thead><tbody id="tbodyDaftarAkun"></tbody></table>
                 </div>
 
-                <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:15px; border-radius:8px;">
+                <form onsubmit="simpanAkunBaru(event)" style="background:#fef3c7; padding:15px; border-radius:8px; border:1px solid #fde68a;">
                     <h5 style="margin-bottom: 10px;">+ Tambah Akun Baru</h5>
                     <div class="form-group"><input type="text" id="regHp" placeholder="No. HP" required></div>
                     <div class="form-group"><input type="text" id="regNama" placeholder="Nama Panggilan" required></div>
-                    <div class="form-group"><input type="text" id="regPass" placeholder="Password Angka" required></div>
+                    <div class="form-group"><input type="text" id="regPass" placeholder="Password Angka (misal: 12345)" required></div>
                     <div class="form-group">
                         <select id="regRole" required onchange="cekRoleDropdown()">
                             <option value="kasir">Kasir</option>
@@ -430,14 +576,69 @@
                     </div>
                     <div class="form-group" id="containerCabangTugas">
                         <label>Ditugaskan di Cabang:</label>
-                        <select id="regCabangTugas"></select>
+                        <select id="regCabangTugas" style="background: #fff; border-color: #f59e0b; font-weight: bold;"></select>
                     </div>
                     <button type="submit" class="btn btn-warning" style="margin-top:8px;">+ Simpan Akun</button>
                 </form>
+
+                <!-- PENGATURAN FINANSIAL CABANG (DIPERBAIKI) -->
+                <div style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-top: 25px; border: 1px solid #e2e8f0; border-top: 5px solid #2563eb; position: relative;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <div style="background: #eff6ff; padding: 8px; border-radius: 8px; color: #2563eb; font-size: 1.2rem;">⚙️</div>
+                        <h4 style="color: #0f172a; margin: 0; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px;">Pengaturan Finansial Cabang</h4>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 20px; line-height: 1.5; border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px;">Kelola struktur gaji, batas toleransi libur, dan kustomisasi pembagian profit khusus untuk cabang yang sedang aktif ini secara independen.</p>
+                    
+                    <form onsubmit="simpanPengaturanFinansialCabang(event)">
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                            <h5 style="color: #334155; font-size: 0.85rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;"><span>💵</span> Parameter Gaji & Insentif</h5>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Gaji Harian (Rp)</label>
+                                    <input type="text" inputmode="numeric" id="cfgGajiHarian" value="50.000" oninput="formatRibuanInput(this)" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Toleransi Libur/Bulan</label>
+                                    <input type="number" id="cfgToleransiLibur" value="2" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 0.7rem; color: #475569; font-weight: 700;">Gaji Bulanan Tetap (Untuk Slip Gaji)</label>
+                                <!-- FIX: ID diubah menjadi cfgGajiBulanan -->
+                                <input type="text" inputmode="numeric" id="cfgGajiBulanan" value="1.500.000" oninput="formatRibuanInput(this)" required style="border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; padding: 8px 12px; font-weight: bold; color: #0f172a; width: 100%;">  
+                            </div>
+                        </div>
+
+                        <div style="background: #fffbeb; padding: 15px; border-radius: 10px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                            <h5 style="color: #b45309; font-size: 0.85rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;"><span>📊</span> Kustomisasi Pos Profit Bersih</h5>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 1</label>
+                                    <input type="text" id="cfgLabelPos1" value="Dana Darurat" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                                    <input type="number" id="cfgPersenPos1" value="20" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                                </div>
+                                <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 2</label>
+                                    <input type="text" id="cfgLabelPos2" value="Tabungan Anak" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                                    <input type="number" id="cfgPersenPos2" value="40" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                                </div>
+                                <div style="background: #ffffff; padding: 12px 10px; border-radius: 8px; border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.05);">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 800; text-transform: uppercase;">Pos 3</label>
+                                    <input type="text" id="cfgLabelPos3" value="Laba Bersih" style="width: 100%; padding: 6px 8px; margin: 4px 0 8px 0; font-weight: bold; font-size: 0.75rem; border: 1px solid #fde047; border-radius: 6px; background: #fffbeb; color: #92400e; outline: none;">
+                                    <label style="font-size: 0.65rem; color: #b45309; font-weight: 700;">Persentase (%)</label>
+                                    <input type="number" id="cfgPersenPos3" value="40" style="width: 100%; padding: 6px 8px; font-weight: 900; font-size: 0.9rem; border: 1px solid #fde047; border-radius: 6px; color: #92400e; text-align: center; outline: none;">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; width: 100%; padding: 14px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">💾 Simpan Pengaturan Cabang</button>
+                    </form>
+                </div>
             </div> 
         </div> 
 
-        <!-- 6. REKAP GAJI BULANAN -->
+        <!-- REKAP GAJI BULANAN -->
         <div id="viewGajiBulanan" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #f43f5e;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
@@ -450,24 +651,69 @@
                 </div>
                 <div class="grid-mobile">
                     <div class="summary-box" style="background:#fff; border-color:#f43f5e;">
-                        <h4 style="color:#e11d48; font-size:0.9rem; font-weight:800; margin-bottom:10px;">🧑‍🍳 Karyawan Utama (Bulanan)</h4>
-                        <div class="summary-item"><span>Status Absensi:</span><strong id="gbHariKerja" style="color:#16a34a;">0 Hari Masuk</strong></div>
+                        <h4 style="color:#e11d48; font-size:0.9rem; font-weight:800; margin-bottom:10px; text-transform:uppercase; border-bottom:2px solid #ffe4e6; padding-bottom:6px;">🧑‍🍳 Karyawan Utama (Bulanan)</h4>
+                        <div class="summary-item"><span>Status Absensi (Bulan Ini):</span><strong id="gbHariKerja" style="color:#16a34a;">0 Hari Masuk</strong></div>
                         <div class="summary-item"><span>Total Libur/Absen:</span><strong id="gbHariLibur" style="color:#dc2626;">0 Hari</strong></div>
+                        <div class="summary-item"><span>Jatah Libur Gratis:</span><strong style="color:#475569;">2 Hari / Bulan</strong></div>
+                        <hr style="margin: 10px 0; border-top:1px dashed #fda4af;">
+                        <div class="summary-item"><span>Gaji Pokok Bulanan:</span><strong style="font-size:1rem;"><span id="lblGajiPokokBulanan">Rp 1.500.000</span></strong></div>
+                        <div class="summary-item" style="color:#dc2626;"><span>➖ Potongan Libur (>2x):</span><strong id="gbPotonganLibur">Rp 0</strong></div>
                         <div class="summary-item bold" style="color:#be185d; font-size:1.1rem; border-top:2px solid #fda4af; padding-top:10px; margin-top:6px;"><span>GAJI BERSIH (TF):</span><span id="gbGajiUtamaTF">Rp 0</span></div>
+                        <div style="font-size:0.65rem; color:#881337; text-align:right; margin-top:2px;">*Tidak termasuk uang makan harian yg memotong profit harian.</div>
+                    </div>
+                    <div class="summary-box" style="background:#f8fafc; border-color:#cbd5e1;">
+                        <h4 style="color:#334155; font-size:0.9rem; font-weight:800; margin-bottom:10px; text-transform:uppercase; border-bottom:2px solid #e2e8f0; padding-bottom:6px;">🧑‍🤝‍🧑 Rekap Beban Gaji Harian</h4>
+                        <div style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Ringkasan uang gaji yang telah memotong Profit Kotor bisnis Anda sepanjang bulan ini.</div>
+                        <div class="summary-item"><span>Beban Gaji Karyawan Utama:</span><strong id="gbUangHarianUtama">Rp 0</strong></div>
+                        <div class="summary-item"><span>Beban Gaji Karyawan Tambahan:</span><strong id="gbUangHarianTambahan">Rp 0</strong></div>
+                        <div class="summary-item bold" style="color:#0f172a; border-top:1px dashed #94a3b8; padding-top:8px; margin-top:6px;"><span>TOTAL BEBAN GAJI:</span><span id="gbTotalHarianLaci">Rp 0</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 7. OPERASIONAL HARIAN -->
+       <!-- OPERASIONAL HARIAN -->
         <div id="viewHarian" style="display:none;">
             <div class="card">
-                <div style="position: sticky; top: 10px; z-index: 100; display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 12px; border: 1.5px solid #22c55e;">
-                    <div style="font-weight: 800; color: #1e293b; font-size: 0.85rem;">📦 Input Stok Harian</div>
-                    <button id="btnSimpanStokHarianMasal" onclick="simpanStokHarianMasal()" style="background-color: #16a34a; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; cursor: pointer;">💾 Simpan Stok Harian</button>
+                
+                <!-- 👉 FLOATING ACTION BAR: TOMBOL SIMPAN STOK HARIAN MELAYANG -->
+                <div style="position: sticky; top: 10px; z-index: 100; display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 10px 14px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); margin-bottom: 12px; border: 1.5 solid #22c55e; border-left: 5px solid #16a34a;">
+                    <div style="font-weight: 800; color: #1e293b; font-size: 0.85rem; display:flex; align-items:center; gap:6px;">
+                        <span>📦 Input Stok Harian</span>
+                    </div>
+                    <button id="btnSimpanStokHarianMasal" onclick="simpanStokHarianMasal()" style="background-color: #16a34a; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(22,163,74,0.3); transition: all 0.2s;">
+                        💾 Simpan Stok Harian
+                    </button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <h2 style="margin:0; font-size: 1.1rem;">📋 Entry Stok Harian</h2>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                        <button onclick="document.getElementById('fileImportPagi').click()" class="btn btn-warning" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: #fbbf24; color:#78350f;">📥 Import CSV</button>
+                        <button onclick="downloadTemplatePagi()" class="btn btn-outline" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; border-color:#cbd5e1; color:#475569;">📤 Export</button>
+                        <button onclick="bukaModalMutasiStok()" class="btn" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px; background: linear-gradient(135deg, #06b6d4, #0284c7); color:white; font-weight:bold;">🚚 Mutasi Stok</button>
+                        <input type="file" id="fileImportPagi" accept=".csv" style="display:none;" onchange="importStokPagi(event)">   
+                        
+                        <div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 6px;">
+                            <span style="font-size: 0.7rem; font-weight: bold; color: #475569;">Kasir:</span>
+                            <input type="text" id="inputNamaKasirHarian" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 60px; font-size: 0.7rem;" placeholder="Nama...">
+                        </div>
+                        <button onclick="generatePDFHarian()" class="btn btn-pdf" style="width:auto; padding:6px 8px; font-size:0.7rem; margin:0; border-radius:8px;">📄 Cetak</button>
+                    </div>
+                </div>
+                
+                <div id="bannerWarningRefill" style="display: none; background: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #b45309;">⚠️ WAKTUNYA REFILL ETALASE!</div>
+                    <div id="textWarningRefill" style="font-size: 0.75rem; color: #92400e; margin-top: 4px;"></div>
+                </div>
+
+                <!-- TEKS PETUNJUK BARU -->
+                <div style="font-size: 0.75rem; color: #15803d; font-weight: 700; margin-bottom: 8px; text-align: right;">
+                    💡 Isi angka stok terlebih dahulu, lalu klik tombol <b>💾 Simpan Stok Harian</b> di atas.
                 </div>
 
                 <div class="table-wrapper"><table class="table-freeze"><thead id="theadMatriks"></thead><tbody id="tbodyMatriks"></tbody></table></div>
+                <div id="containerAkumulasiKategori" style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;"></div>
             </div>
 
             <!-- ABSENSI & GAJI HARIAN -->
@@ -476,8 +722,17 @@
                 <div class="grid-mobile">
                     <div class="form-group">
                         <label style="color:#9d174d;">🧑‍🍳 Karyawan Utama (Bulanan) Masuk?</label>
-                        <select id="inAbsenUtama" onchange="simpanAbsensi()"><option value="ya">✅ YA (Hadir Hari Ini)</option><option value="tidak">❌ TIDAK (Libur / Absen)</option></select>
+                        <select id="inAbsenUtama" onchange="simpanAbsensi()" style="border-color:#fbcfe8; font-weight:bold; color:#be185d;"><option value="ya">✅ YA (Hadir Hari Ini)</option><option value="tidak">❌ TIDAK (Libur / Absen)</option></select>
                     </div>
+                    <div class="form-group">
+                        <label style="color:#9d174d;">🧑‍🤝‍🧑 Jumlah Karyawan Tambahan</label>
+                        <input type="number" id="inAbsenTambahan" value="0" min="0" onchange="simpanAbsensi()" style="border-color:#fbcfe8; font-weight:bold;" placeholder="Ketik angka (0, 1, 2...)">
+                    </div>
+                </div>
+                <div style="background:#fdf2f8; padding:10px; border-radius:8px; margin-top:8px; border:1px dashed #f472b6; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; font-weight:700; color:#db2777;">Total Beban Gaji Harian: </span>
+                    <!-- FIX: Menambahkan ID txtTotalGajiHarian yang hilang -->
+                    <strong id="txtTotalGajiHarian" style="font-size:1.2rem; color:#be185d; font-weight:900;">Rp 0</strong>
                 </div>
             </div>
 
@@ -485,39 +740,178 @@
             <div class="card" id="cardKasir">
                 <h2>💰 Kasir & Pengeluaran</h2>
                 <div class="grid-mobile">
-                    <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="text" id="inCash" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)"></div>
-                    <div class="form-group"><label>📱 QRIS</label><input type="text" id="inQris" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>💵 Cash Laci Akhir Shift</label><input type="text" id="inCash" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)" placeholder="Total sebelum setoran fisik"></div>
+                    <div class="form-group"><label>📱 QRIS</label><input type="text" id="inQris" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛵 Gojek</label><input type="text" id="inGojek" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛵 Grab</label><input type="text" id="inGrab" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group"><label>🛍️ Shopee</label><input type="text" id="inShopee" value="0" oninput="inputKasirPintar(this); simpanKasMasuk(true)" onblur="hitungOtomatis(this); simpanKasMasuk(true)"></div>
+                    <div class="form-group">
+                        <label>🪙 Pettycash (Modal Awal)</label>
+                        <input type="text" id="inPettycash" value="0" readonly style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #cbd5e1;" title="Angka ini otomatis ditarik dari Modal Besok hari sebelumnya.">
+                    </div>
+                </div>
+
+                <div class="form-group" style="background:#fefce8; border:1px solid #fde047; padding:12px; border-radius:8px; margin-top:8px;">
+                    <label style="color:#854d0e;">🪙 Modal Laci Besok (Fisik Ditahan)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" inputmode="numeric" id="inModalBesok" value="0" oninput="formatRibuanInput(this)" style="border-color:#fef08a; font-weight:800; color:#854d0e; flex: 1; font-size: 1.1rem;" placeholder="Ketik uang receh yg ditinggal...">
+                        <button id="btnSimpanModalBesok" onclick="simpanModalBesokManual()" class="btn btn-warning" style="width: 120px; margin-bottom: 0;">💾 SIMPAN</button>
+                    </div>
+                    <div style="font-size:0.65rem; color:#d97706; margin-top:4px;">*Angka ini otomatis menjadi <strong>Pettycash</strong> untuk hari esok. Jangan lupa klik SIMPAN.</div>
+                </div>
+
+                <hr style="margin: 16px 0; border: none; border-top: 1px dashed var(--border-color);">
+                <h3 style="font-size:0.85rem; color:#dc2626; margin-bottom:8px; font-weight:800;">☕ Pengeluaran Harian (Bukan Dapur)</h3>
+                <form onsubmit="tambahPengeluaranHarian(event)">
+                    <div style="display:flex; flex-direction: column; gap:8px;">
+                        <input type="text" id="ketKeluarHarian" placeholder="Ket: Beli Lakban, Es Batu, dll" required>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" inputmode="numeric" id="nominalKeluarHarian" oninput="formatRibuanInput(this)" placeholder="Nominal (Rp)" required>
+                            <button type="submit" id="btnSubmitPengeluaran" class="btn btn-danger" style="width: 90px; margin-bottom:0;">+ Tambah</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="table-wrapper" style="margin-top:12px;">
+                    <table><thead><tr><th style="width:80px;">Tgl</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody id="tabelPengeluaranHarian"></tbody></table>
                 </div>
             </div>
+
+            <!-- ALOKASI HARIAN -->
+            <div class="card" id="cardAlokasiHarian" style="margin-bottom: 40px;">
+                <h2>📊 Alokasi Harian (Profit & Gaji)</h2>
+                <div class="grid-mobile">
+                    <div class="summary-box">
+                        <div class="summary-item bold"><span>A. Uang Seharusnya:</span><span id="txtUangSeharusnya" style="font-weight:800; font-size:0.95rem;">Rp 0</span></div>
+                        <div class="summary-item" style="color:#64748b; font-size:0.75rem; margin-top:8px;"><span>+ Fisik Kasir & Digital:</span><span id="txtDetailMasuk">Rp 0</span></div>
+                        <div class="summary-item" style="color:#64748b; font-size:0.75rem;"><span>+ Struk/Pengeluaran:</span><span id="txtDetailKeluar">Rp 0</span></div>
+                        <div class="summary-item bold" style="color:#2563eb; border-top: 1px dashed #cbd5e1; padding-top: 6px; margin-top:4px;"><span>B. Aktual Uang:</span><span id="txtAktualUang" style="font-weight:800; font-size:0.95rem;">Rp 0</span></div>
+                        <div class="summary-item bold" style="border-top: 2px solid #cbd5e1; padding-top: 10px; margin-top:8px;"><span>C. SELISIH (B - A):</span><span id="txtSelisih" style="font-size: 1.15rem;">Rp 0</span></div>
+                        <div class="summary-item" id="boxEstimasiEsTeh" style="font-size: 0.75rem; margin-top: 6px; border-top: 1px dashed #cbd5e1; padding-top: 6px; display: block; font-weight: 500;"></div>
+
+                        <div class="summary-box" style="background:#fffbeb; border-color:#fde047; margin-top:12px; padding:10px;">
+                            <h4 style="color:#d97706; margin-bottom:8px; font-size:0.85rem; font-weight:800; text-transform:uppercase;">🥤 Teh Manis (Penyeimbang Kas)</h4>
+                            <div style="font-size: 0.7rem; color: #b45309; margin-bottom: 6px;">*Masukkan angka cup terjual untuk menutupi selisih/kekurangan uang.</div>
+                            <div style="display:flex; gap:8px; align-items:flex-end;">
+                                <div style="flex:1;"><label style="font-size:0.75rem; color:#854d0e; font-weight:800;">✅ Total Cup Terjual:</label><input type="number" id="inTehTerjual" class="input-stok input-tambah" style="width:100%; font-size:1rem; padding:8px 4px; border-color:#fde047;" min="0" oninput="updateTehManisLokal()" placeholder="0"></div>
+                            </div>
+                            <div id="infoTehTerjual" style="font-size:0.75rem; color:#b45309; margin-top:8px; font-weight:700; border-top:1px dashed #fde047; padding-top:6px;">Nominal Omset: Rp 0</div>
+                        </div>
+                    <div class="summary-box" style="background:#f0fdf4; border-color:#86efac;">
+                        <div class="summary-item"><span>Profit Bakso:</span><span id="profitBakso" style="font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item"><span>Profit Reseller:</span><span id="profitReseller" style="font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item bold" style="font-size:0.95rem; color:#16a34a;"><span>Total Profit Kotor:</span><span id="totalProfitGros">Rp 0</span></div>
+                        
+                        <div class="summary-item" style="color:#dc2626; border-top:1px dashed #4ade80; margin-top:8px; padding-top:8px;">
+                            <span>➖ Gaji Karyawan Harian:</span><span id="txtProfitPotongGaji" style="font-weight:800;">Rp 0</span>
+                        </div>
+                        <div class="summary-item" style="color:#dc2626;">
+                            <span>➖ Pengeluaran Operasional Harian:</span><span id="txtProfitPotongHarian" style="font-weight:800;">Rp 0</span>
+                        </div>
+                        
+                        <div class="summary-item bold" style="margin-bottom:8px; font-size:1rem; color:#15803d; border-top:2px solid #86efac; padding-top:8px;">
+                            <span>Profit Bersih (Siap Bagi):</span><span id="totalProfitBersih">Rp 0</span>
+                        </div>
+
+                        <!-- FIX: Penambahan ID lblPos1, dll -->
+                        <div class="summary-item"><span>🛡️ <span id="lblPos1">Dana Darurat(20%)</span>:</span><span id="allocDarurat" style="font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item"><span>👶 <span id="lblPos2">Tabungan(40%)</span>:</span><span id="allocAnak" style="font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item bold" style="color:#0f172a; border-top-color:#86efac; font-size:0.95rem;"><span>💵 <span id="lblPos3">Laba Bersih(40%)</span>:</span><span id="allocLabaBersih">Rp 0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div> <!-- PENUTUP VIEW HARIAN -->
 
-        <!-- 8. MUTASI KAS -->
+     <!-- RIWAYAT AKTIVITAS & LAPORAN BUG -->
+<div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px; background: #f8fafc; padding: 15px; border-radius: 16px;">
+    
+    <!-- BAGIAN 1: TABEL RIWAYAT AKTIVITAS (Bawaan) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="color: #0f172a; font-size: 1.1rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas</h2>
+        <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);">🔄 Muat Ulang</button>
+    </div>
+   <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <!-- white-space diubah agar teks keterangan bisa turun ke bawah (wrap) -->
+        <table id="tabelRiwayatUtama" style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.75rem;">
+            <thead style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
+                <tr>
+                    <!-- Lebar Waktu dipatok 65px -->
+                    <th style="padding: 8px; font-weight: 700; position: sticky; left: 0; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; width: 65px; min-width: 65px; max-width: 65px; white-space: nowrap;">Waktu</th>
+                    <!-- Lebar Pengguna dipatok 75px, posisi beku digeser ke kiri (65px) -->
+                    <th style="padding: 8px; font-weight: 700; position: sticky; left: 65px; z-index: 20; background: #f1f5f9; border-bottom: 2px solid #cbd5e1; box-shadow: 3px 0 4px -2px rgba(0,0,0,0.1); width: 75px; min-width: 75px; max-width: 75px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pengguna</th>
+                    <!-- Kolom Keterangan dibuat fleksibel -->
+                    <th style="padding: 8px; font-weight: 700; width: 100%; min-width: 180px;">Aktivitas / Keterangan</th>
+                </tr>
+            </thead>
+            <tbody id="tabelRiwayatBody" style="color: #1e293b; line-height: 1.4;">
+                <tr><td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">Memuat data riwayat...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- BAGIAN 2: TABEL LAPORAN BUG & MASUKAN (Baru) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-top: 2px dashed #cbd5e1; padding-top: 20px;">
+        <h2 style="color: #dc2626; font-size: 1.1rem; font-weight: 800; margin: 0;">🚨 Tiket Laporan & Bug</h2>
+        <button onclick="muatDataLaporanBug()" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">🔄 Refresh Tiket</button>
+    </div>
+    <div style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-x: auto; max-height: 45vh; border: 1px solid #fca5a5;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.8rem; white-space: nowrap;">
+            <thead style="background: #fef2f2; color: #991b1b; border-bottom: 2px solid #fecaca;">
+                <tr>
+                    <th style="padding: 10px 12px; font-weight: 700;">Waktu</th>
+                    <th style="padding: 10px 12px; font-weight: 700;">Pelapor</th>
+                    <th style="padding: 10px 12px; font-weight: 700;">Jenis Laporan</th>
+                    <th style="padding: 10px 12px; font-weight: 700; min-width: 250px; white-space: normal;">Deskripsi</th>
+                    <th style="padding: 10px 12px; font-weight: 700; text-align: center;">Status</th>
+                    <th style="padding: 10px 12px; font-weight: 700; text-align: center;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyLaporanBug" style="color: #1e293b;">
+                <tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">Belum ada laporan masuk.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>
+
+        <!-- MUTASI KAS -->
         <div id="viewMutasiKas" style="display:none; margin-bottom: 40px;">
             <div class="card" style="border-top: 4px solid #10b981;">
                 <h2 style="color: #047857; margin-bottom: 16px;">💰 Ringkasan & Mutasi Kas</h2>
-                <div class="grid-kas-cards">
-                    <div class="kas-card"><div class="kas-title">Kas Reseller</div><div class="kas-val" id="sbKasReseller" style="color:#60a5fa;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Reseller', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Reseller', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card kas-card-plastik"><div class="kas-title" style="color:#fef08a;">Kas Plastik</div><div class="kas-val" id="sbKasPlastik">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Plastik', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Plastik', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card"><div class="kas-title" id="lblCardPos1" style="color:#fca5a5;">Dana Darurat</div><div class="kas-val" id="sbKasDarurat" style="color:#f87171;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos1', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos1', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card kas-card-laba"><div class="kas-title" id="lblCardPos3" style="color:#bbf7d0;">Laba Bersih</div><div class="kas-val" id="sbKasLaba">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos3', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos3', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                    <div class="kas-card"><div class="kas-title" id="lblCardPos2" style="color:#e879f9;">Tabungan Anak</div><div class="kas-val" id="sbKasAnak" style="color:#c084fc;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos2', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos2', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
-                </div>
+                <!-- KARTU ATAS -->
+<div class="grid-kas-cards">
+    <div class="kas-card"><div class="kas-title">Kas Reseller</div><div class="kas-val" id="sbKasReseller" style="color:#60a5fa;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Reseller', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKas('Reseller', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+    
+    <div class="kas-card kas-card-plastik"><div class="kas-title" style="color:#fef08a;">Kas Plastik</div><div class="kas-val" id="sbKasPlastik">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKas('Plastik', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">+ Saldo</button><button onclick="bukaModalKas('Plastik', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.4);">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos1 -->
+    <div class="kas-card"><div class="kas-title" id="lblCardPos1" style="color:#fca5a5;">Dana Darurat</div><div class="kas-val" id="sbKasDarurat" style="color:#f87171;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos1', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos1', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos3 -->
+    <div class="kas-card kas-card-laba"><div class="kas-title" id="lblCardPos3" style="color:#bbf7d0;">Laba Bersih</div><div class="kas-val" id="sbKasLaba">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos3', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">+ Saldo</button><button onclick="bukaModalKasDinamis('pos3', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0; background:rgba(0,0,0,0.3);">- Tarik</button></div></div>
+    
+    <!-- Beri ID lblCardPos2 -->
+    <div class="kas-card"><div class="kas-title" id="lblCardPos2" style="color:#e879f9;">Tabungan Anak</div><div class="kas-val" id="sbKasAnak" style="color:#c084fc;">Rp 0</div><div style="display:flex; gap:6px;"><button onclick="bukaModalKasDinamis('pos2', 'masuk')" class="btn btn-success" style="font-size:0.65rem; padding:6px; margin:0;">+ Saldo</button><button onclick="bukaModalKasDinamis('pos2', 'keluar')" class="btn btn-danger" style="font-size:0.65rem; padding:6px; margin:0;">- Tarik</button></div></div>
+</div>
 
-                <hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border-color);">
+<hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border-color);">
 
-                <div class="tab-container">
-                    <button class="tab-btn active" onclick="gantiTabKas('Reseller', this)">🥤 Reseller</button>
-                    <button class="tab-btn" onclick="gantiTabKas('Plastik', this)">🛍️ Plastik</button>
-                    <button class="tab-btn" id="btnTabPos1" onclick="gantiTabKasDinamis('pos1', this)">🛡️ Darurat</button>
-                    <button class="tab-btn" id="btnTabPos3" onclick="gantiTabKasDinamis('pos3', this)">💵 Laba</button>
-                    <button class="tab-btn" id="btnTabPos2" onclick="gantiTabKasDinamis('pos2', this)">👶 Anak</button>
-                </div>
-                
+<!-- TOMBOL TAB BAWAH -->
+<div class="tab-container">
+    <button class="tab-btn active" onclick="gantiTabKas('Reseller', this)">🥤 Reseller</button>
+    <button class="tab-btn" onclick="gantiTabKas('Plastik', this)">🛍️ Plastik</button>
+    <button class="tab-btn" id="btnTabPos1" onclick="gantiTabKasDinamis('pos1', this)">🛡️ Darurat</button>
+    <button class="tab-btn" id="btnTabPos3" onclick="gantiTabKasDinamis('pos3', this)">💵 Laba</button>
+    <button class="tab-btn" id="btnTabPos2" onclick="gantiTabKasDinamis('pos2', this)">👶 Anak</button>
+</div>
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); color:white; padding:16px; border-radius:12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
-                    <div><span style="font-size:0.65rem; color:#94a3b8;">Saldo Terkini DOMPET</span><h3 id="txtNamaTabKas" style="font-size:0.95rem; color:#38bdf8; margin-top:2px;">Kas Reseller</h3></div>
+                    <div><span style="font-size:0.65rem; color:#94a3b8; text-transform:uppercase; font-weight:800;">Saldo Terkini DOMPET</span><h3 id="txtNamaTabKas" style="font-size:0.95rem; color:#38bdf8; margin-top:2px;">Kas Reseller</h3></div>
                     <div id="txtTotalTabKas" style="font-size:1.3rem; font-weight:800; color:#4ade80;">Rp 0</div>
                 </div>
-                
+                <div style="margin-bottom: 15px; text-align: right;">
+                    <label style="font-weight:bold; font-size:0.9rem; margin-right: 5px;">Filter Bulan: </label>
+                    <input type="month" id="inputFilterBulan" onchange="renderMutasiTabKas(activeKasTab)" style="padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold;">
+                </div>
                 <div class="table-wrapper">
                     <table>
                         <thead>
@@ -525,112 +919,217 @@
                         </thead>
                         <tbody id="tbodyMutasiKas"></tbody>
                     </table>
-                </div>   
+                </div>  
             </div>
         </div>
-
-        <!-- 9. SETORAN BAKSO -->
+       <!-- SETORAN BAKSO -->
         <div id="viewSetoranBakso" style="display:none; margin-bottom: 40px;">
+            
+            <!-- 1. TABEL PENJUALAN BAKSO -->
             <div class="card" style="border-top:4px solid #ea580c;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
                     <h2 style="margin:0;">🍲 Jual Bakso Malang</h2>
+                    <div style="display: inline-flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; margin-right: 10px;">
+                        <span style="font-size: 0.8rem; font-weight: bold; color: #475569;">Kasir:</span>
+                        <input type="text" id="inputNamaKasirBakso" style="border: none; outline: none; background: transparent; font-weight: bold; color: #0f172a; width: 80px; font-size: 0.8rem;" placeholder="Nama...">
+                    </div>
                     <button onclick="generatePDFBaksoHarian()" class="btn btn-pdf" style="width:auto; padding:8px 12px; margin:0; border-radius:12px;">🖨️ Cetak PDF</button>
                 </div>
                 <div class="table-wrapper">
                     <table class="table-freeze">
                         <thead>
-                            <tr><th>No</th><th style="text-align:left;">Varian Produk</th><th>Awal</th><th>Tambah</th><th>Kurang</th><th>Total</th><th>Laku</th><th>Sisa</th><th>Modal</th><th>Jual</th><th>Omset</th><th>Untung</th></tr>
+                            <tr><th>No</th><th style="text-align:left;">Varian Produk</th><th style="background:#ffedd5;">Awal</th><th style="background:#dcfce7; color:#166534;">Tambah</th><th style="background:#fee2e2; color:#991b1b;">Kurang</th><th style="background:#f1f5f9; color:#0f172a;">Total</th><th style="background:#e0e7ff;">Laku</th><th style="background:#fee2e2;">Sisa</th><th>Modal</th><th>Jual</th><th>Omset</th><th>Untung</th></tr>
                         </thead>
                         <tbody id="tbodyBaksoSetoran"></tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- 2. FORM INPUT SETORAN & PENGELUARAN DAPUR (SUDAH PINDAH KE SINI) -->
             <div class="card" id="cardSetoranDapur" style="border-top: 4px solid #ea580c; margin-bottom: 20px;">
                 <h2 style="color: #c2410c;">🍲 Form Setoran & Pengeluaran Dapur</h2>
                 <div style="background:#fff7ed; border:1px solid #fdba74; padding:12px; border-radius:8px;">
                     <div class="form-group">
                         <label style="color:#9a3412;">💵 Uang Cash Fisik (Diserahkan ke Dapur):</label>
                         <input type="text" inputmode="numeric" id="inBmCash" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Setoran Dapur" style="border-color:#fdba74;">
+                        <div style="font-size:0.65rem; color:#d97706; margin-top:2px;">*Input uang tunai yang fisik-nya akan langsung diserahkan ke Dapur/Owner.</div>
+                    </div>
+                    <hr style="margin: 12px 0; border-top:1px dashed #fdba74;">
+                    <div style="font-size:0.75rem; font-weight:800; color:#dc2626; margin-bottom:8px;">⚠️ PENGELUARAN DAPUR (SITUASIONAL)</div>
+                    <div class="form-group">
+                        <label style="color:#b91c1c;">📝 Catatan Keluar (Beli Gas, Kecap, dll):</label>
+                        <input type="text" id="inBmKetPengeluaran" placeholder="Contoh: Beli Gas" onchange="simpanSetoranDapurManual()" style="border-color:#fca5a5;">
+                    </div>
+                    <div class="form-group">
+                        <label style="color:#b91c1c;">🔻 Nominal Keluar Dapur:</label>
+                        <input type="text" inputmode="numeric" id="inBmPengeluaran" value="0" oninput="formatRibuanInput(this); simpanSetoranDapurManual()" placeholder="Nominal Rp" style="border-color:#fca5a5;">
+                        <div style="font-size:0.65rem; color:#dc2626; margin-top:2px;">*Mengurangi kewajiban Sisa Wajib Transfer Setoran Bakso.</div>
+                    </div>
+                </div>
+            </div>
+
+           <!-- 3. LAPORAN HASIL AKHIR SETORAN -->
+            <!-- TAMBAHAN: Saya menambahkan id="sectionLaporanSetoran" pada baris di bawah ini -->
+            <div class="card" id="sectionLaporanSetoran" style="background:linear-gradient(to bottom, #fff7ed, #ffffff); border:1px solid #fdba74;">
+                <h2 style="color:#c2410c;">💰 Laporan Setoran Ke Dapur</h2>
+                <div class="grid-mobile">
+                    <div class="summary-box" style="background:#ffffff; border-color:#f97316;">
+                        <div class="summary-item"><span style="font-weight:700;">Modal (Seharusnya Disetor):</span><span id="bmModalAwal" style="font-weight:800; color:#d97706; font-size:1rem;">Rp 0</span></div>
+                        <hr style="margin: 10px 0; border-top:1px dashed #fdba74;">
+                        <div class="summary-item"><span>💵 Uang Cash Fisik (Disetor):</span><span id="bmCashDisplay" style="font-weight:700; color:#0f172a;">Rp 0</span></div>
+                        <div class="summary-item"><span>📝 Keluar Dapur (<span id="bmKetPengeluaranDisplay">-</span>):</span><span id="bmPengeluaranDisplay" style="color:#dc2626; font-weight:700;">Rp 0</span></div>
+                        <div class="summary-item" style="background:#fefce8; padding:6px; border-radius:6px; margin-top:6px; border:1px solid #fde047;"><span>💳 Sisa Wajib Transfer:</span><span id="bmTFDisplay" style="font-weight:800; color:#a16207;">Rp 0</span></div>
+                        <hr style="margin: 10px 0; border-top:2px solid #fdba74;">
+                        <div class="summary-item bold" style="font-size:1rem; color:#c2410c;"><span>TOTAL SETORAN FIKS:</span><span id="bmSetoranFiks">Rp 0</span></div>
+                    </div>
+                    <div class="summary-box" style="background:#ffffff; border-color:#16a34a;">
+                        <div class="summary-item"><span>Pcs Laku:</span><span id="bmPorsiTerjual" style="font-weight:800; font-size:1rem;">0 Pcs</span></div>
+                        <div class="summary-item"><span>Total Omset:</span><span id="bmTotalOmset" style="font-weight:800; color:#2563eb; font-size:1rem;">Rp 0</span></div>
+                        <hr style="margin: 10px 0; border-top:1px dashed #86efac;">
+                        <div class="summary-item bold" style="color:#16a34a; font-size:1rem;"><span>Untung Kotor:</span><span id="bmTotalUntung">Rp 0</span></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- 10. REKAP TRANSFER -->
-        <div id="viewRekapTransfer" style="display:none; margin-bottom: 40px;">
-            <div class="card" style="border-top: 4px solid #8b5cf6;">
+                <!-- REKAP TRANSFER -->
+        <div id="viewRekapTransfer" style="display:none;">
+            <div class="card" style="border-top: 4px solid #8b5cf6; margin-bottom: 40px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                     <h2 style="color: #6d28d9; margin:0;">🏦 Rekap Transfer Dompet</h2>
                     <button onclick="generatePDFTransfer()" class="btn btn-pdf" style="width:auto; padding:6px 12px; font-size:0.75rem; margin:0; border-radius:12px;">🖨️ Cetak PDF</button>
                 </div>
                 <div class="grid-mobile">
                     <div class="summary-box" style="background:#f8fafc; border-color:#cbd5e1;">
-                        <h4 style="color:#334155; font-size:0.85rem; font-weight:800; margin-bottom:10px;">📥 (A) Rincian Tujuan Dompet Kas</h4>
-                        <div class="summary-item"><span>TF Setoran Bakso:</span><strong id="rtTfBakso">Rp 0</strong></div>
-                        <div class="summary-item"><span>Kas Reseller:</span><strong id="rtKasReseller" style="color:#3b82f6;">Rp 0</strong></div>
+                        <h4 style="color:#334155; font-size:0.85rem; font-weight:800; margin-bottom:10px; text-transform:uppercase;">📥 (A) Rincian Tujuan Dompet Kas</h4>
+                        <div class="summary-item"><span>TF Setoran Bakso:</span><strong id="rtTfBakso">Rp 0</span></div>
+                        <div class="summary-item"><span>Kas Reseller:</span><strong id="rtKasReseller" style="color:#3b82f6;">Rp 0</span></div>
+                        <div class="summary-item"><span>Kas Plastik:</span><strong id="rtKasPlastik" style="color:#ca8a04;">Rp 0</span></div>
+                        <!-- FIX: Penambahan span ID -->
+                        <div class="summary-item"><span><span id="lblRtPos1">Dana Darurat:</span></span><strong id="rtKasDarurat" style="color:#ef4444;">Rp 0</span></div>
+                        <div class="summary-item"><span><span id="lblRtPos3">Laba Bersih:</span></span><strong id="rtKasLaba" style="color:#16a34a;">Rp 0</span></div>
+                        <div class="summary-item"><span><span id="lblRtPos2">Tabungan Anak:</span></span><strong id="rtKasAnak" style="color:#a855f7;">Rp 0</span></div>
                         <div class="summary-item bold" style="color:#0f172a; font-size:1.05rem; border-top:2px solid #94a3b8; padding-top:10px; margin-top:10px;"><span>TOTAL (A):</span><span id="rtTotalA">Rp 0</span></div>
                     </div>
+                    <div class="summary-box" style="background:#f0fdf4; border-color:#86efac;">
+                        <h4 style="color:#15803d; font-size:0.85rem; font-weight:800; margin-bottom:10px; text-transform:uppercase;">📱 (B) Uang Digital & Ditahan</h4>
+                        <div class="summary-item"><span>💳 QRIS:</span><strong id="rtQris">Rp 0</span></div>
+                        <div class="summary-item"><span>🛵 Gojek:</span><strong id="rtGojek">Rp 0</span></div>
+                        <div class="summary-item"><span>🛵 Grab:</span><strong id="rtGrab">Rp 0</span></div>
+                        <div class="summary-item"><span>🛍️ Shopee:</span><strong id="rtShopee">Rp 0</strong></div>
+                        <div class="summary-item bold" style="color:#854d0e; border-top:1px dashed #4ade80; padding-top:8px; margin-top:8px;">
+                            <span>🪙 Modal Laci Besok:</span><strong id="rtModalBesok">Rp 0</strong>
+                        </div>
+                        <div class="summary-item bold" style="color:#16a34a; font-size:1.05rem; border-top:2px solid #86efac; padding-top:10px; margin-top:6px;"><span>TOTAL (B):</span><span id="rtTotalB">Rp 0</span></div>
+                    </div>
+                </div>
+                <div id="rtFinalBox" class="summary-box" style="margin-top:16px; text-align:center; padding:20px; transition: all 0.3s;">
+                    <span id="rtFinalLabel" style="font-size:0.85rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.5px;">SISA CASH FISIK YANG WAJIB DISETOR (A - B):</span>
+                    <div id="rtFinalValue" style="font-size:2rem; font-weight:800; margin-top:8px; margin-bottom:8px;">Rp 0</div>
+                    <div id="rtFinalKet" style="font-size:0.8rem; font-weight:700; line-height:1.4;"></div>
                 </div>
             </div>
-        </div>
-
-        <!-- 11. MASTER PRODUK -->
-        <div id="viewProduk" style="display: none; padding: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #1e293b;">⚙️ Master Produk</h2>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button onclick="bukaModalKelolaProduk()" class="btn btn-success" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px;">+ Tambah Produk</button>
-                </div>
-            </div>
-            
-            <div class="table-wrapper" style="max-height: 70vh; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <table id="tabelMasterProduk" class="table-freeze" style="width: 100%;">
-                    <thead>
-                        <tr>
-                            <th style="text-align:center;">No</th>
-                            <th>Nama Produk</th>
-                            <th style="text-align:center; color:#0284c7;">Sisa</th>
-                            <th>Kategori</th>
-                            <th>Modal</th>
-                            <th>Jual</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyMasterProduk"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 12. RIWAYAT AKTIVITAS -->
-        <div id="viewRiwayatAktivitas" style="display:none; margin-bottom: 40px; background: #f8fafc; padding: 15px; border-radius: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="color: #0f172a; font-size: 1.1rem; font-weight: 800; margin: 0;">🕰️ Riwayat Aktivitas</h2>
-                <button onclick="muatDataRiwayat()" style="background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">🔄 Muat Ulang</button>
-            </div>
-            <div style="background: #ffffff; border-radius: 12px; overflow-x: auto; max-height: 45vh; border: 1px solid #e2e8f0;">
-                <table id="tabelRiwayatUtama" style="width: 100%; text-align: left; font-size: 0.75rem;">
-                    <thead style="background: #f1f5f9; color: #334155;">
-                        <tr>
-                            <th style="padding: 8px;">Waktu</th>
-                            <th style="padding: 8px;">Pengguna</th>
-                            <th style="padding: 8px;">Aktivitas</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelRiwayatBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <button class="fab-btn" onclick="bukaModalFeedback()" title="Kirim Masukan & Laporan Bug">💬</button>
-
-    </div> <!-- PENUTUP MAIN CONTAINER -->
-</div> <!-- PENUTUP APP SCREEN -->
+        </div>  
+    <button class="fab-btn" onclick="bukaModalFeedback()" title="Kirim Masukan & Laporan Bug">💬</button>
+</div>
 
 
 <!-- ==========================================
 MODALS DAN CETAK PDF
 ========================================== -->
+
+<div class="modal" id="modalCetakPeriode">
+    <div class="modal-content">
+        <h3 style="font-size:1.1rem; font-weight:800; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📊 Cetak Laporan Berkala</h3>
+        <div class="form-group" style="margin-top: 15px;">
+            <label style="font-weight: bold; color: #0f172a;">Pilih Jenis Laporan:</label>
+            <select id="jenisCetakPeriode" onchange="gantiTampilanModalLaporan()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <option value="mingguan">Laporan Mingguan (Pilih Tanggal)</option>
+                <option value="bulanan">Laporan Bulanan (Pilih Bulan)</option>
+            </select>
+        </div>
+        <div id="formCetakMingguan" style="display:block; background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <div class="form-group"><label>Dari Tanggal:</label><input type="date" id="cetakTglAwal"></div>
+            <div class="form-group"><label>Sampai Tanggal:</label><input type="date" id="cetakTglAkhir"></div>
+        </div>
+        <div id="formCetakBulanan" style="display:none; background: #f8fafc; padding: 10px; border-radius: 6px; margin-top: 10px;">
+            <div class="form-group"><label>Pilih Bulan & Tahun:</label><input type="month" id="cetakBulan"></div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:20px;">
+            <button type="button" class="btn btn-outline" onclick="tutupModalCetakPeriode()">Batal</button>
+            <button type="button" class="btn btn-pdf" onclick="eksekusiCetakPeriode()">Cetak PDF</button>
+        </div>
+    </div>
+</div>
+
+<div id="viewProduk" style="display: none; padding: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+        <h2 style="margin: 0; font-size: 1.3rem; font-weight: 800; color: #1e293b;">⚙️ Master Produk</h2>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <input type="file" id="fileImportMasterProduk" accept=".csv" style="display:none;" onchange="importMasterProdukCSV(event)">
+            <button onclick="document.getElementById('fileImportMasterProduk').click()" class="btn btn-warning" style="background: #fbbf24; color: #78350f; font-weight: bold;">📥 Import CSV Produk</button>
+            <button onclick="exportProdukKeExcel()" class="btn btn-warning" style="width: auto; margin: 0; padding: 8px 12px; font-size: 0.8rem; border-radius: 6px; background: #fbbf24; color: #78350f; font-weight: bold;">📥 Export CSV</button>
+            <button onclick="cetakPDFProduk()" class="btn btn-pdf" style="width: auto; margin: 0; padding: 8px 12px; font-size: 0.8rem; border-radius: 6px; font-weight: bold;">📄 Cetak PDF</button>
+            <button onclick="bukaModalKelolaProduk()" class="btn btn-success" style="width: auto; margin: 0; padding: 8px 14px; font-size: 0.85rem; border-radius: 6px; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);">+ Tambah Produk</button>
+        </div>
+    </div>
+    
+<div class="table-wrapper" style="max-height: 70vh; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px; position: relative;">
+    <!-- Tambahkan id="tabelMasterProduk" di sini -->
+    <table id="tabelMasterProduk" class="table-freeze" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+        <thead>
+            <tr>
+                <th style="text-align:center;">No</th>
+                <th>Nama Produk</th>
+                <th style="text-align:center; color:#0284c7;">Sisa</th>
+                <th>Kategori</th>
+                <th>Modal</th>
+                <th>Jual</th>
+                <th>Awal</th>
+                <th>Keluar</th>
+                <th>Rusak</th>
+                <th>+Gudang</th>
+                <th>+Rusak</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyMasterProduk"></tbody>
+    </table>
+</div>
+ <!-- KARTU RIWAYAT PERGERAKAN STOK GUDANG (BARU) -->
+    <div class="card" style="margin-top: 20px; border-top: 4px solid #0284c7; background: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h3 style="color: #0369a1; margin:0; font-size: 1rem; font-weight: 800;">📜 Riwayat Pergerakan Stok Gudang</h3>
+                <span style="font-size: 0.7rem; color: #64748b; background: #f0f9ff; padding: 3px 6px; border-radius: 4px;">Audit Trail Masuk & Keluar</span>
+            </div>
+
+            <!-- 👉 TOMBOL REFRESH DIPASANG DI SINI -->
+            <button id="btnRefreshRiwayat" onclick="refreshTabelRiwayatStok()" style="background: #0284c7; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                🔄 Refresh Riwayat
+            </button>
+        </div>
+
+        <div class="table-wrapper">
+            <table style="width: 100%; font-size: 0.8rem;">
+                <thead>
+                    <tr style="background: #f0f9ff; color: #0369a1;">
+                        <th style="text-align:center; width:30px; padding: 6px;">No</th>
+                        <th style="padding: 6px;">Waktu</th>
+                        <th style="padding: 6px;">Produk</th>
+                        <th style="text-align:center; padding: 6px;">Aksi</th>
+                        <th style="text-align:center; padding: 6px;">Perubahan</th>
+                        <th style="text-align:center; padding: 6px;">Sisa Stok Gudang</th>
+                        <th style="padding: 6px;">Oleh</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyRiwayatStok">
+                    <tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:12px;">Belum ada riwayat pergerakan stok.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+        
 
 <div class="modal" id="modalKelolaProduk">
     <div class="modal-content">
@@ -650,14 +1149,34 @@ MODALS DAN CETAK PDF
                 <div class="form-group"><label>Jual (Rp):</label><input type="number" id="inputJualProduk" min="0" required oninput="hitungMarginForm()"></div>
             </div>
             <div class="form-group"><label>Margin:</label><input type="number" id="inputMarginProduk" readonly style="color:#16a34a; background: #f0fdf4;"></div>
+            <div class="grid-mobile" style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <div class="form-group">
+                    <label style="color: #16a34a;">📦 Stok Awal Gudang (Pcs):</label>
+                    <input type="number" id="inputStokGudang" min="0" value="0" required style="border-color: #86efac; background: #f0fdf4;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #9f1239;">🗑️ Stok Rusak/Basi (Pcs):</label>
+                    <input type="number" id="inputStokRusak" min="0" value="0" style="border-color: #fda4af; background: #fff1f2;">
+                </div>
+                <div class="form-group">
+                    <label style="color: #d97706;">🚨 Min. Stok Gudang:</label>
+                    <input type="number" id="inputMinGudang" min="0" value="10" required style="border-color: #fcd34d; background: #fffbeb;">
+                    <div style="font-size: 0.65rem; color: #d97706; margin-top: 2px;">*Warning order ke vendor.</div>
+                </div>
+                <div class="form-group">
+                    <label style="color: #b45309;">⚠️ Min. Stok Etalase:</label>
+                    <input type="number" id="inputMinEtalase" min="0" value="5" required style="border-color: #fdba74; background: #fff7ed;">
+                    <div style="font-size: 0.65rem; color: #b45309; margin-top: 2px;">*Warning kasir utk ambil barang ke belakang.</div>
+                </div>
+            </div>
+
             <div style="display:flex; gap:8px; margin-top:20px;">
                 <button type="button" class="btn btn-outline" onclick="tutupModalKelolaProduk()">Batal</button>
                 <button type="submit" class="btn btn-success" id="btnSimpanProduk">Simpan</button>
             </div>
         </form>
     </div>
-</div>
-
+</div> 
 <div class="modal" id="modalKas">
     <div class="modal-content">
         <h3 id="modalKasJudul" style="font-size:1.1rem; font-weight:800;">Kelola Kas</h3>
@@ -683,24 +1202,32 @@ MODALS DAN CETAK PDF
 <div class="modal" id="modalFeedback">
     <div class="modal-content">
         <h3 style="font-size:1.1rem; font-weight:800; color:#ea580c; margin-bottom:12px;">💬 Kirim Masukan & Laporan Bug</h3>
+        
+        <!-- Tag <form> dihilangkan agar halaman tidak memuat ulang (refresh) -->
         <div>
             <div class="form-group">
                 <label>Jenis Laporan:</label>
+                <!-- ID disesuaikan dengan JavaScript: inputJenisLaporan -->
                 <select id="inputJenisLaporan" required style="font-weight: 600;">
                     <option value="🐛 Lapor Error / Bug">🐛 Lapor Error / Bug</option>
                     <option value="💡 Saran Fitur Baru">💡 Saran Fitur Baru</option>
                     <option value="💬 Lainnya">💬 Lainnya</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label>Deskripsi:</label>
+                <!-- ID disesuaikan dengan JavaScript: inputDeskripsiLaporan -->
                 <textarea id="inputDeskripsiLaporan" rows="4" style="width:100%; border: 2px solid var(--border-color); border-radius: 8px; padding:8px;" required placeholder="Jelaskan masalah atau saran Anda..."></textarea>
             </div>
+            
             <div style="display:flex; gap:8px; margin-top:12px;">
                 <button type="button" class="btn btn-danger" onclick="tutupModalFeedback()">Batal</button>
+                <!-- Tombol ini sekarang memicu fungsi kirimLaporanBug() -->
                 <button type="button" class="btn btn-success" id="btnKirimFeedback" onclick="kirimLaporanBug()">Kirim Laporan</button>
             </div>
         </div>
+        
     </div>
 </div>
 
@@ -715,15 +1242,255 @@ MODALS DAN CETAK PDF
             </div>
             <div class="grid-mobile">
                 <div class="form-group"><label>Isi per Karton:</label><input type="number" id="inVendorIsi" required placeholder="Contoh: 24" min="1"></div>
-                <div class="form-group"><label>Rasa/Varian:</label><input type="text" id="inVendorRasa" placeholder="Contoh: Apel"></div>
+                <div class="form-group"><label>Rasa/Varian:</label><input type="text" id="inVendorRasa" placeholder="Contoh: Apel (Boleh kosong)"></div>
             </div>
             <div class="form-group"><label>Harga per Karton (Rp):</label><input type="number" id="inVendorHarga" required placeholder="Contoh: 60000" min="0"></div>
+            
             <div style="display:flex; gap:8px; margin-top:16px;">
                 <button type="button" class="btn btn-danger" onclick="tutupModalTambahVendor()">Batal</button>
                 <button type="submit" class="btn btn-warning">Simpan Produk</button>
             </div>
         </form>
     </div>
+</div>
+
+<div id="pdfAreaPeriode" class="pdf-area-container">
+    <div class="kop-surat"><img src="AGAK HIDUP.png" alt="Logo"><div class="kop-surat-text"><h1>BAKSO MALANG MBAK SAE'AH</h1><p class="teks-cabang-pdf">Cabang Cipete Utara</p></div></div>
+    <div class="pdf-header"><h2 id="pdfJudulPeriode">LAPORAN REKAPITULASI</h2><p id="pdfTglPeriode" style="font-weight: bold; font-size:0.9rem; color:#475569; margin:0;"></p></div>
+    <div class="pdf-section-title">1. RINGKASAN OMSET & PENJUALAN</div>
+    <div class="pdf-box"><div class="pdf-row"><span>Omset Bakso Malang:</span><span id="pdfOmsetBakso">Rp 0</span></div><div class="pdf-row"><span>Omset Reseller:</span><span id="pdfOmsetReseller">Rp 0</span></div><div class="pdf-row total"><span>TOTAL OMSET:</span><span id="pdfTotalOmset" style="color:#0284c7;">Rp 0</span></div></div>
+    <div class="pdf-box"><div class="pdf-row"><span>Total Modal Terpakai:</span><span id="pdfTotalModal">Rp 0</span></div><div class="pdf-row"><span>Pengeluaran Harian (Trmsk Dapur):</span><span id="pdfTotalPengeluaran">Rp 0</span></div><div class="pdf-row total"><span>KEUNTUNGAN KOTOR:</span><span id="pdfTotalProfitKotor" style="color:#16a34a;">Rp 0</span></div></div>
+    <div class="pdf-box" style="border-color:#fbcfe8; background:#fdf2f8;">
+        <div class="pdf-row"><span>➖ Total Gaji Karyawan Harian (Laci):</span><span id="pdfTotalGaji" style="font-weight:bold; color:#be185d;">Rp 0</span></div>
+        <div class="pdf-row"><span>➖ Total Pengeluaran Harian:</span><span id="pdfTotalPengeluaranHarian" style="font-weight:bold; color:#be185d;">Rp 0</span></div>
+        <div class="pdf-row total" style="border-color:#be185d;"><span>KEUNTUNGAN BERSIH:</span><span id="pdfTotalProfitBersih" style="color:#9d174d;">Rp 0</span></div>
+    </div>
+    <div class="pdf-section-title">2. ALOKASI KEUNTUNGAN</div>
+    <div class="pdf-box" style="background:#f0fdf4; border-color:#86efac;"><div class="pdf-row"><span>🛡️ Dana Darurat (20%):</span><span id="pdfAllocDarurat" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row"><span>👶 Tabungan Anak (40%):</span><span id="pdfAllocAnak" style="font-weight:bold;">Rp 0</span></div><div class="pdf-row total" style="background:#dcfce7; padding:4px;"><span>💵 LABA BERSIH (40%):</span><span id="pdfAllocLabaBersih" style="color:#15803d; font-size:0.9rem;">Rp 0</span></div></div>
+    <div class="pdf-section-title">3. DETAIL STOK TERJUAL</div>
+    <div><table><thead><tr><th>Kategori</th><th>Nama Produk</th><th>Terjual</th><th>Omset</th><th>Profit</th></tr></thead><tbody id="pdfTbodyProdukPeriode"></tbody></table></div>
+</div>
+
+<div id="pdfAreaHarian" class="pdf-area-container">
+    <div class="kop-surat"><img src="AGAK HIDUP.png" alt="Logo"><div class="kop-surat-text"><h1>BAKSO MALANG MBAK SAE'AH</h1><p class="teks-cabang-pdf">Cabang Cipete Utara</p></div></div>
+    <div class="pdf-header" style="border-bottom: 2px solid #3b82f6;"><h2 style="color: #3b82f6;">LAPORAN STOK & KASIR HARIAN</h2><p id="pdfHariTgl" style="font-weight: bold; font-size:0.9rem; color:#475569; margin:0;"></p></div>
+    <div class="pdf-section-title" style="border-left-color: #3b82f6;">1. PEMASUKAN UANG (KASIR)</div>
+    <div class="pdf-box"><div class="pdf-row"><span>💵 Cash Laci:</span><span id="pdfHrCash">Rp 0</span></div><div class="pdf-row"><span>📱 QRIS:</span><span id="pdfHrQris">Rp 0</span></div><div class="pdf-row"><span>🛵 Gojek:</span><span id="pdfHrGojek">Rp 0</span></div><div class="pdf-row"><span>🛵 Grab:</span><span id="pdfHrGrab">Rp 0</span></div><div class="pdf-row"><span>🛍️ Shopee:</span><span id="pdfHrShopee">Rp 0</span></div><div class="pdf-row"><span>🪙 Pettycash (Modal Awal):</span><span id="pdfHrPetty">Rp 0</span></div><div class="pdf-row total" style="border-color:#3b82f6;"><span>TOTAL UANG MASUK:</span><span id="pdfHrTotalMasuk" style="color:#2563eb;">Rp 0</span></div></div>
+    <div class="pdf-section-title" style="border-left-color: #ef4444;">2. PENGELUARAN HARIAN DARI LACI</div>
+    <div class="pdf-box" style="background:#fef2f2; border-color:#fca5a5;"><div id="pdfHrListPengeluaran"></div><div class="pdf-row total" style="border-color:#ef4444; margin-top:8px;"><span>TOTAL KELUAR LACI:</span><span id="pdfHrTotalKeluar" style="color:#dc2626;">Rp 0</span></div></div>
+    <div id="pdfHrTitleProfit" class="pdf-section-title" style="border-left-color: #16a34a;">3. RINGKASAN PROFIT & ALOKASI</div>
+    <div id="pdfHrBoxProfit" class="pdf-box" style="background:#f0fdf4; border-color:#86efac;">
+        <div class="pdf-row"><span>Total Profit Kotor:</span><span id="pdfHrKotor" style="font-weight:bold;">Rp 0</span></div>
+        <div class="pdf-row" style="color:#be185d;"><span>Gaji Karyawan Harian (-):</span><span id="pdfHrGaji" style="font-weight:bold;">Rp 0</span></div>
+        <div class="pdf-row" style="color:#be185d;"><span>Pengeluaran Harian (-):</span><span id="pdfHrPengeluaranHarian" style="font-weight:bold;">Rp 0</span></div>
+        <div class="pdf-row total" style="border-color:#16a34a; padding:6px 0;"><span>PROFIT BERSIH:</span><span id="pdfHrBersih" style="color:#15803d;">Rp 0</span></div>
+        <div style="border-top:1px dashed #86efac; margin-top:4px; padding-top:4px;"><div class="pdf-row"><span>Dana Darurat (20%):</span><span id="pdfHrDarurat">Rp 0</span></div><div class="pdf-row"><span>Tabungan Anak (40%):</span><span id="pdfHrAnak">Rp 0</span></div><div class="pdf-row"><span>Laba Bersih (40%):</span><span id="pdfHrLaba">Rp 0</span></div></div>
+    </div>
+    <div class="pdf-section-title" style="border-left-color: #94a3b8;">DATA BARANG TERJUAL</div>
+    <div><table><thead id="pdfTHeadHarianBarang"></thead><tbody id="pdfTbodyHarianBarang"></tbody></table></div>
+    
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #000;">
+        <div style="text-align: center; width: 200px;">
+           <p style="margin: 0; font-size: 12px;">Jakarta Selatan, <span id="pdfTanggalCetakHarian">...</span></p>
+            <p style="margin: 5px 0 50px 0; font-size: 12px;">Kasir,</p>
+            <p id="pdfNamaPembuatHarianCetak" style="margin: 0; font-size: 14px; font-weight: bold; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+        </div>
+    </div>
+</div>
+
+<div id="pdfAreaBakso" style="display: none; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #ffffff;">
+    <div style="display: flex; align-items: center; border-bottom: 3px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
+        <img src="AGAK HIDUP.png" alt="Logo" style="width: 65px; height: 65px; object-fit: contain; margin-right: 15px;">
+        <div>
+            <h1 style="margin: 0; font-size: 24px; color: #ea580c; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;">BAKSO MALANG MBAK SAE'AH</h1>
+           <p class="teks-cabang-pdf" style="margin: 4px 0 0 0; font-size: 13px; color: #475569; font-weight: 600;">Cabang Cipete Utara</p>
+        </div>
+    </div>
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800; color: #0f172a; text-decoration: underline;">LAPORAN SETORAN & KARTU STOK DAPUR</h2>
+        <p id="pdfBaksoTgl" style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">Tanggal Setoran: -</p>
+    </div>
+    <div style="font-size: 12px; font-weight: bold; color: #ea580c; border-left: 4px solid #ea580c; padding-left: 8px; margin-bottom: 10px;">1. RINCIAN BARANG, STOK & PENJUALAN</div>
+    <div style="margin-bottom: 25px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
+            <thead style="background: #ffedd5; color: #9a3412;">
+                <tr>
+                    <th style="text-align: center; width: 30px;">No</th>
+                    <th style="text-align: left;">Varian Produk</th>
+                    <th style="text-align: center;">Awal</th>
+                    <th style="text-align: center; color: #166534;">Tambah</th>
+                    <th style="text-align: center; color: #991b1b;">Kurang</th>
+                    <th style="text-align: center;">Total</th>
+                    <th style="text-align: center; color: #0f172a;">Laku</th>
+                    <th style="text-align: center; color: #dc2626;">Sisa</th>
+                    <th style="text-align: right;">Modal Satuan</th>
+                    <th style="text-align: right;">Setoran/Modal</th>
+                    <th style="text-align: right;">Profit Kotor</th>
+                </tr>
+            </thead>
+            <tbody id="pdfTbodyBaksoHarian">
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end; page-break-inside: avoid; color: #000;">
+        <div style="text-align: center; width: 200px;">
+            <p style="margin: 0; font-size: 12px;">Jakarta Selatan, <span id="pdfTanggalCetakBakso">...</span></p>
+            <p style="margin: 5px 0 50px 0; font-size: 12px;">Diserahkan Oleh,</p>
+            <p id="pdfNamaPembuatBaksoCetak" style="margin: 0; font-size: 14px; font-weight: bold; text-decoration: underline; text-transform: capitalize;">Nama Kasir</p>
+        </div>
+    </div>
+    <div style="font-size: 12px; font-weight: bold; color: #ea580c; border-left: 4px solid #ea580c; padding-left: 8px; margin-bottom: 10px;">2. RINGKASAN SETORAN KE DAPUR</div>
+    <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 15px; font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px;">
+            <span style="color: #475569;">Total Modal Uang (Harus Disetor):</span>
+            <span id="pdfBaksoModal" style="font-weight: bold; color: #d97706;">Rp 0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px;">
+            <span style="color: #475569;">Uang Cash Fisik diserahkan:</span>
+            <span id="pdfBaksoCash" style="font-weight: bold; color: #334155;">Rp 0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #fed7aa; padding-bottom: 8px;">
+            <span style="color: #475569;">Pengeluaran Dapur (<span id="pdfBaksoKetKeluar" style="font-style: italic; color: #64748b;">-</span>):</span>
+            <span id="pdfBaksoKeluar" style="font-weight: bold; color: #dc2626;">Rp 0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <span style="color: #475569;">Sisa Setoran via Transfer (TF):</span>
+            <span id="pdfBaksoTF" style="font-weight: bold; color: #a16207;">Rp 0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #ffedd5; padding: 10px; border-radius: 6px; border: 1px solid #fb923c;">
+            <span style="font-weight: bold; color: #9a3412; font-size: 13px;">TOTAL KESELURUHAN SETORAN:</span>
+            <span id="pdfBaksoTotalSetor" style="font-weight: 900; color: #c2410c; font-size: 16px;">Rp 0</span>
+        </div>
+    </div>
+    <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 11px;">
+        <div style="width: 200px;">
+            <p style="margin-bottom: 50px; color: #475569;">Dibuat Oleh (Kasir),</p>
+            <p style="border-top: 1px solid #94a3b8; padding-top: 5px; margin: 0; color: #1e293b;">Tanda Tangan & Nama</p>
+        </div>
+        <div style="width: 200px;">
+            <p style="margin-bottom: 50px; color: #475569;">Diterima Oleh (Owner/Dapur),</p>
+            <p style="border-top: 1px solid #94a3b8; padding-top: 5px; margin: 0; color: #1e293b;">Tanda Tangan & Nama</p>
+        </div>
+    </div>
+</div>
+
+<div id="pdfAreaTransfer" class="pdf-area-container">
+    <div class="kop-surat"><img src="AGAK HIDUP.png" alt="Logo"><div class="kop-surat-text"><h1>BAKSO MALANG MBAK SAE'AH</h1><p class="teks-cabang-pdf">Cabang Cipete Utara</p></div></div>
+    <div class="pdf-header" style="border-bottom: 2px solid #8b5cf6;"><h2 style="color: #6d28d9;">LAPORAN REKAP TRANSFER DOMPET</h2><p id="pdfStrukTgl" style="font-weight: bold; font-size:0.9rem; color:#475569; margin:0;"></p></div>
+    <div class="pdf-section-title" style="border-left-color: #8b5cf6;">A. WAJIB MASUK DOMPET KAS</div>
+    <div class="pdf-box">
+        <div class="pdf-row"><span>TF Setoran Bakso:</span><span id="stTfBakso" style="font-weight:bold;">Rp 0</span></div>
+        <div class="pdf-row"><span>Kas Reseller:</span><span id="stKasReseller" style="color:#3b82f6;">Rp 0</span></div>
+        <div class="pdf-row"><span>Kas Plastik:</span><span id="stKasPlastik" style="color:#ca8a04;">Rp 0</span></div>
+        <div class="pdf-row"><span>Dana Darurat:</span><span id="stDarurat" style="color:#ef4444;">Rp 0</span></div>
+        <div class="pdf-row"><span>Laba Bersih:</span><span id="stLaba" style="color:#16a34a;">Rp 0</span></div>
+        <div class="pdf-row"><span>Tabungan Anak:</span><span id="stAnak" style="color:#a855f7;">Rp 0</span></div>
+        <div class="pdf-row total"><span>TOTAL (A):</span><span id="stTotalA">Rp 0</span></div>
+    </div>
+    <div class="pdf-section-title" style="border-left-color: #16a34a;">B. UANG DIGITAL & DITAHAN LACI</div>
+    <div class="pdf-box" style="background:#f0fdf4; border-color:#86efac;">
+        <div class="pdf-row"><span>📱 QRIS:</span><span id="stQris">Rp 0</span></div>
+        <div class="pdf-row"><span>🛵 Gojek:</span><span id="stGojek">Rp 0</span></div>
+        <div class="pdf-row"><span>🛵 Grab:</span><span id="stGrab">Rp 0</span></div>
+        <div class="pdf-row"><span>🛍️ Shopee:</span><span id="stShopee">Rp 0</span></div>
+        <div class="pdf-row" style="font-weight: bold; color: #854d0e;"><span>🪙 Modal Laci Besok:</span><span id="stModalBesok">Rp 0</span></div>
+        <div class="pdf-row total" style="border-color:#16a34a;"><span>TOTAL (B):</span><span id="stTotalB">Rp 0</span></div>
+    </div>
+    <div id="boxStatusSetor" style="margin-top:20px; padding:20px; border: 2px dashed #94a3b8; border-radius: 8px; text-align: center;">
+        <div id="stFinalKet" style="font-weight: 800; font-size: 1.1rem; color: #475569; margin-bottom: 8px;">STATUS SETOR FISIK</div>
+        <div id="stFinalValue" style="font-size: 2rem; font-weight: 900;">Rp 0</div>
+    </div>
+</div>
+
+<div id="pdfAreaSlipGaji" class="pdf-area-container">
+    <div class="kop-surat"><img src="AGAK HIDUP.png" alt="Logo"><div class="kop-surat-text"><h1>BAKSO MALANG MBAK SAE'AH</h1><p class="teks-cabang-pdf">Cabang Cipete Utara</p></div></div>
+    <div class="pdf-header" style="border-bottom: 2px solid #e11d48;"><h2 style="color: #be185d;">SLIP GAJI KARYAWAN (BULANAN)</h2><p id="pdfSgBulan" style="font-weight: bold; font-size:0.9rem; color:#475569; margin:0;"></p></div>
+    <div class="pdf-box" style="border-color:#fda4af; background:#fff1f2;"><div class="pdf-row"><span>Total Hari Kerja (Aktif):</span><span id="pdfSgHadir" style="font-weight:bold;">0 Hari</span></div><div class="pdf-row"><span>Total Hari Libur/Absen:</span><span id="pdfSgLibur" style="font-weight:bold; color:#dc2626;">0 Hari</span></div></div>
+    <div class="pdf-section-title" style="border-left-color: #e11d48;">RINCIAN PENDAPATAN & POTONGAN</div>
+    <div class="pdf-box">
+        <div class="pdf-row"><span>Gaji Pokok Bulanan:</span><span style="font-weight:bold;"><span id="lblGajiPokokBulanan">Rp 1.500.000</span></span></div>
+        <div class="pdf-row"><span>Uang Harian / Makan (Sudah Diambil via Laci):</span><span id="pdfSgUangLaci" style="color:#64748b;">Rp 0</span></div>
+        <div class="pdf-row" style="color:#dc2626;"><span>Potongan Libur (>2 Hari):</span><span id="pdfSgPotongan" style="font-weight:bold;">Rp 0</span></div>
+        <div class="pdf-row total" style="border-color:#be185d; margin-top:12px; padding-top:12px;"><span>TOTAL GAJI DITERIMA (TRANSFER):</span><span id="pdfSgTotalTF" style="color:#9d174d; font-size:1.2rem;">Rp 0</span></div>
+    </div>
+    <div style="margin-top:40px; text-align:right; font-size:0.85rem;"><p>Jakarta, <span id="pdfSgTglCetak"></span></p><br><br><br><p style="font-weight:bold;">( Owner / Pengelola )</p></div>
+</div>
+
+<div id="modalFilterReseller" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: #ffffff; width: 100%; max-width: 350px; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1rem; color: #0f172a;">🛠️ Filter Ranking Reseller</h3>
+            <button onclick="tutupFilterReseller()" style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">✖</button>
+        </div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 10px;">Hilangkan centang untuk menyembunyikan produk dari grafik:</div>
+        <div id="listCheckboxReseller" style="max-height: 250px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;"></div>
+        <button onclick="terapkanFilterReseller()" style="width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer;">✅ Terapkan Filter</button>
+    </div>
+</div>
+
+<div class="modal" id="modalMutasiStok">
+    <div class="modal-content" style="max-width: 550px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0284c7; margin: 0;">🚚 Mutasi Stok Bakso Malang</h3>
+            <button onclick="tutupModalMutasiStok()" style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8;">✖</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="margin: 0;">
+                <label>Jenis Mutasi:</label>
+                <select id="mutasiJenis" onchange="gantiPilihanMutasi()" style="font-weight: bold; color: #0f172a;">
+                    <option value="keluar">📤 Kirim ke Cabang Lain</option>
+                    <option value="masuk">📥 Terima dari Cabang Lain</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label id="labelCabangMitra">Cabang Tujuan:</label>
+                <select id="mutasiCabangTarget" style="font-weight: bold; color: #b45309; background: #fffbeb;"></select>
+            </div>
+        </div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 8px;">*Masukkan jumlah <strong>Pcs</strong> untuk produk Bakso Malang yang dimutasikan:</div>
+        <div class="table-wrapper" style="max-height: 250px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 5;">
+                    <tr>
+                        <th style="padding: 8px; text-align: left;">Nama Produk</th>
+                        <th style="padding: 8px; text-align: center; width: 80px;">Stok Saat Ini</th>
+                        <th style="padding: 8px; text-align: center; width: 90px; color: #0284c7;">Jumlah (Pcs)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyTabelMutasiStok"></tbody>
+            </table>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-outline" onclick="tutupModalMutasiStok()" style="margin: 0;">Batal</button>
+            <button type="button" class="btn btn-success" onclick="prosesSimpanMutasiStok()" style="margin: 0; background: linear-gradient(135deg, #0284c7, #0369a1);">Proses & Simpan Sinkron</button>
+        </div>
+    </div>
+</div>
+    <div id="modalAksiStokGudang" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+  <div class="modal-content" style="background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px;">
+    <span onclick="tutupModalAksiStok()" style="float: right; cursor: pointer; font-size: 20px; font-weight: bold;">&times;</span>
+    <h3 id="modalAksiJudul" style="margin-top: 0;">Kelola Stok Gudang</h3>
+    <form id="formAksiStokGudang" onsubmit="prosesAksiStokGudang(event)">
+      <input type="hidden" id="aksiProdukIndex">
+      <input type="hidden" id="aksiTipeStok">
+      
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Nama Produk:</label>
+        <input type="text" id="aksiNamaProduk" readonly style="width: 100%; padding: 8px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label id="lblJumlahAksi" style="display: block; font-weight: bold; margin-bottom: 4px;">Jumlah:</label>
+        <input type="number" id="inputJumlahAksi" min="1" required placeholder="Masukkan jumlah..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" onclick="tutupModalAksiStok()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Batal</button>
+        <button type="submit" id="btnSimpanAksiStok" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Simpan</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="script.js"></script>
