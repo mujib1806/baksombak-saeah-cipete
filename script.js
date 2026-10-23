@@ -896,7 +896,8 @@ function cekDanTarikDataKemarin(tgl) {
     let d = String(dateObj.getDate()).padStart(2, '0');
     let tglKemarin = `${y}-${m}-${d}`;
     
-    let isKemarinLocked = dbStatusKunci[tglKemarin] === true;
+    // 👉 PERBAIKAN: Gunakan fungsi isDataLocked agar bisa membaca objek snapshot dengan aman
+    let isKemarinLocked = isDataLocked(tglKemarin);
     let needsUpdateUI = false;
 
     if (dbStok[tgl]) {
@@ -908,8 +909,6 @@ function cekDanTarikDataKemarin(tgl) {
                     if (p.awal === "" || p.awal === null) {
                         let pKemarin = dbStok[tglKemarin].find(x => x.nama === p.nama);
                         if (pKemarin) {
-                            // 👉 PERBARUAN: Baik Reseller maupun Bakso Malang, 
-                            // Stok Awal Hari Ini = Stok Sisa Hari Kemarin
                             if ((p.kategori === 'Reseller' || p.kategori === 'Bakso Malang') && pKemarin.sisa !== "" && pKemarin.sisa !== null) { 
                                 dbStok[tgl][idx].awal = pKemarin.sisa; 
                                 needsUpdateUI = true; 
