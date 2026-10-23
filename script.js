@@ -3089,9 +3089,9 @@ function renderDashboardGrafik() {
 
     let totalOmsetBakso = 0, totalOmsetReseller = 0, totalProfit = 0, totalSetoranDapurAkumulatif = 0; 
     let totalGaji = 0, totalLaci = 0, totalDarurat = 0; 
-    // 👉 AKUMULASI PENJUALAN ONLINE
+    // 👉 AKUMULASI & DATA HARIAN PENJUALAN ONLINE
     let totalGojek = 0, totalGrab = 0, totalShopee = 0;
-
+    let dataGojekLine = [], dataGrabLine = [], dataShopeeLine = [];
     let labelsTren = [], dataBakso = [], dataReseller = [], dataProfitLine = [], dataSetoranBaksoLine = []; 
     let produkBakso = {}, produkReseller = {};
 
@@ -3140,18 +3140,27 @@ function renderDashboardGrafik() {
                 .reduce((acc, curr) => acc + (parseFloat(curr.nominal) || 0), 0);
         }
 
-        // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
-        if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
-            const k = dbKasMasuk[tgl];
-            const parseVal = (v) => {
-                if (!v) return 0;
-                if (typeof v === 'number') return v;
-                return parseFloat(v.toString().replace(/\./g, '')) || 0;
-            };
-            totalGojek += parseVal(k.gojek);
-            totalGrab += parseVal(k.grab);
-            totalShopee += parseVal(k.shopee);
-        }
+      // 👉 AMBIL DATA PENJUALAN ONLINE DARI dbKasMasuk
+let harianGojek = 0, harianGrab = 0, harianShopee = 0;
+if (typeof dbKasMasuk !== 'undefined' && dbKasMasuk[tgl]) {
+    const k = dbKasMasuk[tgl];
+    const parseVal = (v) => {
+        if (!v) return 0;
+        if (typeof v === 'number') return v;
+        return parseFloat(v.toString().replace(/\./g, '')) || 0;
+    };
+    harianGojek = parseVal(k.gojek);
+    harianGrab = parseVal(k.grab);
+    harianShopee = parseVal(k.shopee);
+}
+
+totalGojek += harianGojek;
+totalGrab += harianGrab;
+totalShopee += harianShopee;
+
+dataGojekLine.push(harianGojek);
+dataGrabLine.push(harianGrab);
+dataShopeeLine.push(harianShopee);
 
         const totalBebanHarian = dGaji + dLaci + dDarurat;
         const profitBersih = Math.max(0, harianProfitKotor - totalBebanHarian); 
@@ -3201,46 +3210,79 @@ function renderDashboardGrafik() {
         return value.toString(); 
     };
 
-    // 👉 DRAW GRAFIK DONUT CHANNEL ONLINE
-    if(chartOnlineChannel) chartOnlineChannel.destroy();
-    const onlineEl = document.getElementById('chartOnlineChannel');
-    if (onlineEl) {
-        const ctxOnline = onlineEl.getContext('2d');
-        chartOnlineChannel = new Chart(ctxOnline, {
-            type: 'doughnut',
-            data: {
-                labels: ['Gojek', 'Grab', 'Shopee'],
-                datasets: [{
-                    data: [totalGojek, totalGrab, totalShopee],
-                    backgroundColor: ['#22c55e', '#10b981', '#f97316'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } },
-                    datalabels: {
-                        color: '#ffffff',
-                        font: { weight: 'bold', size: 9 },
-                        formatter: function(value, ctx) {
-                            if (!value || value === 0) return '';
-                            return formatSingkatan(value);
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return ' ' + context.label + ': Rp ' + (context.parsed || 0).toLocaleString('id-ID');
+   // 👉 DRAW GRAFIK BALOK PENJUALAN ONLINE HARIAN
+if(chartOnlineChannel) chartOnlineChannel.destroy();
+const onlineEl = document.getElementById('chartOnlineChannel');
+if (onlineEl) {
+    const ctxOnline = onlineEl.getContext('2d');
+    chartOnlineChannel = new Chart(ctxOnline, {
+        type: 'bar',
+        data: {
+            labels: labelsTren, // Menggunakan label tanggal yang sama dengan Tren Omset (misal: 20/10)
+            datasets: [
+                {
+                    label: 'Gojek',
+                    data: dataGojekLine,
+                    backgroundColor: '#22c55e',
+                    borderRadius: 3
+                },
+                {
+                    label: 'Grab',
+                    data: dataGrabLine,
+                    backgroundColor: '#10b981',
+                    borderRadius: 3
+                },
+                {
+                    label: 'Shopee',
+                    data: dataShopeeLine,
+                    backgroundColor: '#f97316',
+                    borderRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 20 } },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                datalabels: {
+                    align: 'top',
+                    anchor: 'end',
+                    color: '#334155',
+                    font: { weight: 'bold', size: 8 },
+                    formatter: formatSingkatan
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += 'Rp ' + context.parsed.y.toLocaleString('id-ID');
                             }
+                            return label;
+                        },
+                        footer: function(tooltipItems) {
+                            let totalHarian = 0;
+                            tooltipItems.forEach(function(item) {
+                                totalHarian += item.parsed.y || 0;
+                            });
+                            return '------------------------\nTotal Online: Rp ' + totalHarian.toLocaleString('id-ID');
                         }
                     }
                 }
+            },
+            scales: {
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, display: false }
             }
-        });
-    }
+        }
+    });
+}
 
     // --- CHART TREN OMSET & PROFIT ---
     if(chartTren) chartTren.destroy(); 
