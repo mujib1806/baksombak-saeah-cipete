@@ -2563,7 +2563,7 @@ function hitungSisaGudangRealtime(index) {
 }
 
 // ==========================================
-// 3. EKSEKUSI SIMPAN MUTASI MASAL (FIREBASE BATCH)
+// 3. EKSEKUSI SIMPAN MUTASI MASAL (SOLUSI RIWAYAT TAMPIL)
 // ==========================================
 async function simpanMutasiGudangMasal() {
     if (!window.masterProduk || window.masterProduk.length === 0) {
@@ -2593,7 +2593,19 @@ async function simpanMutasiGudangMasal() {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
-        const batch = db.batch();
+        // 1. Tarik data riwayat lama agar tidak tertimpa/hilang
+        let riwayatAda = [];
+        if (typeof db !== 'undefined' && db && typeof CABANG_AKTIF !== 'undefined') {
+            const docSnap = await db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok').get();
+            if (docSnap.exists && Array.isArray(docSnap.data().list)) {
+                riwayatAda = docSnap.data().list;
+            }
+        }
+
+        const now = new Date();
+        const tglFormat = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const jamFormat = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+        const userSkrg = (typeof currentUser !== 'undefined' && currentUser && currentUser.role) ? currentUser.role : "Admin";
 
         window.masterProduk.forEach((p, index) => {
             const inputMasukEl = document.getElementById(`inputMasuk_${index}`);
@@ -2603,27 +2615,37 @@ async function simpanMutasiGudangMasal() {
             const rusakBaru = inputRusakEl ? (parseFloat(inputRusakEl.value) || 0) : 0;
 
             if (masukBaru > 0 || rusakBaru > 0) {
+                // A. JIKA ADA STOK MASUK
                 if (masukBaru > 0) {
                     p.stokAwalGudang = (parseFloat(p.stokAwalGudang) || 0) + masukBaru;
-                    const refIn = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
-                    batch.set(refIn, {
+                    const sisaAplikasi = p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0);
+
+                    // Catat ke format Array Riwayat UI
+                    riwayatAda.unshift({
+                        waktu: `${tglFormat}, ${jamFormat}`,
+                        tanggalIso: now.toISOString().split('T')[0],
                         produk: p.nama,
-                        tipe: 'In (Gudang)',
-                        jumlah: masukBaru,
-                        sisaGudang: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - (parseFloat(p.stokRusak) || 0)),
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        aksi: 'In',
+                        perubahan: `+${masukBaru}`,
+                        sisa: Math.max(0, sisaAplikasi),
+                        oleh: userSkrg
                     });
                 }
 
+                // B. JIKA ADA STOK RUSAK
                 if (rusakBaru > 0) {
                     p.stokRusak = (parseFloat(p.stokRusak) || 0) + rusakBaru;
-                    const refRusak = db.collection('cabang').doc(CABANG_AKTIF).collection('riwayatStok').doc();
-                    batch.set(refRusak, {
+                    const sisaAplikasi = p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - p.stokRusak;
+
+                    // Catat ke format Array Riwayat UI
+                    riwayatAda.unshift({
+                        waktu: `${tglFormat}, ${jamFormat}`,
+                        tanggalIso: now.toISOString().split('T')[0],
                         produk: p.nama,
-                        tipe: 'Rusak (Gudang)',
-                        jumlah: rusakBaru,
-                        sisaGudang: (p.stokAwalGudang - (parseFloat(p.keluarEtalase) || 0) - p.stokRusak),
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        aksi: 'Out',
+                        perubahan: `-${rusakBaru}`,
+                        sisa: Math.max(0, sisaAplikasi),
+                        oleh: userSkrg
                     });
                 }
 
@@ -2632,16 +2654,26 @@ async function simpanMutasiGudangMasal() {
             }
         });
 
-        // Simpan Master Produk sekaligus
-        const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
-        batch.set(refMaster, { list: window.masterProduk }, { merge: true });
+        // Batasi maksimal 500 riwayat agar aplikasi tetap ringan
+        if (riwayatAda.length > 500) riwayatAda = riwayatAda.slice(0, 500);
+        window.riwayatStok = riwayatAda;
 
-        // Commiting Batch (Satu Kali Kirim)
+        // 2. Simpan Master Produk & Array Riwayat Stok sekaligus ke Firebase via Batch
+        const batch = db.batch();
+        const refMaster = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('masterProduk');
+        const refRiwayat = db.collection('cabang').doc(CABANG_AKTIF).collection('appData').doc('riwayatStok');
+
+        batch.set(refMaster, { list: window.masterProduk }, { merge: true });
+        batch.set(refRiwayat, { list: window.riwayatStok }, { merge: true });
+
         await batch.commit();
 
+        // 3. Render Ulang Layar & Tabel Riwayat
         renderTabelMasterProduk();
+        if (typeof terapkanFilterRiwayat === 'function') terapkanFilterRiwayat();
+
         if (btn) { btn.innerText = "💾 Simpan"; btn.disabled = false; }
-        if (typeof showToast === 'function') showToast("✅ Mutasi Stok Berhasil Disimpan!");
+        if (typeof showToast === 'function') showToast("✅ Mutasi Stok & Riwayat Berhasil Disimpan!");
 
     } catch (err) {
         alert("Gagal menyimpan ke server: " + err);
